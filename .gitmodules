@@ -1,0 +1,7 @@
+[submodule "smartcontracts/lib/forge-std"]
+	path = smartcontracts/lib/forge-std
+	url = https://github.com/foundry-rs/forge-std
+[submodule "smartcontracts/lib/openzeppelin-contracts"]
+	path = smartcontracts/lib/openzeppelin-contracts
+	url = https://github.com/openzeppelin/openzeppelin-contracts
+	branch = release-v4.8
