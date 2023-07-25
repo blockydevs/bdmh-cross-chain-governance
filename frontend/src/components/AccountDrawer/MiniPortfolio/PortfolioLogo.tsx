@@ -2,10 +2,8 @@ import { Currency } from '@uniswap/sdk-core'
 import blankTokenUrl from 'assets/svg/blank_token.svg'
 import { ReactComponent as UnknownStatus } from 'assets/svg/contract-interaction.svg'
 import { LogoImage, MissingImageLogo } from 'components/Logo/AssetLogo'
-import { Unicon } from 'components/Unicon'
 import { getChainInfo } from 'constants/chainInfo'
 import { SupportedChainId } from 'constants/chains'
-import useTokenLogoSource from 'hooks/useAssetLogoSource'
 import useENSAvatar from 'hooks/useENSAvatar'
 import React from 'react'
 import { Loader } from 'react-feather'
@@ -97,22 +95,13 @@ export function PortfolioLogo({
   const { avatar, loading } = useENSAvatar(accountAddress, false)
   const theme = useTheme()
 
-  const [src, nextSrc] = useTokenLogoSource(currencies?.[0]?.wrapped.address, chainId, currencies?.[0]?.isNative)
-  const [src2, nextSrc2] = useTokenLogoSource(currencies?.[1]?.wrapped.address, chainId, currencies?.[1]?.isNative)
-
   let component
   if (accountAddress) {
-    component = loading ? (
-      <Loader size={size} />
-    ) : avatar ? (
-      <ENSAvatarImg src={avatar} alt="avatar" />
-    ) : (
-      <Unicon size={40} address={accountAddress} />
-    )
+    component = loading ? <Loader size={size} /> : avatar ? <ENSAvatarImg src={avatar} alt="avatar" /> : null
   } else if (currencies && currencies.length) {
-    const logo1 = <LogoImage size={size} src={src ?? blankTokenUrl} onError={nextSrc} />
+    const logo1 = <LogoImage size={size} src={blankTokenUrl} />
 
-    const logo2 = <LogoImage size={size} src={src2 ?? blankTokenUrl} onError={nextSrc2} />
+    const logo2 = <LogoImage size={size} src={blankTokenUrl} />
 
     component =
       currencies.length > 1 ? (
@@ -120,8 +109,6 @@ export function PortfolioLogo({
           {logo1}
           {logo2}
         </DoubleLogoContainer>
-      ) : src ? (
-        logo1
       ) : (
         <MissingImageLogo size={size}>
           {currencies[0]?.symbol?.toUpperCase().replace('$', '').replace(/\s+/g, '').slice(0, 3)}

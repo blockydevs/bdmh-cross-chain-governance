@@ -1,6 +1,4 @@
 import { Trans } from '@lingui/macro'
-import { Trace } from '@uniswap/analytics'
-import { InterfacePageName } from '@uniswap/analytics-events'
 import { CurrencyAmount, Token } from '@uniswap/sdk-core'
 import { useWeb3React } from '@web3-react/core'
 import { ButtonPrimary } from 'components/Button'
@@ -8,13 +6,14 @@ import { AutoColumn } from 'components/Column'
 import FormattedCurrencyAmount from 'components/FormattedCurrencyAmount'
 import Loader from 'components/Icons/LoadingSpinner'
 import { AutoRow, RowBetween, RowFixed } from 'components/Row'
-import { SwitchLocaleLink } from 'components/SwitchLocaleLink'
 import DelegateModal from 'components/vote/DelegateModal'
 import DepositHMTModal from 'components/vote/DepositHMTModal'
 import DepositVHMTModal from 'components/vote/DepositVHMTModal'
 import ProposalEmptyState from 'components/vote/ProposalEmptyState'
 import JSBI from 'jsbi'
+import { useHubBlockNumber } from 'lib/hooks/useBlockNumber'
 import { useHmtContractToken } from 'lib/hooks/useCurrencyBalance'
+import { useTokenBalance } from 'lib/hooks/useCurrencyBalance'
 import { useIsMobile } from 'nft/hooks'
 import { darken } from 'polished'
 import { Link } from 'react-router-dom'
@@ -26,13 +25,13 @@ import {
   useToggleDelegateModal,
 } from 'state/application/hooks'
 import { ApplicationModal } from 'state/application/reducer'
-import { useTokenBalance } from 'state/connection/hooks'
 import { ProposalData } from 'state/governance/hooks'
 import { useAllProposalData, useUserDelegatee, useUserVotes } from 'state/governance/hooks'
 import styled from 'styled-components/macro'
 import { ExternalLink, ThemedText } from 'theme'
 import { shortenAddress } from 'utils'
 import { shortenString } from 'utils'
+import { checkProposalState } from 'utils/checkProposalPendingState'
 import { ExplorerDataType, getExplorerLink } from 'utils/getExplorerLink'
 import { shortenTitle } from 'utils/shortenTitle'
 
@@ -223,6 +222,7 @@ const UnlockVotingContainer = styled.div`
 export default function Landing() {
   const { account, chainId } = useWeb3React()
   const isMobile = useIsMobile()
+  const hubBlock = useHubBlockNumber()
 
   const showDelegateModal = useModalIsOpen(ApplicationModal.DELEGATE)
   const toggleDelegateModal = useToggleDelegateModal()
@@ -269,100 +269,100 @@ export default function Landing() {
 
   return (
     <>
-      <Trace page={InterfacePageName.LANDING_PAGE} shouldLogImpression>
-        <PageWrapper gap="lg" justify="center">
-          <DelegateModal
-            isOpen={showDelegateModal}
-            onDismiss={toggleDelegateModal}
-            title={showUnlockVoting ? <Trans>Unlock Votes</Trans> : <Trans>Update Delegation</Trans>}
-          />
-          <DepositHMTModal
-            isOpen={showDepositHMTModal}
-            onDismiss={toggleDepositHMTModal}
-            title={showDepositHMTButton && <Trans>Deposit HMT</Trans>}
-            hmtBalance={hmtBalance}
-          />
-          <DepositVHMTModal
-            isOpen={showDepositVHMTModal}
-            onDismiss={toggleDepositVHMTModal}
-            title={showDepositVHMTButton && <Trans>Withdraw HMT</Trans>}
-            uniBalance={uniBalance}
-          />
-          <ProposalsContainer gap="2px">
-            <WrapSmall>
-              <StyledButtonsContainer gap="6px" justify="flex-end">
-                {loadingProposals || loadingAvailableVotes ? <Loader /> : null}
-                <StyledButtonPrimary disabled={!showDepositHMTButton} onClick={toggleDepositHMTModal}>
-                  <Trans>Deposit HMT</Trans>
+      <PageWrapper gap="lg" justify="center">
+        <DelegateModal
+          isOpen={showDelegateModal}
+          onDismiss={toggleDelegateModal}
+          title={showUnlockVoting ? <Trans>Unlock Votes</Trans> : <Trans>Update Delegation</Trans>}
+        />
+        <DepositHMTModal
+          isOpen={showDepositHMTModal}
+          onDismiss={toggleDepositHMTModal}
+          title={showDepositHMTButton && <Trans>Deposit HMT</Trans>}
+          hmtBalance={hmtBalance}
+        />
+        <DepositVHMTModal
+          isOpen={showDepositVHMTModal}
+          onDismiss={toggleDepositVHMTModal}
+          title={showDepositVHMTButton && <Trans>Withdraw HMT</Trans>}
+          uniBalance={uniBalance}
+        />
+        <ProposalsContainer gap="2px">
+          <WrapSmall>
+            <StyledButtonsContainer gap="6px" justify="flex-end">
+              {loadingProposals || loadingAvailableVotes ? <Loader /> : null}
+              <StyledButtonPrimary disabled={!showDepositHMTButton} onClick={toggleDepositHMTModal}>
+                <Trans>Deposit HMT</Trans>
+              </StyledButtonPrimary>
+              <StyledButtonPrimary disabled={!showDepositVHMTButton} onClick={toggleDepositVHMTModal}>
+                <Trans>Withdraw HMT</Trans>
+              </StyledButtonPrimary>
+            </StyledButtonsContainer>
+            {showUnlockVoting ? (
+              <UnlockVotingContainer>
+                <ThemedText.BodySecondary fontWeight={500} mr="4px">
+                  <Trans>You have to delegate to unlock voting</Trans>
+                </ThemedText.BodySecondary>
+                <StyledButtonPrimary onClick={toggleDelegateModal}>
+                  <Trans>Unlock Voting</Trans>
                 </StyledButtonPrimary>
-                <StyledButtonPrimary disabled={!showDepositVHMTButton} onClick={toggleDepositVHMTModal}>
-                  <Trans>Withdraw HMT</Trans>
-                </StyledButtonPrimary>
-              </StyledButtonsContainer>
-              {showUnlockVoting ? (
-                <UnlockVotingContainer>
-                  <ThemedText.BodySecondary fontWeight={500} mr="4px">
-                    <Trans>You have to delegate to unlock voting</Trans>
-                  </ThemedText.BodySecondary>
-                  <StyledButtonPrimary onClick={toggleDelegateModal}>
-                    <Trans>Unlock Voting</Trans>
-                  </StyledButtonPrimary>
-                </UnlockVotingContainer>
-              ) : null}
-            </WrapSmall>
-            {!showUnlockVoting && (
-              <RowBetween>
-                {userDelegatee && userDelegatee[0] !== ZERO_ADDRESS && chainId ? (
-                  <StyledRowBetween justify="between">
+              </UnlockVotingContainer>
+            ) : null}
+          </WrapSmall>
+          {!showUnlockVoting && (
+            <RowBetween>
+              {userDelegatee && userDelegatee[0] !== ZERO_ADDRESS && chainId ? (
+                <StyledRowBetween justify="between">
+                  <RowFixed>
+                    <ThemedText.SubHeaderLarge mr="4px">
+                      <Trans>Delegated to:</Trans>
+                    </ThemedText.SubHeaderLarge>
+                    <AddressButton>
+                      <StyledExternalLink
+                        href={getExplorerLink(chainId, userDelegatee, ExplorerDataType.ADDRESS)}
+                        style={{ margin: '0 4px' }}
+                      >
+                        {shortenAddress(userDelegatee[0])} <Trans>(self)</Trans>
+                      </StyledExternalLink>
+                    </AddressButton>
+                  </RowFixed>
+
+                  {availableVotes && JSBI.notEqual(JSBI.BigInt(0), availableVotes?.quotient) ? (
                     <RowFixed>
-                      <ThemedText.SubHeaderLarge mr="4px">
-                        <Trans>Delegated to:</Trans>
+                      <ThemedText.SubHeaderLarge mr="6px">
+                        <Trans>
+                          <FormattedCurrencyAmount currencyAmount={availableVotes} /> Votes
+                        </Trans>
                       </ThemedText.SubHeaderLarge>
-                      <AddressButton>
-                        <StyledExternalLink
-                          href={getExplorerLink(chainId, userDelegatee, ExplorerDataType.ADDRESS)}
-                          style={{ margin: '0 4px' }}
-                        >
-                          {shortenAddress(userDelegatee[0])} <Trans>(self)</Trans>
-                        </StyledExternalLink>
-                      </AddressButton>
                     </RowFixed>
+                  ) : uniBalance &&
+                    userDelegatee &&
+                    userDelegatee[0] !== ZERO_ADDRESS &&
+                    JSBI.notEqual(JSBI.BigInt(0), uniBalance?.quotient) ? (
+                    <RowFixed>
+                      <ThemedText.DeprecatedBody fontWeight={500} mr="6px">
+                        <Trans>
+                          <FormattedCurrencyAmount currencyAmount={uniBalance} /> Votes
+                        </Trans>
+                      </ThemedText.DeprecatedBody>
+                    </RowFixed>
+                  ) : (
+                    ''
+                  )}
+                </StyledRowBetween>
+              ) : (
+                ''
+              )}
+            </RowBetween>
+          )}
+          <ThemedText.HeadlineLarge style={{ margin: '28px 0 12px 0', flexShrink: 0 }}>
+            <Trans>Proposals</Trans>
+          </ThemedText.HeadlineLarge>
+          <div />
 
-                    {availableVotes && JSBI.notEqual(JSBI.BigInt(0), availableVotes?.quotient) ? (
-                      <RowFixed>
-                        <ThemedText.SubHeaderLarge mr="6px">
-                          <Trans>
-                            <FormattedCurrencyAmount currencyAmount={availableVotes} /> Votes
-                          </Trans>
-                        </ThemedText.SubHeaderLarge>
-                      </RowFixed>
-                    ) : uniBalance &&
-                      userDelegatee &&
-                      userDelegatee[0] !== ZERO_ADDRESS &&
-                      JSBI.notEqual(JSBI.BigInt(0), uniBalance?.quotient) ? (
-                      <RowFixed>
-                        <ThemedText.DeprecatedBody fontWeight={500} mr="6px">
-                          <Trans>
-                            <FormattedCurrencyAmount currencyAmount={uniBalance} /> Votes
-                          </Trans>
-                        </ThemedText.DeprecatedBody>
-                      </RowFixed>
-                    ) : (
-                      ''
-                    )}
-                  </StyledRowBetween>
-                ) : (
-                  ''
-                )}
-              </RowBetween>
-            )}
-            <ThemedText.HeadlineLarge style={{ margin: '28px 0 12px 0', flexShrink: 0 }}>
-              <Trans>Proposals</Trans>
-            </ThemedText.HeadlineLarge>
-            <div />
-
-            {allProposals?.length === 0 && <ProposalEmptyState />}
-            {allProposals
+          {allProposals?.length === 0 && <ProposalEmptyState />}
+          {allProposals &&
+            allProposals
               ?.slice(0)
               ?.reverse()
               ?.map((p: ProposalData) => {
@@ -370,7 +370,7 @@ export default function Landing() {
                   <Proposal as={Link} to={`${p.governorIndex}/${p.id}`} key={`${p.governorIndex}${p.id}`}>
                     <RowBetween>
                       <ProposalNumber>{shortenString(p.id)}</ProposalNumber>
-                      <ProposalStatus status={p.status} />
+                      <ProposalStatus status={checkProposalState(p.status, hubBlock, p.endBlock)} />
                     </RowBetween>
                     <ProposalTitle>{shortenTitle(p.title)}</ProposalTitle>
                   </Proposal>
@@ -378,14 +378,12 @@ export default function Landing() {
                   <Proposal as={Link} to={`${p.governorIndex}/${p.id}`} key={`${p.governorIndex}${p.id}`}>
                     <ProposalNumber>{shortenString(p.id)}</ProposalNumber>
                     <ProposalTitle>{shortenTitle(p.title)}</ProposalTitle>
-                    <ProposalStatus status={p.status} />
+                    <ProposalStatus status={checkProposalState(p.status, hubBlock, p.endBlock)} />
                   </Proposal>
                 )
               })}
-          </ProposalsContainer>
-        </PageWrapper>
-      </Trace>
-      <SwitchLocaleLink />
+        </ProposalsContainer>
+      </PageWrapper>
     </>
   )
 }

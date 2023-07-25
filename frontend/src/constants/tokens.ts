@@ -2,14 +2,15 @@ import { Currency, Ether, NativeCurrency, Token, WETH9 } from '@uniswap/sdk-core
 import invariant from 'tiny-invariant'
 
 import { HUB_VOTE_TOKEN_ADDRESS, SPOKE_VOTE_TOKEN_ADDRESSES } from './addresses'
+import { HUB_CHAIN_ID } from './addresses'
 import { SupportedChainId } from './chains'
-
-export const NATIVE_CHAIN_ID = 'NATIVE'
 
 // When decimals are not specified for an ERC20 token
 // use default ERC20 token decimals as specified here:
 // https://docs.openzeppelin.com/contracts/3.x/erc20
 export const DEFAULT_ERC20_DECIMALS = 18
+
+export const NATIVE_CHAIN_ID = 'NATIVE'
 
 export const USDC_MAINNET = new Token(
   SupportedChainId.MAINNET,
@@ -25,7 +26,7 @@ const USDC_GOERLI = new Token(
   'USDC',
   'USD//C'
 )
-export const USDC_OPTIMISM = new Token(
+const USDC_OPTIMISM = new Token(
   SupportedChainId.OPTIMISM,
   '0x7F5c764cBc14f9669B88837ca1490cCa17c31607',
   6,
@@ -39,14 +40,14 @@ const USDC_OPTIMISM_GOERLI = new Token(
   'USDC',
   'USD//C'
 )
-export const USDC_ARBITRUM = new Token(
+const USDC_ARBITRUM = new Token(
   SupportedChainId.ARBITRUM_ONE,
   '0xFF970A61A04b1cA14834A43f5dE4533eBDDB5CC8',
   6,
   'USDC',
   'USD//C'
 )
-export const USDC_ARBITRUM_GOERLI = new Token(
+const USDC_ARBITRUM_GOERLI = new Token(
   SupportedChainId.ARBITRUM_GOERLI,
   '0x8FB1E3fC51F3b789dED7557E680551d93Ea9d892',
   6,
@@ -116,13 +117,7 @@ export const USDT_POLYGON = new Token(
   'USDT',
   'Tether USD'
 )
-export const WBTC_POLYGON = new Token(
-  SupportedChainId.POLYGON,
-  '0x1bfd67037b42cf73acf2047067bd4f2c47d9bfd6',
-  8,
-  'WBTC',
-  'Wrapped BTC'
-)
+
 export const USDT = new Token(
   SupportedChainId.MAINNET,
   '0xdAC17F958D2ee523a2206206994597C13D831ec7',
@@ -228,13 +223,6 @@ export const SWISE = new Token(
   'SWISE',
   'StakeWise'
 )
-export const WETH_POLYGON_MUMBAI = new Token(
-  SupportedChainId.POLYGON_MUMBAI,
-  '0xa6fa4fb5f76172d178d61b04b0ecd319c5d1c0aa',
-  18,
-  'WETH',
-  'Wrapped Ether'
-)
 
 export const WETH_POLYGON = new Token(
   SupportedChainId.POLYGON,
@@ -243,7 +231,7 @@ export const WETH_POLYGON = new Token(
   'WETH',
   'Wrapped Ether'
 )
-const CELO_CELO = new Token(SupportedChainId.CELO, '0x471EcE3750Da237f93B8E339c536989b8978a438', 18, 'CELO', 'Celo')
+
 export const CUSD_CELO = new Token(
   SupportedChainId.CELO,
   '0x765DE816845861e75A25fCA122bb6898B8B1282a',
@@ -271,27 +259,6 @@ export const CMC02_CELO = new Token(
   18,
   'cMCO2',
   'Celo Moss Carbon Credit'
-)
-const CELO_CELO_ALFAJORES = new Token(
-  SupportedChainId.CELO_ALFAJORES,
-  '0xF194afDf50B03e69Bd7D057c1Aa9e10c9954E4C9',
-  18,
-  'CELO',
-  'Celo'
-)
-export const CUSD_CELO_ALFAJORES = new Token(
-  SupportedChainId.CELO_ALFAJORES,
-  '0x874069Fa1Eb16D44d622F2e0Ca25eeA172369bC1',
-  18,
-  'CUSD',
-  'Celo Dollar'
-)
-export const CEUR_CELO_ALFAJORES = new Token(
-  SupportedChainId.CELO_ALFAJORES,
-  '0x10c892A6EC43a53E45D0B916B4b7D383B1b78C0F',
-  18,
-  'CEUR',
-  'Celo Euro Stablecoin'
 )
 
 export const USDC_BSC = new Token(
@@ -355,16 +322,12 @@ export const BUSD_BSC = new Token(
 export const DAI_BSC = new Token(SupportedChainId.BNB, '0x1AF3F329e8BE154074D8769D1FFa4eE058B1DBc3', 18, 'DAI', 'DAI')
 
 export const UNI: { [chainId: number]: Token } = {
-  [SupportedChainId.MAINNET]: new Token(SupportedChainId.MAINNET, HUB_VOTE_TOKEN_ADDRESS[1], 18, 'UNI', 'Uniswap'),
-  [SupportedChainId.GOERLI]: new Token(SupportedChainId.GOERLI, HUB_VOTE_TOKEN_ADDRESS[5], 18, 'UNI', 'Uniswap'),
-  [SupportedChainId.SEPOLIA]: new Token(SupportedChainId.SEPOLIA, HUB_VOTE_TOKEN_ADDRESS[5], 18, 'UNI', 'Uniswap'),
-  [SupportedChainId.POLYGON_MUMBAI]: new Token(
-    SupportedChainId.POLYGON_MUMBAI,
-    SPOKE_VOTE_TOKEN_ADDRESSES[5],
-    18,
-    'UNI',
-    'Uniswap'
-  ),
+  [HUB_CHAIN_ID]: new Token(HUB_CHAIN_ID, HUB_VOTE_TOKEN_ADDRESS[5], 18, 'UNI', 'Uniswap'),
+}
+
+for (const chainId in SPOKE_VOTE_TOKEN_ADDRESSES) {
+  const address = SPOKE_VOTE_TOKEN_ADDRESSES[chainId]
+  UNI[chainId] = new Token(parseInt(chainId, 10), address, 18, 'UNI', 'Uniswap')
 }
 
 export const WRAPPED_NATIVE_CURRENCY: { [chainId: number]: Token | undefined } = {
@@ -394,7 +357,7 @@ export const WRAPPED_NATIVE_CURRENCY: { [chainId: number]: Token | undefined } =
     SupportedChainId.ARBITRUM_GOERLI,
     '0xe39Ab88f8A4777030A534146A9Ca3B52bd5D43A3',
     18,
-    'WETH',
+    'AGOR',
     'Wrapped Ether'
   ),
   [SupportedChainId.POLYGON]: new Token(
@@ -408,7 +371,7 @@ export const WRAPPED_NATIVE_CURRENCY: { [chainId: number]: Token | undefined } =
     SupportedChainId.POLYGON_MUMBAI,
     '0x9c3C9283D3e44854697Cd22D3Faa240Cfb032889',
     18,
-    'WMATIC',
+    'MATIC',
     'Wrapped MATIC'
   ),
   [SupportedChainId.CELO]: new Token(
@@ -432,21 +395,6 @@ export const WRAPPED_NATIVE_CURRENCY: { [chainId: number]: Token | undefined } =
     'WBNB',
     'Wrapped BNB'
   ),
-}
-
-export function isCelo(chainId: number): chainId is SupportedChainId.CELO | SupportedChainId.CELO_ALFAJORES {
-  return chainId === SupportedChainId.CELO_ALFAJORES || chainId === SupportedChainId.CELO
-}
-
-function getCeloNativeCurrency(chainId: number) {
-  switch (chainId) {
-    case SupportedChainId.CELO_ALFAJORES:
-      return CELO_CELO_ALFAJORES
-    case SupportedChainId.CELO:
-      return CELO_CELO
-    default:
-      throw new Error('Not celo')
-  }
 }
 
 function isMatic(chainId: number): chainId is SupportedChainId.POLYGON | SupportedChainId.POLYGON_MUMBAI {
@@ -473,6 +421,10 @@ class MaticNativeCurrency extends NativeCurrency {
 
 function isBsc(chainId: number): chainId is SupportedChainId.BNB {
   return chainId === SupportedChainId.BNB
+}
+
+export function isCelo(chainId: number): chainId is SupportedChainId.CELO | SupportedChainId.CELO_ALFAJORES {
+  return chainId === SupportedChainId.CELO_ALFAJORES || chainId === SupportedChainId.CELO
 }
 
 class BscNativeCurrency extends NativeCurrency {
@@ -513,21 +465,12 @@ export function nativeOnChain(chainId: number): NativeCurrency | Token {
   let nativeCurrency: NativeCurrency | Token
   if (isMatic(chainId)) {
     nativeCurrency = new MaticNativeCurrency(chainId)
-  } else if (isCelo(chainId)) {
-    nativeCurrency = getCeloNativeCurrency(chainId)
   } else if (isBsc(chainId)) {
     nativeCurrency = new BscNativeCurrency(chainId)
   } else {
     nativeCurrency = ExtendedEther.onChain(chainId)
   }
   return (cachedNativeCurrency[chainId] = nativeCurrency)
-}
-
-export function getSwapCurrencyId(currency: Currency): string {
-  if (currency.isToken) {
-    return currency.address
-  }
-  return NATIVE_CHAIN_ID
 }
 
 export const TOKEN_SHORTHANDS: { [shorthand: string]: { [chainId in SupportedChainId]?: string } } = {

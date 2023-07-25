@@ -8,6 +8,7 @@ const handleColorType = (status: ProposalState, theme: DefaultTheme) => {
     case ProposalState.PENDING:
     case ProposalState.ACTIVE:
     case ProposalState.SUCCEEDED:
+    case ProposalState.COLLECTION_PHASE:
       return theme.accentSuccess
     case ProposalState.EXECUTED:
       return theme.textPrimary
@@ -26,6 +27,8 @@ function StatusText({ status }: { status: ProposalState }) {
   switch (status) {
     case ProposalState.PENDING:
       return <Trans>Pending</Trans>
+    case ProposalState.COLLECTION_PHASE:
+      return <Trans>Collection Phase</Trans>
     case ProposalState.ACTIVE:
       return <Trans>Active</Trans>
     case ProposalState.SUCCEEDED:

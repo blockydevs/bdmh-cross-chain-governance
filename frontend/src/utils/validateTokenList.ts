@@ -1,4 +1,4 @@
-import type { TokenInfo, TokenList } from '@uniswap/token-lists'
+import type { TokenList } from '@uniswap/token-lists'
 import type { ValidateFunction } from 'ajv'
 
 import { retry } from './retry'
@@ -34,19 +34,6 @@ async function validate(schema: ValidationSchema, data: unknown): Promise<unknow
     return data
   }
   throw new Error(getValidationErrors(validator))
-}
-
-/**
- * Validates an array of tokens.
- * @param json the TokenInfo[] to validate
- */
-export async function validateTokens(json: TokenInfo[]): Promise<TokenInfo[]> {
-  try {
-    await validate(ValidationSchema.TOKENS, { tokens: json })
-    return json
-  } catch (error) {
-    throw new Error(`Tokens failed validation: ${error.message}`)
-  }
 }
 
 /**

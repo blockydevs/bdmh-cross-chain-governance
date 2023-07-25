@@ -14,10 +14,6 @@ export function toSupportedChainId(chainId: ChainId): SupportedChainId | undefin
   if (SupportedChainId[numericChainId]) return numericChainId
   return undefined
 }
-export function isSupportedChainId(chainId: ChainId | undefined): boolean {
-  if (chainId === undefined) return false
-  return toSupportedChainId(chainId) !== undefined
-}
 
 async function getQuote(
   {

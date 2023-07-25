@@ -1,5 +1,3 @@
-import { NftActivityType, NftStandard, OrderStatus } from 'graphql/data/__generated__/types-and-hooks'
-
 import { Markets, Rarity, TokenType } from '../common'
 export interface AssetPayload {
   filters: {
@@ -84,7 +82,7 @@ export interface TokenMetadata {
   metadataUrl?: string
   rarity?: TokenRarity | Rarity
   suspiciousFlag?: boolean
-  standard?: TokenType | NftStandard
+  standard?: TokenType
 }
 
 // TODO when deprecating activity query, remove all outdated types (former in optional fields)
@@ -92,12 +90,10 @@ export interface ActivityEvent {
   collectionAddress?: string
   tokenId?: string
   tokenMetadata?: TokenMetadata
-  eventType?: NftActivityType
   marketplace?: Markets | string
   fromAddress?: string
   toAddress?: string
   transactionHash?: string
-  orderStatus?: OrderStatus
   price?: string
   symbol?: string
   quantity?: number

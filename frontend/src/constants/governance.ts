@@ -29,5 +29,3 @@ export const DEFAULT_AVERAGE_BLOCK_TIME_IN_SECS = 12
 export const AVERAGE_BLOCK_TIME_IN_SECS: { [chainId: number]: number } = {
   1: DEFAULT_AVERAGE_BLOCK_TIME_IN_SECS,
 }
-
-export const LATEST_GOVERNOR_INDEX = 2

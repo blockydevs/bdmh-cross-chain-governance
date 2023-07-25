@@ -5,7 +5,7 @@ import noop from 'utils/noop'
 
 import Popover, { PopoverProps } from '../Popover'
 
-export enum TooltipSize {
+enum TooltipSize {
   Small = '256px',
   Large = '400px',
 }

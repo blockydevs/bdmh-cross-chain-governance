@@ -1,5 +1,7 @@
 import { Trans } from '@lingui/macro'
 import { useWeb3React } from '@web3-react/core'
+import GrayCloseButton from 'components/GrayCloseButton/GrayCloseButton'
+import { useIsMobile } from 'nft/hooks'
 import { useState } from 'react'
 import { ArrowUpCircle, X } from 'react-feather'
 import styled, { useTheme } from 'styled-components/macro'
@@ -31,7 +33,7 @@ const ConfirmOrLoadingWrapper = styled.div`
 `
 
 const ConfirmedIcon = styled(ColumnCenter)`
-  padding: 60px 0;
+  padding-top: 16px;
 `
 
 interface RequestCollectionsModalProps {
@@ -43,6 +45,7 @@ interface RequestCollectionsModalProps {
 export default function RequestCollectionsModal({ isOpen, onDismiss, proposalId }: RequestCollectionsModalProps) {
   const { chainId } = useWeb3React()
   const requestCollectionsCallback = useRequestCollections()
+  const isMobile = useIsMobile()
 
   // monitor call to help UI loading state
   const [hash, setHash] = useState<string | undefined>()
@@ -79,17 +82,13 @@ export default function RequestCollectionsModal({ isOpen, onDismiss, proposalId 
     <Modal isOpen={isOpen} onDismiss={wrappedOnDismiss} maxHeight={90}>
       {!attempting && !hash && (
         <ContentWrapper gap="lg">
+          <GrayCloseButton onClick={wrappedOnDismiss} />
           <AutoColumn gap="lg" justify="center">
             <RowBetween>
               <ThemedText.DeprecatedMediumHeader fontWeight={500}>
                 <Trans>Request Collections</Trans>
               </ThemedText.DeprecatedMediumHeader>
               <StyledClosed onClick={wrappedOnDismiss} />
-            </RowBetween>
-            <RowBetween>
-              <ThemedText.DeprecatedBody>
-                {/* <Trans>Adding this proposal to the queue will allow it to be executed, after a delay.</Trans> */}
-              </ThemedText.DeprecatedBody>
             </RowBetween>
             <ButtonPrimary onClick={onRequestCollections}>
               <ThemedText.DeprecatedMediumHeader color="white">
@@ -101,16 +100,21 @@ export default function RequestCollectionsModal({ isOpen, onDismiss, proposalId 
       )}
       {attempting && !hash && (
         <ConfirmOrLoadingWrapper>
+          <GrayCloseButton onClick={wrappedOnDismiss} />
           <RowBetween>
             <div />
             <StyledClosed onClick={wrappedOnDismiss} />
           </RowBetween>
           <ConfirmedIcon>
-            <CustomLightSpinner src={Circle} alt="loader" size="90px" />
+            <CustomLightSpinner src={Circle} alt="loader" size={isMobile ? '90px' : '116px'} />
           </ConfirmedIcon>
-          <AutoColumn gap="100px" justify="center">
+          <AutoColumn gap={isMobile ? '24px' : '48px'} justify="center">
             <AutoColumn gap="md" justify="center">
-              <ThemedText.DeprecatedLargeHeader>
+              <ThemedText.DeprecatedLargeHeader
+                marginTop={32}
+                fontSize={isMobile ? 20 : 36}
+                fontWeight={isMobile ? 500 : 600}
+              >
                 <Trans>Processing</Trans>
               </ThemedText.DeprecatedLargeHeader>
             </AutoColumn>
@@ -122,16 +126,23 @@ export default function RequestCollectionsModal({ isOpen, onDismiss, proposalId 
       )}
       {hash && (
         <ConfirmOrLoadingWrapper>
+          <GrayCloseButton onClick={wrappedOnDismiss} />
           <RowBetween>
             <div />
             <StyledClosed onClick={wrappedOnDismiss} />
           </RowBetween>
           <ConfirmedIcon>
-            <ArrowUpCircle strokeWidth={0.5} size={90} color={theme.accentAction} />
+            <ArrowUpCircle strokeWidth={0.7} size={isMobile ? 116 : 190} color={theme.accentAction} />
           </ConfirmedIcon>
-          <AutoColumn gap="100px" justify="center">
+          <AutoColumn gap={isMobile ? '24px' : '48px'} justify="center">
             <AutoColumn gap="md" justify="center">
-              <ThemedText.DeprecatedLargeHeader>
+              <ThemedText.DeprecatedLargeHeader
+                width="100%"
+                textAlign="center"
+                marginTop={32}
+                fontSize={isMobile ? 20 : 36}
+                fontWeight={isMobile ? 500 : 600}
+              >
                 <Trans>Transaction Submitted</Trans>
               </ThemedText.DeprecatedLargeHeader>
             </AutoColumn>

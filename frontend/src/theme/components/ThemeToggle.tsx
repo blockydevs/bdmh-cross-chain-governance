@@ -1,16 +1,8 @@
-import { Trans } from '@lingui/macro'
-import Row from 'components/Row'
-import { atom, useAtom } from 'jotai'
+import { atom } from 'jotai'
 import { atomWithStorage, useAtomValue, useUpdateAtom } from 'jotai/utils'
-import ms from 'ms.macro'
 import { useCallback, useEffect, useMemo } from 'react'
-import { Moon, Sun } from 'react-feather'
 import { addMediaQueryListener, removeMediaQueryListener } from 'utils/matchMedia'
 
-import { Segment, SegmentedControl } from './SegmentedControl'
-import { ThemedText } from './text'
-
-const THEME_UPDATE_DELAY = ms`0.1s`
 const DARKMODE_MEDIA_QUERY = window.matchMedia('(prefers-color-scheme: dark)')
 
 export enum ThemeMode {
@@ -59,34 +51,4 @@ export function useDarkModeManager(): [boolean, (mode: ThemeMode) => void] {
   return useMemo(() => {
     return [isDarkMode, setMode]
   }, [isDarkMode, setMode])
-}
-
-export default function ThemeToggle({ disabled }: { disabled?: boolean }) {
-  const [mode, setMode] = useAtom(themeModeAtom)
-  const switchMode = useCallback(
-    (mode: ThemeMode) => {
-      // Switch feels less jittery with short delay
-      !disabled && setTimeout(() => setMode(mode), THEME_UPDATE_DELAY)
-    },
-    [disabled, setMode]
-  )
-
-  return (
-    <Row align="center">
-      <Row width="40%">
-        <ThemedText.SubHeaderSmall color="primary">
-          <Trans>Theme</Trans>
-        </ThemedText.SubHeaderSmall>
-      </Row>
-      <Row flexGrow={1} justify="flex-end" width="60%">
-        <SegmentedControl selected={mode} onSelect={switchMode}>
-          <Segment value={ThemeMode.AUTO} testId="theme-auto">
-            <Trans>Auto</Trans>
-          </Segment>
-          <Segment value={ThemeMode.LIGHT} Icon={Sun} testId="theme-lightmode" />
-          <Segment value={ThemeMode.DARK} Icon={Moon} testId="theme-darkmode" />
-        </SegmentedControl>
-      </Row>
-    </Row>
-  )
 }

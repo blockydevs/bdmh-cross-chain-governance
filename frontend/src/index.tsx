@@ -1,11 +1,8 @@
 import '@reach/dialog/styles.css'
 import 'inter-ui'
 import 'polyfills'
-import 'tracing'
 
-import { ApolloProvider } from '@apollo/client'
 import { FeatureFlagsProvider } from 'featureFlags'
-import { apolloClient } from 'graphql/data/apollo'
 import { BlockNumberProvider } from 'lib/hooks/useBlockNumber'
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
@@ -55,15 +52,13 @@ createRoot(container).render(
           <Router>
             <LanguageProvider>
               <Web3Provider>
-                <ApolloProvider client={apolloClient}>
-                  <BlockNumberProvider>
-                    <Updaters />
-                    <ThemeProvider>
-                      <ThemedGlobalStyle />
-                      <App />
-                    </ThemeProvider>
-                  </BlockNumberProvider>
-                </ApolloProvider>
+                <BlockNumberProvider>
+                  <Updaters />
+                  <ThemeProvider>
+                    <ThemedGlobalStyle />
+                    <App />
+                  </ThemeProvider>
+                </BlockNumberProvider>
               </Web3Provider>
             </LanguageProvider>
           </Router>

@@ -6,7 +6,7 @@ import { TransactionDetails, TransactionInfo } from './types'
 
 const now = () => new Date().getTime()
 
-export interface TransactionState {
+interface TransactionState {
   [chainId: number]: {
     [txHash: string]: TransactionDetails
   }
@@ -20,7 +20,7 @@ interface AddTransactionPayload {
   nonce: number
 }
 
-export const initialState: TransactionState = {}
+const initialState: TransactionState = {}
 
 const transactionSlice = createSlice({
   name: 'transactions',
@@ -36,10 +36,6 @@ const transactionSlice = createSlice({
       const txs = transactions[chainId] ?? {}
       txs[hash] = { hash, info, from, addedTime: now(), nonce }
       transactions[chainId] = txs
-    },
-    clearAllTransactions(transactions, { payload: { chainId } }) {
-      if (!transactions[chainId]) return
-      transactions[chainId] = {}
     },
     removeTransaction(transactions, { payload: { chainId, hash } }) {
       if (transactions[chainId][hash]) {
@@ -82,6 +78,5 @@ const transactionSlice = createSlice({
   },
 })
 
-export const { addTransaction, clearAllTransactions, checkedTransaction, finalizeTransaction, removeTransaction } =
-  transactionSlice.actions
+export const { addTransaction, checkedTransaction, finalizeTransaction, removeTransaction } = transactionSlice.actions
 export default transactionSlice.reducer

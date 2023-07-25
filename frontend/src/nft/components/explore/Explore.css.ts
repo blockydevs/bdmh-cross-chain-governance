@@ -1,5 +1,4 @@
 import { style } from '@vanilla-extract/css'
-import { body, bodySmall } from 'nft/css/common.css'
 import { sprinkles } from 'nft/css/sprinkles.css'
 
 export const section = style([
@@ -80,7 +79,6 @@ export const thead = sprinkles({
 })
 
 export const th = style([
-  bodySmall,
   {
     selectors: {
       '&:nth-last-child(1)': {
@@ -96,7 +94,6 @@ export const th = style([
 ])
 
 export const td = style([
-  body,
   {
     selectors: {
       '&:nth-last-child(1)': {
@@ -113,7 +110,6 @@ export const td = style([
 ])
 
 export const loadingTd = style([
-  body,
   {
     selectors: {
       '&:nth-last-child(1)': {

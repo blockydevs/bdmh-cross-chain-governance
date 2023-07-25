@@ -1,12 +1,9 @@
 import { style } from '@vanilla-extract/css'
-
-import { body } from '../../../css/common.css'
-import { sprinkles } from '../../../css/sprinkles.css'
+import { sprinkles } from 'nft/css/sprinkles.css'
 
 export const logo = sprinkles({ borderRadius: '12' })
 
 export const title = style([
-  body,
   sprinkles({
     color: 'textPrimary',
     textAlign: 'left',

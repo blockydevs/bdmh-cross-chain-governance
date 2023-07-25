@@ -6,6 +6,7 @@ import { useWeb3React } from '@web3-react/core'
 import ExchangeHmtInput from 'components/ExchangeHmtInput/ExchangeHmtInput'
 import GrayCloseButton from 'components/GrayCloseButton/GrayCloseButton'
 import { useHmtContractToken } from 'lib/hooks/useCurrencyBalance'
+import { useIsMobile } from 'nft/hooks'
 import { ReactNode, useCallback, useState } from 'react'
 import { X } from 'react-feather'
 import { useUniContract } from 'state/governance/hooks'
@@ -23,10 +24,10 @@ import Modal from '../Modal'
 import { LoadingView, SubmittedView, SubmittedWithErrorView } from '../ModalViews'
 import { RowBetween } from '../Row'
 
-const ContentWrapper = styled(AutoColumn)`
+const ContentWrapper = styled(AutoColumn)<{ padding?: boolean }>`
   width: 100%;
-  padding: 24px;
-  justify-content: center;
+  padding: ${({ padding }) => (padding ? '24px' : '24px 0')};
+  text-align: center;
 `
 
 const StyledClosed = styled(X)`
@@ -58,6 +59,7 @@ export default function DepositHMTModal({ isOpen, onDismiss, title, hmtBalance }
   const uniContract = useUniContract()
   const theme = useTheme()
   const addTransaction = useTransactionAdder()
+  const isMobile = useIsMobile()
 
   const userHmtBalanceAmount =
     hmtBalance && Number(hmtBalance.toExact()) < 1
@@ -166,11 +168,19 @@ export default function DepositHMTModal({ isOpen, onDismiss, title, hmtBalance }
   return (
     <Modal isOpen={isOpen || !!error || isApproveWaitResponse} onDismiss={wrappedOnDismiss} maxHeight={90}>
       {!attempting && !approveHash && !depositForHash && isOpen && !error && (
-        <ContentWrapper gap="lg">
+        <ContentWrapper gap="lg" padding={true}>
           <GrayCloseButton onClick={wrappedOnDismiss} />
           <AutoColumn gap="lg" justify="center">
             <RowBetween>
-              <ThemedText.DeprecatedMediumHeader fontWeight={500}>{title}</ThemedText.DeprecatedMediumHeader>
+              <ThemedText.DeprecatedMediumHeader
+                textAlign="center"
+                fontWeight={isMobile ? 500 : 600}
+                fontSize={isMobile ? 20 : 28}
+                width="100%"
+                marginBottom={isMobile ? 16 : 0}
+              >
+                {title}
+              </ThemedText.DeprecatedMediumHeader>
               <StyledClosed stroke={theme.textPrimary} onClick={wrappedOnDismiss} />
             </RowBetween>
             <RowBetween>
@@ -222,7 +232,12 @@ export default function DepositHMTModal({ isOpen, onDismiss, title, hmtBalance }
           <GrayCloseButton onClick={wrappedOnDismiss} />
           <SubmittedView onDismiss={wrappedOnDismiss} hash={depositForHash}>
             <AutoColumn justify="center">
-              <ThemedText.DeprecatedLargeHeader>
+              <ThemedText.DeprecatedLargeHeader
+                width="100%"
+                textAlign="center"
+                fontSize={isMobile ? 20 : 36}
+                fontWeight={isMobile ? 500 : 600}
+              >
                 <Trans>Transaction Submitted</Trans>
               </ThemedText.DeprecatedLargeHeader>
             </AutoColumn>
@@ -234,18 +249,20 @@ export default function DepositHMTModal({ isOpen, onDismiss, title, hmtBalance }
           <GrayCloseButton onClick={wrappedOnDismiss} />
           <SubmittedWithErrorView onDismiss={wrappedOnDismiss}>
             <AutoColumn justify="center">
-              <ThemedText.DeprecatedError error={!!error}>
-                <Trans>Unable to execute transaction</Trans>
-              </ThemedText.DeprecatedError>
+              <ContentWrapper gap="10px">
+                <ThemedText.DeprecatedError
+                  error={!!error}
+                  fontSize={isMobile ? 20 : 34}
+                  fontWeight={isMobile ? 500 : 600}
+                >
+                  {swapErrorToUserReadableMessage(error)}
+                </ThemedText.DeprecatedError>
+              </ContentWrapper>
+
               {error && (
-                <ContentWrapper gap="10px">
-                  <ThemedText.DeprecatedLargeHeader textAlign="center">
-                    <Trans>Reason</Trans>:
-                  </ThemedText.DeprecatedLargeHeader>
-                  <ThemedText.DeprecatedMediumHeader>
-                    {swapErrorToUserReadableMessage(error)}
-                  </ThemedText.DeprecatedMediumHeader>
-                </ContentWrapper>
+                <ThemedText.BodySmall fontSize={16}>
+                  <Trans>Unable to execute transaction</Trans>
+                </ThemedText.BodySmall>
               )}
             </AutoColumn>
           </SubmittedWithErrorView>

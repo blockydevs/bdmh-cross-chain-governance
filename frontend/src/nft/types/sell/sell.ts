@@ -1,5 +1,3 @@
-import { NftMarketplace, NftStandard, OrderStatus, OrderType } from 'graphql/data/__generated__/types-and-hooks'
-
 import { GenieCollection, PriceInfo } from '../common'
 
 export interface ListingMarket {
@@ -13,7 +11,7 @@ export interface SellOrder {
   endAt?: number
   id: string
   maker: string
-  marketplace: NftMarketplace
+  marketplace: any
   marketplaceUrl: string
   orderHash?: string
   price: {
@@ -22,9 +20,9 @@ export interface SellOrder {
   }
   quantity: number
   startAt: number
-  status: OrderStatus
+  status: any
   tokenId?: string
-  type: OrderType
+  type: any
   protocolParameters: Record<string, unknown>
 }
 
@@ -50,7 +48,7 @@ export interface WalletAsset {
     description?: string
     image_url?: string
     payout_address?: string
-    tokenType?: NftStandard
+    tokenType?: any
   }
   collection?: GenieCollection
   collectionIsVerified?: boolean
@@ -103,7 +101,7 @@ export interface ListingRow extends AssetRow {
 export interface CollectionRow extends AssetRow {
   collectionAddress?: string
   isVerified?: boolean
-  nftStandard?: NftStandard
+  nftStandard?: any
 }
 
 // Creating this as an enum and not boolean as we will likely have a success screen state to show

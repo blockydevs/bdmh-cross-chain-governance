@@ -23,6 +23,7 @@ export enum NetworkType {
   L1,
   L2,
 }
+
 interface BaseChainInfo {
   readonly networkType: NetworkType
   readonly blockWaitMsBeforeWarning?: number
@@ -45,12 +46,10 @@ interface BaseChainInfo {
 }
 
 interface L1ChainInfo extends BaseChainInfo {
-  readonly networkType: NetworkType.L1
   readonly defaultListUrl?: string
 }
 
-export interface L2ChainInfo extends BaseChainInfo {
-  readonly networkType: NetworkType.L2
+interface L2ChainInfo extends BaseChainInfo {
   readonly bridge: string
   readonly statusPage?: string
   readonly defaultListUrl: string
@@ -135,15 +134,13 @@ const CHAIN_INFO: ChainInfoMap = {
     networkType: NetworkType.L2,
     blockWaitMsBeforeWarning: ms`10m`,
     bridge: 'https://bridge.arbitrum.io/',
+    defaultListUrl: ARBITRUM_LIST,
     docs: 'https://offchainlabs.com/',
     explorer: 'https://goerli.arbiscan.io/',
     infoLink: 'https://info.uniswap.org/#/arbitrum/',
     label: 'Arbitrum Goerli',
     logoUrl: arbitrumLogoUrl,
-    defaultListUrl: ARBITRUM_LIST, // TODO: use arbitrum goerli token list
-    helpCenterUrl: 'https://help.uniswap.org/en/collections/3137787-uniswap-on-arbitrum',
-    nativeCurrency: { name: 'Goerli Arbitrum Ether', symbol: 'goerliArbETH', decimals: 18 },
-    color: darkTheme.chain_421613,
+    nativeCurrency: { name: 'Goerli Arbitrum Ether', symbol: 'AGOR', decimals: 18 },
   },
   [SupportedChainId.POLYGON]: {
     networkType: NetworkType.L1,
@@ -167,9 +164,9 @@ const CHAIN_INFO: ChainInfoMap = {
     docs: 'https://polygon.io/',
     explorer: 'https://mumbai.polygonscan.com/',
     infoLink: 'https://info.uniswap.org/#/polygon/',
-    label: 'Polygon Mumbai',
+    label: 'Mumbai',
     logoUrl: polygonMaticLogo,
-    nativeCurrency: { name: 'Polygon Mumbai Matic', symbol: 'mMATIC', decimals: 18 },
+    nativeCurrency: { name: 'Polygon Mumbai Matic', symbol: 'MATIC', decimals: 18 },
   },
   [SupportedChainId.CELO]: {
     networkType: NetworkType.L1,
@@ -225,17 +222,6 @@ const CHAIN_INFO: ChainInfoMap = {
   },
 }
 
-// [SupportedChainId.GOERLI]: {
-//   networkType: NetworkType.L1,
-//   docs: 'https://docs.uniswap.org/',
-//   explorer: 'https://goerli.etherscan.io/',
-//   infoLink: 'https://info.uniswap.org/#/',
-//   label: 'Görli',
-//   logoUrl: ethereumLogoUrl,
-//   nativeCurrency: { name: 'Görli Ether', symbol: 'görETH', decimals: 18 },
-//   color: darkTheme.chain_5,
-// },
-
 export function getChainInfo(chainId: SupportedL1ChainId): L1ChainInfo
 export function getChainInfo(chainId: SupportedL2ChainId): L2ChainInfo
 export function getChainInfo(chainId: SupportedChainId): L1ChainInfo | L2ChainInfo
@@ -256,9 +242,4 @@ export function getChainInfo(chainId: any): any {
     return CHAIN_INFO[chainId] ?? undefined
   }
   return undefined
-}
-
-const MAINNET_INFO = CHAIN_INFO[SupportedChainId.MAINNET]
-export function getChainInfoOrDefault(chainId: number | undefined) {
-  return getChainInfo(chainId) ?? MAINNET_INFO
 }

@@ -5,6 +5,7 @@ import { useWeb3React } from '@web3-react/core'
 import ExchangeHmtInput from 'components/ExchangeHmtInput/ExchangeHmtInput'
 import GrayCloseButton from 'components/GrayCloseButton/GrayCloseButton'
 import { parseUnits } from 'ethers/lib/utils'
+import { useIsMobile } from 'nft/hooks'
 import { ReactNode, useCallback, useState } from 'react'
 import { X } from 'react-feather'
 import { useUniContract } from 'state/governance/hooks'
@@ -21,9 +22,10 @@ import Modal from '../Modal'
 import { LoadingView, SubmittedView, SubmittedWithErrorView } from '../ModalViews'
 import { RowBetween } from '../Row'
 
-const ContentWrapper = styled(AutoColumn)`
+const ContentWrapper = styled(AutoColumn)<{ padding?: boolean }>`
   width: 100%;
-  padding: 24px;
+  padding: ${({ padding }) => (padding ? '24px' : '24px 0')};
+  text-align: center;
 `
 
 const ModalViewWrapper = styled('div')`
@@ -65,6 +67,7 @@ export default function DepositVHMTModal({ isOpen, onDismiss, title, uniBalance 
   const [withdrawToHash, setWithdrawToHash] = useState<string | undefined>()
   const [validationInputError, setValidationInputError] = useState<string>('')
   const [error, setError] = useState<string>('')
+  const isMobile = useIsMobile()
 
   // wrapper to reset state on modal close
   function wrappedOnDismiss() {
@@ -127,11 +130,13 @@ export default function DepositVHMTModal({ isOpen, onDismiss, title, uniBalance 
   return (
     <Modal isOpen={isOpen} onDismiss={wrappedOnDismiss} maxHeight={90}>
       {!attempting && !withdrawToHash && isOpen && !error && (
-        <ContentWrapper gap="lg">
+        <ContentWrapper gap="lg" padding={true}>
           <GrayCloseButton onClick={wrappedOnDismiss} />
           <AutoColumn gap="lg" justify="center">
-            <RowBetween>
-              <ThemedText.DeprecatedMediumHeader fontWeight={500}>{title}</ThemedText.DeprecatedMediumHeader>
+            <RowBetween textAlign="center">
+              <ThemedText.DeprecatedMediumHeader fontWeight={500} width="100%" marginBottom={isMobile ? 16 : 0}>
+                {title}
+              </ThemedText.DeprecatedMediumHeader>
               <StyledClosed stroke={theme.textPrimary} onClick={wrappedOnDismiss} />
             </RowBetween>
             <RowBetween>
@@ -156,20 +161,28 @@ export default function DepositVHMTModal({ isOpen, onDismiss, title, uniBalance 
         </ContentWrapper>
       )}
       {attempting && !withdrawToHash && !validationInputError && (
-        <LoadingView onDismiss={wrappedOnDismiss}>
-          <AutoColumn gap="md" justify="center">
-            <ThemedText.HeadlineSmall fontWeight={500} textAlign="center">
-              Confirm this transaction in your wallet
-            </ThemedText.HeadlineSmall>
-          </AutoColumn>
-        </LoadingView>
+        <ContentWrapper>
+          <GrayCloseButton onClick={wrappedOnDismiss} />
+          <LoadingView onDismiss={wrappedOnDismiss}>
+            <AutoColumn gap="md" justify="center">
+              <ThemedText.HeadlineSmall fontWeight={500} textAlign="center">
+                Confirm this transaction in your wallet
+              </ThemedText.HeadlineSmall>
+            </AutoColumn>
+          </LoadingView>
+        </ContentWrapper>
       )}
       {attempting && withdrawToHash && (
         <ModalViewWrapper>
           <GrayCloseButton onClick={wrappedOnDismiss} />
           <SubmittedView onDismiss={wrappedOnDismiss} hash={withdrawToHash}>
             <AutoColumn gap="md" justify="center">
-              <ThemedText.DeprecatedLargeHeader>
+              <ThemedText.DeprecatedLargeHeader
+                width="100%"
+                textAlign="center"
+                fontSize={isMobile ? 20 : 36}
+                fontWeight={isMobile ? 500 : 600}
+              >
                 <Trans>Transaction Submitted</Trans>
               </ThemedText.DeprecatedLargeHeader>
             </AutoColumn>
@@ -180,19 +193,21 @@ export default function DepositVHMTModal({ isOpen, onDismiss, title, uniBalance 
         <ModalViewWrapper>
           <GrayCloseButton onClick={wrappedOnDismiss} />
           <SubmittedWithErrorView onDismiss={wrappedOnDismiss}>
-            <AutoColumn gap="md" justify="center">
-              <ThemedText.DeprecatedError error={!!error}>
-                <Trans>Unable to execute transaction</Trans>
-              </ThemedText.DeprecatedError>
+            <AutoColumn justify="center">
+              <ContentWrapper gap="10px">
+                <ThemedText.DeprecatedError
+                  error={!!error}
+                  fontSize={isMobile ? 20 : 34}
+                  fontWeight={isMobile ? 500 : 600}
+                >
+                  {swapErrorToUserReadableMessage(error)}
+                </ThemedText.DeprecatedError>
+              </ContentWrapper>
+
               {error && (
-                <ContentWrapper gap="10px">
-                  <ThemedText.DeprecatedLargeHeader textAlign="center">
-                    <Trans>Reason</Trans>:
-                  </ThemedText.DeprecatedLargeHeader>
-                  <ThemedText.DeprecatedMediumHeader>
-                    {swapErrorToUserReadableMessage(error)}
-                  </ThemedText.DeprecatedMediumHeader>
-                </ContentWrapper>
+                <ThemedText.BodySmall fontSize={16}>
+                  <Trans>Unable to execute transaction</Trans>
+                </ThemedText.BodySmall>
               )}
             </AutoColumn>
           </SubmittedWithErrorView>

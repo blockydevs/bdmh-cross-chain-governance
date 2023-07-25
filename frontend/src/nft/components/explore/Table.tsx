@@ -1,7 +1,6 @@
 import { TraceEvent } from '@uniswap/analytics'
 import { BrowserEvent, InterfaceElementName, NFTEventName } from '@uniswap/analytics-events'
 import { useWeb3React } from '@web3-react/core'
-import { LoadingBubble } from 'components/Tokens/loading'
 import { useWindowSize } from 'hooks/useWindowSize'
 import { useIsMobile } from 'nft/hooks'
 import { useEffect } from 'react'
@@ -70,18 +69,6 @@ const StyledCollectionNameHolder = styled.div`
   margin-left: 24px;
   gap: 8px;
   align-items: center;
-`
-
-const StyledImageHolder = styled(LoadingBubble)`
-  width: 36px;
-  height: 36px;
-  border-radius: 36px;
-`
-
-const StyledRankHolder = styled(LoadingBubble)`
-  width: 8px;
-  height: 16px;
-  margin-right: 12px;
 `
 
 const DEFAULT_TRENDING_TABLE_QUERY_AMOUNT = 10
@@ -286,15 +273,9 @@ function LoadingTable({ headerGroups, visibleColumns, ...props }: LoadingTablePr
                 return (
                   <td className={styles.loadingTd} key={cellIndex}>
                     {cellIndex === 0 ? (
-                      <StyledCollectionNameHolder>
-                        <StyledRankHolder />
-                        <StyledImageHolder />
-                        <LoadingBubble />
-                      </StyledCollectionNameHolder>
+                      <StyledCollectionNameHolder></StyledCollectionNameHolder>
                     ) : (
-                      <StyledLoadingHolder>
-                        <LoadingBubble />
-                      </StyledLoadingHolder>
+                      <StyledLoadingHolder></StyledLoadingHolder>
                     )}
                   </td>
                 )

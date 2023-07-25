@@ -42,7 +42,7 @@ export enum ApplicationModal {
 
 type PopupList = Array<{ key: string; show: boolean; content: PopupContent; removeAfterMs: number | null }>
 
-export interface ApplicationState {
+interface ApplicationState {
   readonly isHubChainActive: boolean
   readonly fiatOnramp: { available: boolean; availabilityChecked: boolean }
   readonly chainId: number | null
@@ -66,9 +66,6 @@ const applicationSlice = createSlice({
       const flag = action.payload
       state.isHubChainActive = flag
     },
-    setFiatOnrampAvailability(state, { payload: available }) {
-      state.fiatOnramp = { available, availabilityChecked: true }
-    },
     updateChainId(state, action) {
       const { chainId } = action.payload
       state.chainId = chainId
@@ -86,16 +83,8 @@ const applicationSlice = createSlice({
         },
       ])
     },
-    removePopup(state, { payload: { key } }) {
-      state.popupList.forEach((p) => {
-        if (p.key === key) {
-          p.show = false
-        }
-      })
-    },
   },
 })
 
-export const { setIsHubChainActive, updateChainId, setFiatOnrampAvailability, setOpenModal, addPopup, removePopup } =
-  applicationSlice.actions
+export const { setIsHubChainActive, updateChainId, setOpenModal, addPopup } = applicationSlice.actions
 export default applicationSlice.reducer

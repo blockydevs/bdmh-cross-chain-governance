@@ -1,4 +1,3 @@
-import CreateProposal from 'pages/CreateProposal'
 import { Route, Routes } from 'react-router-dom'
 
 import Landing from './Landing'
@@ -9,7 +8,6 @@ export default function Vote() {
     <Routes>
       <Route path="/" element={<Landing />} />
       <Route path=":governorIndex/:id" element={<VotePage />} />
-      <Route path="create-proposal" element={<CreateProposal />} />
     </Routes>
   )
 }

@@ -1,6 +1,5 @@
 import { style } from '@vanilla-extract/css'
-
-import { sprinkles } from '../../nft/css/sprinkles.css'
+import { sprinkles } from 'nft/css/sprinkles.css'
 
 const baseNavDropdown = style([
   sprinkles({

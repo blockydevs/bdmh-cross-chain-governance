@@ -2,12 +2,12 @@ import { TraceEvent } from '@uniswap/analytics'
 import { BrowserEvent, InterfaceElementName, SharedEventName } from '@uniswap/analytics-events'
 import { useWeb3React } from '@web3-react/core'
 import { useGetConnection } from 'connection'
-import { LogoutIcon, SettingsIcon } from 'nft/components/icons'
+import { LogoutIcon } from 'nft/components/icons'
 import { useCallback } from 'react'
-import { ArrowDownRight, ArrowUpRight, Copy, IconProps } from 'react-feather'
+import { Copy } from 'react-feather'
 import { useAppDispatch } from 'state/hooks'
 import { updateSelectedWallet } from 'state/user/reducer'
-import styled, { useTheme } from 'styled-components/macro'
+import styled from 'styled-components/macro'
 import { CopyHelper, ThemedText } from 'theme'
 
 import { shortenAddress } from '../../nft/utils/address'
@@ -73,16 +73,7 @@ const CopyText = styled(CopyHelper).attrs({
   iconPosition: 'right',
 })``
 
-export function PortfolioArrow({ change, ...rest }: { change: number } & IconProps) {
-  const theme = useTheme()
-  return change < 0 ? (
-    <ArrowDownRight color={theme.accentCritical} size={20} {...rest} />
-  ) : (
-    <ArrowUpRight color={theme.accentSuccess} size={20} {...rest} />
-  )
-}
-
-export default function AuthenticatedHeader({ account, openSettings }: { account: string; openSettings: () => void }) {
+export default function AuthenticatedHeader({ account }: { account: string }) {
   const { connector, ENSName } = useWeb3React()
   const dispatch = useAppDispatch()
   const getConnection = useGetConnection()
@@ -116,7 +107,6 @@ export default function AuthenticatedHeader({ account, openSettings }: { account
           )}
         </StatusWrapper>
         <IconContainer>
-          <IconButton data-testid="wallet-settings" onClick={openSettings} Icon={SettingsIcon} />
           <TraceEvent
             events={[BrowserEvent.onClick]}
             name={SharedEventName.ELEMENT_CLICKED}

@@ -1,22 +1,35 @@
 import { isAddress } from '@ethersproject/address'
 import { Trans } from '@lingui/macro'
 import { useWeb3React } from '@web3-react/core'
+import GrayCloseButton from 'components/GrayCloseButton/GrayCloseButton'
+import { useIsMobile } from 'nft/hooks'
 import { ReactNode, useState } from 'react'
 import { X } from 'react-feather'
 import styled, { useTheme } from 'styled-components/macro'
 
+import Circle from '../../assets/images/blue-loader.svg'
 import useENS from '../../hooks/useENS'
 import { useDelegateCallback } from '../../state/governance/hooks'
-import { ThemedText } from '../../theme'
+import { CustomLightSpinner, ThemedText } from '../../theme'
 import { ButtonPrimary } from '../Button'
-import { AutoColumn } from '../Column'
+import { AutoColumn, ColumnCenter } from '../Column'
 import Modal from '../Modal'
-import { LoadingView, SubmittedView } from '../ModalViews'
+import { SubmittedView } from '../ModalViews'
 import { RowBetween } from '../Row'
 
 const ContentWrapper = styled(AutoColumn)`
   width: 100%;
   padding: 24px;
+`
+
+const ConfirmOrLoadingWrapper = styled.div`
+  width: 100%;
+  padding: 24px;
+`
+
+const ModalViewWrapper = styled('div')`
+  width: 100%;
+  padding-top: 16px;
 `
 
 const StyledClosed = styled(X)`
@@ -36,6 +49,7 @@ export default function DelegateModal({ isOpen, onDismiss, title }: VoteModalPro
   const { address: parsedAddress } = useENS(account)
   const theme = useTheme()
   const delegateCallback = useDelegateCallback()
+  const isMobile = useIsMobile()
 
   // monitor call to help UI loading state
   const [hash, setHash] = useState<string | undefined>()
@@ -68,7 +82,8 @@ export default function DelegateModal({ isOpen, onDismiss, title }: VoteModalPro
   return (
     <Modal isOpen={isOpen} onDismiss={wrappedOnDismiss} maxHeight={90}>
       {!attempting && !hash && (
-        <ContentWrapper gap="lg">
+        <ContentWrapper>
+          <GrayCloseButton onClick={wrappedOnDismiss} />
           <AutoColumn gap="lg" justify="center">
             <RowBetween>
               <ThemedText.DeprecatedMediumHeader fontWeight={500}>{title}</ThemedText.DeprecatedMediumHeader>
@@ -86,22 +101,50 @@ export default function DelegateModal({ isOpen, onDismiss, title }: VoteModalPro
         </ContentWrapper>
       )}
       {attempting && !hash && (
-        <LoadingView onDismiss={wrappedOnDismiss}>
-          <AutoColumn gap="md" justify="center">
-            <ThemedText.DeprecatedLargeHeader>
-              {account ? <Trans>Delegating votes</Trans> : <Trans>Unlocking Votes</Trans>}
-            </ThemedText.DeprecatedLargeHeader>
+        <ConfirmOrLoadingWrapper>
+          <GrayCloseButton onClick={wrappedOnDismiss} />
+          <RowBetween>
+            <div />
+            <StyledClosed onClick={wrappedOnDismiss} />
+          </RowBetween>
+          <ColumnCenter>
+            <CustomLightSpinner src={Circle} alt="loader" size={isMobile ? '90px' : '116px'} />
+          </ColumnCenter>
+          <AutoColumn gap={isMobile ? '24px' : '48px'} justify="center">
+            <AutoColumn justify="center">
+              <ThemedText.DeprecatedLargeHeader
+                marginTop={32}
+                width="100%"
+                textAlign="center"
+                fontSize={isMobile ? 20 : 36}
+                fontWeight={isMobile ? 500 : 600}
+              >
+                <Trans>Delegating votes</Trans>
+              </ThemedText.DeprecatedLargeHeader>
+            </AutoColumn>
+            <ThemedText.DeprecatedSubHeader>
+              <Trans>Confirm this transaction in your wallet</Trans>
+            </ThemedText.DeprecatedSubHeader>
           </AutoColumn>
-        </LoadingView>
+        </ConfirmOrLoadingWrapper>
       )}
       {hash && (
-        <SubmittedView onDismiss={wrappedOnDismiss} hash={hash}>
-          <AutoColumn gap="md" justify="center">
-            <ThemedText.DeprecatedLargeHeader>
-              <Trans>Transaction Submitted</Trans>
-            </ThemedText.DeprecatedLargeHeader>
-          </AutoColumn>
-        </SubmittedView>
+        <ModalViewWrapper>
+          <GrayCloseButton onClick={wrappedOnDismiss} />
+          <SubmittedView onDismiss={wrappedOnDismiss} hash={hash}>
+            <AutoColumn justify="center">
+              <ThemedText.DeprecatedLargeHeader
+                marginTop={32}
+                width="100%"
+                textAlign="center"
+                fontSize={isMobile ? 20 : 36}
+                fontWeight={isMobile ? 500 : 600}
+              >
+                <Trans>Transaction Submitted</Trans>
+              </ThemedText.DeprecatedLargeHeader>
+            </AutoColumn>
+          </SubmittedView>
+        </ModalViewWrapper>
       )}
     </Modal>
   )

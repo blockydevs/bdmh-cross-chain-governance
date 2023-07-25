@@ -10,7 +10,7 @@ function getReason(error: any): string | undefined {
   return reason
 }
 
-export function didUserReject(error: any): boolean {
+function didUserReject(error: any): boolean {
   const reason = getReason(error)
   if (
     error?.code === 4001 ||

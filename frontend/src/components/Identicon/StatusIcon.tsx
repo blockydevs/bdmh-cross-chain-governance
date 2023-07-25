@@ -1,13 +1,10 @@
 import { useWeb3React } from '@web3-react/core'
-import { Unicon } from 'components/Unicon'
 import { Connection, ConnectionType } from 'connection/types'
 import useENSAvatar from 'hooks/useENSAvatar'
 import styled from 'styled-components/macro'
 import { useIsDarkMode } from 'theme/components/ThemeToggle'
 import { flexColumnNoWrap } from 'theme/styles'
 
-import sockImg from '../../assets/svg/socks.svg'
-import { useHasSocks } from '../../hooks/useSocksBalance'
 import Identicon from '../Identicon'
 
 export const IconWrapper = styled.div<{ size?: number }>`
@@ -50,14 +47,6 @@ const MiniImg = styled.img`
   height: 16px;
 `
 
-const Socks = () => {
-  return (
-    <MiniIconContainer side="left">
-      <MiniImg src={sockImg} />
-    </MiniIconContainer>
-  )
-}
-
 const MiniWalletIcon = ({ connection, side }: { connection: Connection; side: 'left' | 'right' }) => {
   const isDarkMode = useIsDarkMode()
   return (
@@ -76,7 +65,7 @@ const MainWalletIcon = ({ connection, size }: { connection: Connection; size: nu
   } else if (avatar || (connection.type === ConnectionType.INJECTED && connection.getName() === 'MetaMask')) {
     return <Identicon size={size} />
   } else {
-    return <Unicon address={account} size={size} />
+    return null
   }
 }
 
@@ -89,13 +78,10 @@ export default function StatusIcon({
   size?: number
   showMiniIcons?: boolean
 }) {
-  const hasSocks = useHasSocks()
-
   return (
     <IconWrapper size={size} data-testid="StatusIconRoot">
       <MainWalletIcon connection={connection} size={size} />
       {showMiniIcons && <MiniWalletIcon connection={connection} side="right" />}
-      {hasSocks && showMiniIcons && <Socks />}
     </IconWrapper>
   )
 }

@@ -1,7 +1,7 @@
 import styled from 'styled-components/macro'
 import { Gap } from 'theme'
 
-export const Column = styled.div<{
+const Column = styled.div<{
   gap?: Gap
 }>`
   display: flex;

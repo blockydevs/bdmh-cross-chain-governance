@@ -11,6 +11,8 @@ const SOCIAL_MEDIA = [
   { icon: <YoutubeIcon />, link: 'https://www.youtube.com/@HUMANProtocol' },
 ]
 
+const TERMS_AND_CONDITIONS_LINK = 'https://www.humanprotocol.org/protocol-disclaimer'
+
 const MainContainer = styled.footer`
   position: relative;
   display: flex;
@@ -79,6 +81,10 @@ const SocialMediaContainer = styled.div`
   }
 `
 
+const StyledLink = styled.a`
+  text-decoration: none;
+`
+
 const Footer = () => {
   const isScreenSize = useScreenSize()
 
@@ -108,7 +114,9 @@ const Footer = () => {
       ) : (
         <>
           <TermsContainer>
-            <Trans>Terms and conditions</Trans>
+            <StyledLink href={TERMS_AND_CONDITIONS_LINK} target="_blank" rel="noreferrer">
+              <Trans>Terms and conditions</Trans>
+            </StyledLink>
           </TermsContainer>
           <CopyrightContainer>
             © 2021 HPF. HUMAN Protocol® <Trans>is a registered trademark</Trans>

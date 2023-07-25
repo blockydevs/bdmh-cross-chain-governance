@@ -1,4 +1,3 @@
-import { NftMarketplace, NftTradeInput, TokenAmountInput } from 'graphql/data/__generated__/types-and-hooks'
 import { BagItem, BagItemStatus, UpdatedGenieAsset } from 'nft/types'
 
 export const buildSellObject = (amount: string) => {
@@ -18,18 +17,18 @@ export const buildSellObject = (amount: string) => {
   }
 }
 
-export const buildNftTradeInputFromBagItems = (itemsInBag: BagItem[]): NftTradeInput[] => {
+export const buildNftTradeInputFromBagItems = (itemsInBag: BagItem[]): any[] => {
   const assetsToBuy = itemsInBag.filter((item) => item.status !== BagItemStatus.UNAVAILABLE).map((item) => item.asset)
   return buildNftTradeInput(assetsToBuy)
 }
 
-const buildNftTradeInput = (assets: UpdatedGenieAsset[]): NftTradeInput[] => {
+const buildNftTradeInput = (assets: UpdatedGenieAsset[]): any[] => {
   return assets.flatMap((asset) => {
     const { id, address, marketplace, priceInfo, tokenId, tokenType } = asset
 
     if (!id || !marketplace) return []
 
-    const ethAmountInput: TokenAmountInput = {
+    const ethAmountInput: any = {
       amount: priceInfo.ETHPrice,
       token: {
         address: '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee',
@@ -44,7 +43,7 @@ const buildNftTradeInput = (assets: UpdatedGenieAsset[]): NftTradeInput[] => {
         amount: 1,
         contractAddress: address,
         id,
-        marketplace: marketplace.toUpperCase() as NftMarketplace,
+        marketplace: marketplace.toUpperCase() as any,
         quotePrice: ethAmountInput,
         tokenId,
         tokenType,

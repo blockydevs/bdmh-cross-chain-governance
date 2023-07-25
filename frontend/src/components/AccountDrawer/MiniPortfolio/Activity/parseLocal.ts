@@ -3,10 +3,7 @@ import { formatCurrencyAmount } from '@uniswap/conedison/format'
 import { Currency, CurrencyAmount, TradeType } from '@uniswap/sdk-core'
 import { nativeOnChain } from '@uniswap/smart-order-router'
 import { SupportedChainId } from 'constants/chains'
-import { TransactionStatus } from 'graphql/data/__generated__/types-and-hooks'
-import { ChainTokenMap, useAllTokensMultichain } from 'hooks/Tokens'
-import { useMemo } from 'react'
-import { useMultichainTransactions } from 'state/transactions/hooks'
+import { ChainTokenMap } from 'hooks/Tokens'
 import {
   AddLiquidityV2PoolTransactionInfo,
   AddLiquidityV3PoolTransactionInfo,
@@ -22,8 +19,9 @@ import {
   WrapTransactionInfo,
 } from 'state/transactions/types'
 
+import { TransactionStatus } from '../constants'
 import { getActivityTitle } from '../constants'
-import { Activity, ActivityMap } from './types'
+import { Activity } from './types'
 
 function getCurrency(currencyId: string, chainId: SupportedChainId, tokens: ChainTokenMap): Currency | undefined {
   return currencyId === 'ETH' ? nativeOnChain(chainId) : tokens[chainId]?.[currencyId]
@@ -187,17 +185,17 @@ export function parseLocalActivity(
   }
 }
 
-export function useLocalActivities(account: string): ActivityMap {
-  const allTransactions = useMultichainTransactions()
-  const tokens = useAllTokensMultichain()
+// export function useLocalActivities(account: string): ActivityMap {
+//   const allTransactions = useMultichainTransactions()
+//   const tokens = useAllTokensMultichain()
 
-  return useMemo(() => {
-    const activityByHash: ActivityMap = {}
-    for (const [transaction, chainId] of allTransactions) {
-      if (transaction.from !== account) continue
+//   return useMemo(() => {
+//     const activityByHash: ActivityMap = {}
+//     for (const [transaction, chainId] of allTransactions) {
+//       if (transaction.from !== account) continue
 
-      activityByHash[transaction.hash] = parseLocalActivity(transaction, chainId, tokens)
-    }
-    return activityByHash
-  }, [account, allTransactions, tokens])
-}
+//       activityByHash[transaction.hash] = parseLocalActivity(transaction, chainId, tokens)
+//     }
+//     return activityByHash
+//   }, [account, allTransactions, tokens])
+// }

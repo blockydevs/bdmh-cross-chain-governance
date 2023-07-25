@@ -22,7 +22,6 @@ const AlertTriangleIcon = styled(AlertTriangle)`
   color: ${({ theme }) => theme.accentCritical};
 `
 
-// TODO(cartcrom): move this to a top level modal, rather than inline in the drawer
 export default function ConnectionErrorView() {
   const { activationState, tryActivation, cancelActivation } = useActivationState()
   const closeDrawer = useCloseAccountDrawer()

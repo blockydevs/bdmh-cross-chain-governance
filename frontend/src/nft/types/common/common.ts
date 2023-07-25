@@ -1,6 +1,3 @@
-import { MediaType, NftMarketplace, NftStandard } from 'graphql/data/__generated__/types-and-hooks'
-import { SortBy } from 'nft/hooks'
-
 import { SellOrder } from '../sell'
 
 export interface OpenSeaCollection {
@@ -85,7 +82,7 @@ export interface Offer {
   endAt?: number
   id: string
   maker: string
-  marketplace: NftMarketplace
+  marketplace: any
   marketplaceUrl: string
   price: {
     currency?: string
@@ -102,7 +99,7 @@ export interface GenieAsset {
   collectionSymbol?: string
   imageUrl?: string
   animationUrl?: string
-  mediaType?: MediaType
+  mediaType?: any
   marketplace?: Markets
   name?: string
   priceInfo: PriceInfo
@@ -110,7 +107,7 @@ export interface GenieAsset {
   sellorders?: SellOrder[]
   smallImageUrl?: string
   tokenId: string
-  tokenType?: NftStandard
+  tokenType?: any
   totalCount?: number // The totalCount from the query to /assets
   collectionIsVerified?: boolean
   rarity?: Rarity
@@ -184,7 +181,6 @@ export interface DropDownOption {
   onClick: () => void
   reverseIndex?: number
   reverseOnClick?: () => void
-  sortBy?: SortBy
   isSelected?: boolean
 }
 

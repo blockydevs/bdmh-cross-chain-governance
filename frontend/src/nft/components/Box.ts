@@ -1,9 +1,8 @@
 import clsx, { ClassValue } from 'clsx'
+import { sprinkles } from 'nft/css/sprinkles.css'
 import * as React from 'react'
-import { animated } from 'react-spring'
 
 import { Atoms, atoms } from '../css/atoms'
-import { sprinkles } from '../css/sprinkles.css'
 
 type HTMLProperties<T = HTMLElement> = Omit<
   React.AllHTMLAttributes<T>,
@@ -43,8 +42,6 @@ export const Box = React.forwardRef<HTMLElement, Props>(({ as = 'div', className
 // We get this error around the codebase: https://github.com/microsoft/TypeScript/issues/34933
 // so you see ts-ignore almost everywhere this component is used
 // since we are going to deprecate vanilla-extract, this will be `any` for now
-export const AnimatedBox: any = animated(Box) as any
-
 export type BoxProps = Parameters<typeof Box>[0]
 
 Box.displayName = 'Box'

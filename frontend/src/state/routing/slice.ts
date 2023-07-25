@@ -1,4 +1,4 @@
-import { createApi, fetchBaseQuery, FetchBaseQueryError } from '@reduxjs/toolkit/query/react'
+import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react'
 import { Protocol } from '@uniswap/router-sdk'
 import { TradeType } from '@uniswap/sdk-core'
 import { AlphaRouter, ChainId } from '@uniswap/smart-order-router'
@@ -6,7 +6,6 @@ import { RPC_PROVIDERS } from 'constants/providers'
 import { getClientSideQuote, toSupportedChainId } from 'lib/hooks/routing/clientSideSmartOrderRouter'
 import ms from 'ms.macro'
 import qs from 'qs'
-import { trace } from 'tracing/trace'
 
 import { QuoteData, TradeResult } from './types'
 import { isExactInput, transformRoutesToTrade } from './utils'
@@ -97,34 +96,6 @@ export const routingApi = createApi({
   }),
   endpoints: (build) => ({
     getQuote: build.query<TradeResult, GetQuoteArgs>({
-      async onQueryStarted(args: GetQuoteArgs, { queryFulfilled }) {
-        trace(
-          'quote',
-          async ({ setTraceError, setTraceStatus }) => {
-            try {
-              await queryFulfilled
-            } catch (error: unknown) {
-              if (error && typeof error === 'object' && 'error' in error) {
-                const queryError = (error as Record<'error', FetchBaseQueryError>).error
-                if (typeof queryError.status === 'number') {
-                  setTraceStatus(queryError.status)
-                }
-                setTraceError(queryError)
-              } else {
-                throw error
-              }
-            }
-          },
-          {
-            data: {
-              ...args,
-              isPrice: args.routerPreference === INTERNAL_ROUTER_PREFERENCE_PRICE,
-              isAutoRouter:
-                args.routerPreference === RouterPreference.AUTO || args.routerPreference === RouterPreference.API,
-            },
-          }
-        )
-      },
       async queryFn(args, _api, _extraOptions, fetch) {
         if (
           args.routerPreference === RouterPreference.API ||
@@ -186,5 +157,3 @@ export const routingApi = createApi({
     }),
   }),
 })
-
-export const { useGetQuoteQuery } = routingApi

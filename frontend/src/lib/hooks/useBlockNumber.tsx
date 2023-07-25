@@ -1,11 +1,16 @@
 import { useWeb3React } from '@web3-react/core'
+import { SupportedChainId } from 'constants/chains'
+import { RPC_PROVIDERS } from 'constants/providers'
 import useIsWindowVisible from 'hooks/useIsWindowVisible'
 import { createContext, ReactNode, useCallback, useContext, useEffect, useMemo, useState } from 'react'
+
+const hubProvider = RPC_PROVIDERS[SupportedChainId.SEPOLIA]
 
 const MISSING_PROVIDER = Symbol()
 const BlockNumberContext = createContext<
   | {
       value?: number
+      hubBlock?: number
       fastForward(block: number): void
     }
   | typeof MISSING_PROVIDER
@@ -29,10 +34,15 @@ export function useFastForwardBlockNumber(): (block: number) => void {
   return useBlockNumberContext().fastForward
 }
 
+export function useHubBlockNumber(): number | undefined {
+  return useBlockNumberContext().hubBlock
+}
+
 export function BlockNumberProvider({ children }: { children: ReactNode }) {
   const { chainId: activeChainId, provider } = useWeb3React()
 
   const [{ chainId, block }, setChainBlock] = useState<{ chainId?: number; block?: number }>({ chainId: activeChainId })
+  const [hubBlock, setHubBlock] = useState<number | undefined>(undefined)
 
   const onBlock = useCallback(
     (block: number) => {
@@ -49,6 +59,29 @@ export function BlockNumberProvider({ children }: { children: ReactNode }) {
   )
 
   const windowVisible = useIsWindowVisible()
+
+  useEffect(() => {
+    let stale = false
+
+    hubProvider
+      .getBlockNumber()
+      .then((block) => {
+        if (!stale) setHubBlock(block)
+      })
+      .catch((error) => {
+        console.error(`Failed to get block number for hub chain`, error)
+      })
+
+    hubProvider.on('block', (block: number) => {
+      if (!stale) setHubBlock(block)
+    })
+
+    return () => {
+      stale = true
+      hubProvider.removeListener('block', setHubBlock)
+    }
+  }, [])
+
   useEffect(() => {
     let stale = false
 
@@ -78,13 +111,14 @@ export function BlockNumberProvider({ children }: { children: ReactNode }) {
   const value = useMemo(
     () => ({
       value: chainId === activeChainId ? block : undefined,
+      hubBlock,
       fastForward: (update: number) => {
         if (block && update > block) {
           setChainBlock({ chainId: activeChainId, block: update })
         }
       },
     }),
-    [activeChainId, block, chainId]
+    [activeChainId, block, chainId, hubBlock]
   )
 
   return <BlockNumberContext.Provider value={value}>{children}</BlockNumberContext.Provider>

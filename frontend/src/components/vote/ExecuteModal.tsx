@@ -1,5 +1,7 @@
 import { Trans } from '@lingui/macro'
 import { useWeb3React } from '@web3-react/core'
+import GrayCloseButton from 'components/GrayCloseButton/GrayCloseButton'
+import { useIsMobile } from 'nft/hooks'
 import { useState } from 'react'
 import { ArrowUpCircle, X } from 'react-feather'
 import styled, { useTheme } from 'styled-components/macro'
@@ -32,7 +34,7 @@ const ConfirmOrLoadingWrapper = styled.div`
 `
 
 const ConfirmedIcon = styled(ColumnCenter)`
-  padding: 60px 0;
+  padding-top: 16px;
 `
 
 interface ExecuteModalProps {
@@ -45,10 +47,11 @@ interface ExecuteModalProps {
 export default function ExecuteModal({ isOpen, onDismiss, proposalId, proposalExecutionData }: ExecuteModalProps) {
   const { chainId } = useWeb3React()
   const executeCallback = useExecuteCallback()
+  const isMobile = useIsMobile()
 
   // monitor call to help UI loading state
   const [hash, setHash] = useState<string | undefined>()
-  const [attempting, setAttempting] = useState<boolean>(false)
+  const [attempting, setAttempting] = useState<boolean>(true)
 
   // get theme for colors
   const theme = useTheme()
@@ -81,6 +84,7 @@ export default function ExecuteModal({ isOpen, onDismiss, proposalId, proposalEx
     <Modal isOpen={isOpen} onDismiss={wrappedOnDismiss} maxHeight={90}>
       {!attempting && !hash && (
         <ContentWrapper gap="lg">
+          <GrayCloseButton onClick={wrappedOnDismiss} />
           <AutoColumn gap="lg" justify="center">
             <RowBetween>
               <ThemedText.DeprecatedMediumHeader fontWeight={500}>
@@ -103,16 +107,23 @@ export default function ExecuteModal({ isOpen, onDismiss, proposalId, proposalEx
       )}
       {attempting && !hash && (
         <ConfirmOrLoadingWrapper>
+          <GrayCloseButton onClick={wrappedOnDismiss} />
           <RowBetween>
             <div />
             <StyledClosed onClick={wrappedOnDismiss} />
           </RowBetween>
           <ConfirmedIcon>
-            <CustomLightSpinner src={Circle} alt="loader" size="90px" />
+            <CustomLightSpinner src={Circle} alt="loader" size={isMobile ? '90px' : '116px'} />
           </ConfirmedIcon>
-          <AutoColumn gap="100px" justify="center">
+          <AutoColumn gap={isMobile ? '24px' : '48px'} justify="center">
             <AutoColumn gap="md" justify="center">
-              <ThemedText.DeprecatedLargeHeader>
+              <ThemedText.DeprecatedLargeHeader
+                marginTop={32}
+                width="100%"
+                textAlign="center"
+                fontSize={isMobile ? 20 : 36}
+                fontWeight={isMobile ? 500 : 600}
+              >
                 <Trans>Executing</Trans>
               </ThemedText.DeprecatedLargeHeader>
             </AutoColumn>
@@ -124,16 +135,23 @@ export default function ExecuteModal({ isOpen, onDismiss, proposalId, proposalEx
       )}
       {hash && (
         <ConfirmOrLoadingWrapper>
+          <GrayCloseButton onClick={wrappedOnDismiss} />
           <RowBetween>
             <div />
             <StyledClosed onClick={wrappedOnDismiss} />
           </RowBetween>
           <ConfirmedIcon>
-            <ArrowUpCircle strokeWidth={0.5} size={90} color={theme.accentAction} />
+            <ArrowUpCircle strokeWidth={0.7} size={isMobile ? 116 : 190} color={theme.accentAction} />
           </ConfirmedIcon>
-          <AutoColumn gap="100px" justify="center">
+          <AutoColumn gap={isMobile ? '24px' : '48px'} justify="center">
             <AutoColumn gap="md" justify="center">
-              <ThemedText.DeprecatedLargeHeader>
+              <ThemedText.DeprecatedLargeHeader
+                marginTop={32}
+                width="100%"
+                textAlign="center"
+                fontSize={isMobile ? 20 : 36}
+                fontWeight={isMobile ? 500 : 600}
+              >
                 <Trans>Execution Submitted</Trans>
               </ThemedText.DeprecatedLargeHeader>
             </AutoColumn>

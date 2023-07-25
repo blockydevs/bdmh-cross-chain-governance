@@ -1,52 +1,14 @@
 import { BigNumber } from '@ethersproject/bignumber'
-import { Currency, CurrencyAmount, Token } from '@uniswap/sdk-core'
+import { CurrencyAmount, Token } from '@uniswap/sdk-core'
 import { useWeb3React } from '@web3-react/core'
 import JSBI from 'jsbi'
-import { useSingleContractMultipleData } from 'lib/hooks/multicall'
 import { useMemo } from 'react'
 import { useEffect, useState } from 'react'
 import { useDispatch } from 'react-redux'
 import { useHMTUniContract, useUniContract } from 'state/governance/hooks'
 import { useAppSelector } from 'state/hooks'
 
-import { nativeOnChain } from '../../constants/tokens'
-import { useInterfaceMulticall } from '../../hooks/useContract'
 import { isAddress } from '../../utils'
-
-/**
- * Returns a map of the given addresses to their eventually consistent ETH balances.
- */
-export function useNativeCurrencyBalances(uncheckedAddresses?: (string | undefined)[]): {
-  [address: string]: CurrencyAmount<Currency> | undefined
-} {
-  const { chainId } = useWeb3React()
-  const multicallContract = useInterfaceMulticall()
-
-  const validAddressInputs: [string][] = useMemo(
-    () =>
-      uncheckedAddresses
-        ? uncheckedAddresses
-            .map(isAddress)
-            .filter((a): a is string => a !== false)
-            .sort()
-            .map((addr) => [addr])
-        : [],
-    [uncheckedAddresses]
-  )
-
-  const results = useSingleContractMultipleData(multicallContract, 'getEthBalance', validAddressInputs)
-
-  return useMemo(
-    () =>
-      validAddressInputs.reduce<{ [address: string]: CurrencyAmount<Currency> }>((memo, [address], i) => {
-        const value = results?.[i]?.result?.[0]
-        if (value && chainId)
-          memo[address] = CurrencyAmount.fromRawAmount(nativeOnChain(chainId), JSBI.BigInt(value.toString()))
-        return memo
-      }, {}),
-    [validAddressInputs, chainId, results]
-  )
-}
 
 // Returns HMT token
 export function useHmtContractToken() {
@@ -78,7 +40,7 @@ export function useHmtContractToken() {
 /**
  * Returns a map of token addresses to their eventually consistent token balances for a single account.
  */
-export function useTokenBalancesWithLoadingIndicator(
+function useTokenBalancesWithLoadingIndicator(
   address?: string,
   tokens?: (Token | undefined)[]
 ): [{ [tokenAddress: string]: CurrencyAmount<Token> | undefined }, boolean] {
@@ -142,7 +104,7 @@ export function useTokenBalancesWithLoadingIndicator(
   )
 }
 
-export function useTokenBalances(
+function useTokenBalances(
   address?: string,
   tokens?: (Token | undefined)[]
 ): { [tokenAddress: string]: CurrencyAmount<Token> | undefined } {
@@ -157,40 +119,4 @@ export function useTokenBalance(account?: string, token?: Token): CurrencyAmount
   )
   if (!token) return undefined
   return tokenBalances[token.address]
-}
-
-export function useCurrencyBalances(
-  account?: string,
-  currencies?: (Currency | undefined)[]
-): (CurrencyAmount<Currency> | undefined)[] {
-  const tokens = useMemo(
-    () => currencies?.filter((currency): currency is Token => currency?.isToken ?? false) ?? [],
-    [currencies]
-  )
-
-  const { chainId } = useWeb3React()
-  const tokenBalances = useTokenBalances(account, tokens)
-  const containsETH: boolean = useMemo(() => currencies?.some((currency) => currency?.isNative) ?? false, [currencies])
-  const ethBalance = useNativeCurrencyBalances(useMemo(() => (containsETH ? [account] : []), [containsETH, account]))
-
-  return useMemo(
-    () =>
-      currencies?.map((currency) => {
-        if (!account || !currency || currency.chainId !== chainId) return undefined
-        if (currency.isToken) return tokenBalances[currency.address]
-        if (currency.isNative) return ethBalance[account]
-        return undefined
-      }) ?? [],
-    [account, chainId, currencies, ethBalance, tokenBalances]
-  )
-}
-
-export default function useCurrencyBalance(
-  account?: string,
-  currency?: Currency
-): CurrencyAmount<Currency> | undefined {
-  return useCurrencyBalances(
-    account,
-    useMemo(() => [currency], [currency])
-  )[0]
 }

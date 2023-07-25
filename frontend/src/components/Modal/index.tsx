@@ -14,7 +14,6 @@ const StyledDialogOverlay = styled(AnimatedDialogOverlay)<{ $scrollOverlay?: boo
     z-index: ${Z_INDEX.modalBackdrop};
     background-color: transparent;
     overflow: hidden;
-
     display: flex;
     align-items: center;
     @media screen and (max-width: ${({ theme }) => theme.breakpoint.sm}px) {

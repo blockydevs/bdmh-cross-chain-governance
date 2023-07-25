@@ -1,11 +1,9 @@
 import { useWeb3React } from '@web3-react/core'
-import IconButton from 'components/AccountDrawer/IconButton'
 import { AutoColumn } from 'components/Column'
 import { AutoRow } from 'components/Row'
 import { getConnections, networkConnection } from 'connection'
 import { ActivationStatus, useActivationState } from 'connection/activate'
 import { isSupportedChain } from 'constants/chains'
-import { SettingsIcon } from 'nft/components/icons'
 import { useEffect } from 'react'
 import styled from 'styled-components/macro'
 import { ThemedText } from 'theme'
@@ -32,11 +30,7 @@ const OptionGrid = styled.div`
   `};
 `
 
-// const PrivacyPolicyWrapper = styled.div`
-//   padding: 0 4px;
-// `
-
-export default function WalletModal({ openSettings }: { openSettings: () => void }) {
+export default function WalletModal() {
   const { connector, chainId } = useWeb3React()
 
   const connections = getConnections()
@@ -54,7 +48,6 @@ export default function WalletModal({ openSettings }: { openSettings: () => void
     <Wrapper data-testid="wallet-modal">
       <AutoRow justify="space-between" width="100%" marginBottom="16px">
         <ThemedText.SubHeader>Connect a wallet</ThemedText.SubHeader>
-        <IconButton Icon={SettingsIcon} onClick={openSettings} data-testid="wallet-settings" />
       </AutoRow>
       {activationState.status === ActivationStatus.ERROR ? (
         <ConnectionErrorView />
@@ -67,10 +60,6 @@ export default function WalletModal({ openSettings }: { openSettings: () => void
                 <Option key={connection.getName()} connection={connection} />
               ))}
           </OptionGrid>
-          {/* BLOCKYTODO: tymczasowo zakomentowana polityka prywatności. W przyszłości może zostać podmieniona na nową bądź zostać całkowicie usunięta */}
-          {/* <PrivacyPolicyWrapper>
-            <PrivacyPolicyNotice />
-          </PrivacyPolicyWrapper> */}
         </AutoColumn>
       )}
     </Wrapper>

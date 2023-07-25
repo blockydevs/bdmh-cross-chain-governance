@@ -3,7 +3,6 @@ import { sendAnalyticsEvent, TraceEvent } from '@uniswap/analytics'
 import { BrowserEvent, InterfaceElementName, InterfaceEventName } from '@uniswap/analytics-events'
 import { useWeb3React } from '@web3-react/core'
 import PortfolioDrawer, { useAccountDrawer } from 'components/AccountDrawer'
-import PrefetchBalancesWrapper from 'components/AccountDrawer/PrefetchBalancesWrapper'
 import Loader from 'components/Icons/LoadingSpinner'
 import { IconWrapper } from 'components/Identicon/StatusIcon'
 import { useGetConnection } from 'connection'
@@ -238,11 +237,11 @@ function Web3StatusInner() {
 
 export default function Web3Status() {
   return (
-    <PrefetchBalancesWrapper>
+    <>
       <Web3StatusInner />
       <Portal>
         <PortfolioDrawer />
       </Portal>
-    </PrefetchBalancesWrapper>
+    </>
   )
 }

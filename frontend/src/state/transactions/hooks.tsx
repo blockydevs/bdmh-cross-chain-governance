@@ -1,7 +1,6 @@
 import type { TransactionResponse } from '@ethersproject/providers'
 import { Token } from '@uniswap/sdk-core'
 import { useWeb3React } from '@web3-react/core'
-import { ALL_SUPPORTED_CHAIN_IDS, SupportedChainId } from 'constants/chains'
 import { useCallback, useMemo } from 'react'
 import { useAppDispatch, useAppSelector } from 'state/hooks'
 
@@ -43,15 +42,6 @@ export function useTransactionRemover() {
   )
 }
 
-export function useMultichainTransactions(): [TransactionDetails, SupportedChainId][] {
-  const state = useAppSelector((state) => state.transactions)
-  return ALL_SUPPORTED_CHAIN_IDS.flatMap((chainId) =>
-    state[chainId]
-      ? Object.values(state[chainId]).map((tx): [TransactionDetails, SupportedChainId] => [tx, chainId])
-      : []
-  )
-}
-
 // returns all the transactions for the current chain
 export function useAllTransactions(): { [txHash: string]: TransactionDetails } {
   const { chainId } = useWeb3React()
@@ -59,32 +49,6 @@ export function useAllTransactions(): { [txHash: string]: TransactionDetails } {
   const state = useAppSelector((state) => state.transactions)
 
   return chainId ? state[chainId] ?? {} : {}
-}
-
-export function useTransaction(transactionHash?: string): TransactionDetails | undefined {
-  const allTransactions = useAllTransactions()
-
-  if (!transactionHash) {
-    return undefined
-  }
-
-  return allTransactions[transactionHash]
-}
-
-export function useIsTransactionPending(transactionHash?: string): boolean {
-  const transactions = useAllTransactions()
-
-  if (!transactionHash || !transactions[transactionHash]) return false
-
-  return !transactions[transactionHash].receipt
-}
-
-export function useIsTransactionConfirmed(transactionHash?: string): boolean {
-  const transactions = useAllTransactions()
-
-  if (!transactionHash || !transactions[transactionHash]) return false
-
-  return Boolean(transactions[transactionHash].receipt)
 }
 
 /**
@@ -115,3 +79,30 @@ export function useHasPendingApproval(token?: Token, spender?: string): boolean 
     [allTransactions, spender, token?.address]
   )
 }
+
+export function useTransaction(transactionHash?: string): TransactionDetails | undefined {
+  const allTransactions = useAllTransactions()
+
+  if (!transactionHash) {
+    return undefined
+  }
+
+  return allTransactions[transactionHash]
+}
+
+export function useIsTransactionConfirmed(transactionHash?: string): boolean {
+  const transactions = useAllTransactions()
+
+  if (!transactionHash || !transactions[transactionHash]) return false
+
+  return Boolean(transactions[transactionHash].receipt)
+}
+
+// export function useMultichainTransactions(): [TransactionDetails, SupportedChainId][] {
+//   const state = useAppSelector((state) => state.transactions)
+//   return ALL_SUPPORTED_CHAIN_IDS.flatMap((chainId) =>
+//     state[chainId]
+//       ? Object.values(state[chainId]).map((tx): [TransactionDetails, SupportedChainId] => [tx, chainId])
+//       : []
+//   )
+// }

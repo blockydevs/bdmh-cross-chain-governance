@@ -1,6 +1,4 @@
 import { Trans } from '@lingui/macro'
-import { outboundLink } from 'components/analytics'
-import { MOBILE_MEDIA_BREAKPOINT } from 'components/Tokens/constants'
 import useCopyClipboard from 'hooks/useCopyClipboard'
 import React, {
   forwardRef,
@@ -26,7 +24,6 @@ import styled, { css, keyframes } from 'styled-components/macro'
 import { Z_INDEX } from 'theme/zIndex'
 
 import { ReactComponent as TooltipTriangle } from '../../assets/svg/tooltip_triangle.svg'
-import { anonymizeLink } from '../../utils/anonymizeLink'
 
 // TODO: Break this file into a components folder
 
@@ -170,25 +167,6 @@ export const UniTokenAnimated = styled.img`
   filter: drop-shadow(0px 2px 4px rgba(0, 0, 0, 0.15));
 `
 
-function handleClickExternalLink(event: React.MouseEvent<HTMLAnchorElement>) {
-  const { target, href } = event.currentTarget
-
-  const anonymizedHref = anonymizeLink(href)
-
-  // don't prevent default, don't redirect if it's a new tab
-  if (target === '_blank' || event.ctrlKey || event.metaKey) {
-    outboundLink({ label: anonymizedHref }, () => {
-      console.debug('Fired outbound link event', anonymizedHref)
-    })
-  } else {
-    event.preventDefault()
-    // send a ReactGA event and then trigger a location change
-    outboundLink({ label: anonymizedHref }, () => {
-      window.location.href = anonymizedHref
-    })
-  }
-}
-
 const StyledLink = styled.a`
   ${ClickableStyle}
   ${LinkStyle}
@@ -208,7 +186,7 @@ export function ExternalLink({
   rel = 'noopener noreferrer',
   ...rest
 }: Omit<HTMLProps<HTMLAnchorElement>, 'as' | 'ref' | 'onClick'> & { href: string }) {
-  return <StyledLink target={target} rel={rel} href={href} onClick={handleClickExternalLink} {...rest} />
+  return <StyledLink target={target} rel={rel} href={href} {...rest} />
 }
 
 export function ExternalLinkIcon({
@@ -218,7 +196,7 @@ export function ExternalLinkIcon({
   ...rest
 }: Omit<HTMLProps<HTMLAnchorElement>, 'as' | 'ref' | 'onClick'> & { href: string }) {
   return (
-    <LinkIconWrapper target={target} rel={rel} href={href} onClick={handleClickExternalLink} {...rest}>
+    <LinkIconWrapper target={target} rel={rel} href={href} {...rest}>
       <LinkIcon />
     </LinkIconWrapper>
   )
@@ -296,18 +274,6 @@ export function CopyLinkIcon({ toCopy }: { toCopy: string }) {
   )
 }
 
-const FullAddress = styled.span`
-  @media only screen and (max-width: ${MOBILE_MEDIA_BREAKPOINT}) {
-    display: none;
-  }
-`
-const TruncatedAddress = styled.span`
-  display: none;
-  @media only screen and (max-width: ${MOBILE_MEDIA_BREAKPOINT}) {
-    display: flex;
-  }
-`
-
 const CopyAddressRow = styled.div<{ isClicked: boolean }>`
   ${ClickableStyle}
   color: inherit;
@@ -341,8 +307,8 @@ export function CopyContractAddress({ address }: { address: string }) {
   return (
     <CopyContractAddressWrapper onClick={copy}>
       <CopyAddressRow isClicked={isCopied}>
-        <FullAddress>{address}</FullAddress>
-        <TruncatedAddress>{truncated}</TruncatedAddress>
+        <div>{address}</div>
+        <div>{truncated}</div>
         <Copy size={14} />
       </CopyAddressRow>
       {isCopied && <Tooltip isCopyContractTooltip tooltipX={tooltipX} />}

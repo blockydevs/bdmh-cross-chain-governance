@@ -1,6 +1,4 @@
 import { Trans } from '@lingui/macro'
-import { Trace } from '@uniswap/analytics'
-import { InterfacePageName } from '@uniswap/analytics-events'
 import { CurrencyAmount, Token } from '@uniswap/sdk-core'
 import { useWeb3React } from '@web3-react/core'
 import ExecuteModal from 'components/vote/ExecuteModal'
@@ -9,7 +7,8 @@ import RequestCollectionsModal from 'components/vote/RequestCollectionsModal'
 import { useActiveLocale } from 'hooks/useActiveLocale'
 import useCurrentBlockTimestamp from 'hooks/useCurrentBlockTimestamp'
 import JSBI from 'jsbi'
-import useBlockNumber from 'lib/hooks/useBlockNumber'
+import useBlockNumber, { useHubBlockNumber } from 'lib/hooks/useBlockNumber'
+import { useTokenBalance } from 'lib/hooks/useCurrencyBalance'
 import { Box } from 'nft/components/Box'
 import { WarningCircleIcon } from 'nft/components/icons'
 import VotingButtons from 'pages/Vote/VotingButtons'
@@ -19,6 +18,7 @@ import ReactMarkdown from 'react-markdown'
 import { useParams } from 'react-router-dom'
 import { useAppSelector } from 'state/hooks'
 import styled from 'styled-components/macro'
+import { checkProposalState } from 'utils/checkProposalPendingState'
 import { getDateFromBlock } from 'utils/getDateFromBlock'
 
 import { ButtonPrimary } from '../../components/Button'
@@ -26,7 +26,6 @@ import { GrayCard } from '../../components/Card'
 import { AutoColumn } from '../../components/Column'
 import { CardSection, DataCard } from '../../components/earn/styled'
 import { RowBetween, RowFixed } from '../../components/Row'
-import { SwitchLocaleLink } from '../../components/SwitchLocaleLink'
 import DelegateModal from '../../components/vote/DelegateModal'
 import VoteModal from '../../components/vote/VoteModal'
 import {
@@ -45,7 +44,6 @@ import {
   useToggleVoteModal,
 } from '../../state/application/hooks'
 import { ApplicationModal } from '../../state/application/reducer'
-import { useTokenBalance } from '../../state/connection/hooks'
 import {
   ProposalData,
   ProposalState,
@@ -185,18 +183,18 @@ const ProposerAddressLink = styled(ExternalLink)`
 `
 
 export default function VotePage() {
-  // see https://github.com/remix-run/react-router/issues/8200#issuecomment-962520661
   const { governorIndex, id } = useParams() as { governorIndex: string; id: string }
   const parsedGovernorIndex = Number.parseInt(governorIndex)
   const { chainId, account } = useWeb3React()
   const isHubChainActive = useAppSelector((state) => state.application.isHubChainActive)
+  const hubBlock = useHubBlockNumber()
 
   const quorumAmount = useQuorum()
   const quorumNumber = Number(quorumAmount?.toExact())
 
   // get data for this specific proposal
   const proposalData: ProposalData | undefined = useProposalData(parsedGovernorIndex, id)
-  const { proposalExecutionData } = proposalData || {}
+  const { proposalExecutionData, status, endBlock } = proposalData || {}
 
   // update vote option based on button interactions
   const [voteOption, setVoteOption] = useState<VoteOption | undefined>(undefined)
@@ -247,8 +245,6 @@ export default function VotePage() {
     minute: 'numeric',
     timeZoneName: 'short',
   }
-  // convert the eta to milliseconds before it's a date
-  // const eta = proposalData?.eta ? new Date(proposalData.eta.mul(ms`1 second`).toNumber()) : undefined
 
   // get total votes and format percentages for UI
   const totalVotes = proposalData?.hubForCount?.add(proposalData.hubAgainstCount).add(proposalData.hubAbstainCount)
@@ -288,11 +284,14 @@ export default function VotePage() {
   } = useCollectionStatus(id)
 
   const showRequestCollectionsButton = Boolean(
-    account && proposalData?.status === ProposalState.SUCCEEDED && !collectionFinishedResponse
-  )
-  const collectionPhase = Boolean(
     account &&
-      proposalData?.status === ProposalState.SUCCEEDED &&
+      checkProposalState(status, hubBlock, endBlock) === ProposalState.COLLECTION_PHASE &&
+      !collectionFinishedResponse
+  )
+
+  const collectionPhaseInProgress = Boolean(
+    account &&
+      checkProposalState(status, hubBlock, endBlock) === ProposalState.COLLECTION_PHASE &&
       collectionStartedResponse &&
       !collectionFinishedResponse
   )
@@ -335,223 +334,207 @@ export default function VotePage() {
 
   if (!proposalData) return null
   return (
-    <Trace page={InterfacePageName.VOTE_PAGE} shouldLogImpression>
-      <>
-        <PageWrapper gap="lg" justify="center">
-          <VoteModal
-            isOpen={showVoteModal}
-            onDismiss={toggleVoteModal}
-            proposalId={proposalData?.id}
-            voteOption={voteOption}
-            availableVotes={availableVotes}
-            id={id}
-          />
-          <DelegateModal
-            isOpen={showDelegateModal}
-            onDismiss={toggleDelegateModal}
-            title={<Trans>Unlock Votes</Trans>}
-          />
-          <RequestCollectionsModal
-            isOpen={showRequestCollectionsModal}
-            onDismiss={toggleRequestCollectionsModal}
-            proposalId={id}
-          />
-          <QueueModal
-            isOpen={showQueueModal}
-            onDismiss={toggleQueueModal}
-            proposalId={proposalData?.id}
-            proposalExecutionData={proposalExecutionData}
-          />
-          <ExecuteModal
-            isOpen={showExecuteModal}
-            onDismiss={toggleExecuteModal}
-            proposalId={proposalData?.id}
-            proposalExecutionData={proposalExecutionData}
-          />
-          <ProposalInfo gap="lg" justify="start">
-            <RowBetween style={{ width: '100%' }}>
-              <ArrowWrapper to="/">
-                <Trans>
-                  <ArrowLeft size={20} /> Proposals
-                </Trans>
-              </ArrowWrapper>
-              {proposalData && <ProposalStatus status={proposalData.status} />}
+    <>
+      <PageWrapper gap="lg" justify="center">
+        <VoteModal
+          isOpen={showVoteModal}
+          onDismiss={toggleVoteModal}
+          proposalId={proposalData?.id}
+          voteOption={voteOption}
+          availableVotes={availableVotes}
+          id={id}
+        />
+        <DelegateModal isOpen={showDelegateModal} onDismiss={toggleDelegateModal} title={<Trans>Unlock Votes</Trans>} />
+        <RequestCollectionsModal
+          isOpen={showRequestCollectionsModal}
+          onDismiss={toggleRequestCollectionsModal}
+          proposalId={id}
+        />
+        <QueueModal
+          isOpen={showQueueModal}
+          onDismiss={toggleQueueModal}
+          proposalId={proposalData?.id}
+          proposalExecutionData={proposalExecutionData}
+        />
+        <ExecuteModal
+          isOpen={showExecuteModal}
+          onDismiss={toggleExecuteModal}
+          proposalId={proposalData?.id}
+          proposalExecutionData={proposalExecutionData}
+        />
+        <ProposalInfo gap="lg" justify="start">
+          <RowBetween style={{ width: '100%' }}>
+            <ArrowWrapper to="/">
+              <Trans>
+                <ArrowLeft size={20} /> Proposals
+              </Trans>
+            </ArrowWrapper>
+            {proposalData && <ProposalStatus status={checkProposalState(status, hubBlock, endBlock)} />}
+          </RowBetween>
+          <StyledAutoColumn gap="10px">
+            <ThemedText.SubHeaderLarge style={{ marginBottom: '.5rem' }}>
+              {proposalData?.title}
+            </ThemedText.SubHeaderLarge>
+            <RowBetween>
+              <ThemedText.DeprecatedMain>
+                {startDate && startDate > now ? (
+                  <Trans>Voting starts approximately {startDate.toLocaleString(locale, dateFormat)}</Trans>
+                ) : null}
+              </ThemedText.DeprecatedMain>
             </RowBetween>
-            <StyledAutoColumn gap="10px">
-              <ThemedText.SubHeaderLarge style={{ marginBottom: '.5rem' }}>
-                {proposalData?.title}
-              </ThemedText.SubHeaderLarge>
-              <RowBetween>
-                <ThemedText.DeprecatedMain>
-                  {startDate && startDate > now ? (
-                    <Trans>Voting starts approximately {startDate.toLocaleString(locale, dateFormat)}</Trans>
-                  ) : null}
-                </ThemedText.DeprecatedMain>
-              </RowBetween>
-              <RowBetween>
-                <ThemedText.DeprecatedMain>
-                  {endDate &&
-                    (endDate < now ? (
-                      <Trans>Voting ended {endDate.toLocaleString(locale, dateFormat)}</Trans>
-                    ) : (
-                      <Trans>Voting ends approximately {endDate.toLocaleString(locale, dateFormat)}</Trans>
-                    ))}
-                </ThemedText.DeprecatedMain>
-              </RowBetween>
-              {proposalData && proposalData.status === ProposalState.ACTIVE && showVotingButtons === false && (
-                <GrayCard>
-                  <Box>
-                    <WarningCircleIcon />
-                  </Box>
-                  <Trans>
-                    Only vHMT votes that were self delegated before block {proposalData.startBlock} are eligible for
-                    voting.
-                  </Trans>{' '}
-                  {showLinkForUnlock && (
-                    <span>
-                      <Trans>
-                        <StyledInternalLink to="/vote">Unlock voting</StyledInternalLink> to prepare for the next
-                        proposal.
-                      </Trans>
-                    </span>
-                  )}
-                </GrayCard>
-              )}
-            </StyledAutoColumn>
-
-            <VotingButtons
-              forVotes={forVotes}
-              againstVotes={againstVotes}
-              abstainVotes={abstainVotes}
-              setVoteOption={setVoteOption}
-              showVotingButtons={showVotingButtons}
-              proposalStatus={proposalData?.status}
-            />
-
-            {showRequestCollectionsButton && !collectionStatusLoading && (
-              <ButtonPrimary
-                onClick={() => toggleRequestCollectionsModal()}
-                disabled={collectionPhase || collectionStatusLoading}
-              >
-                <Trans>{collectionPhase ? 'Collection phase' : 'Request Collection'}</Trans>
-              </ButtonPrimary>
+            <RowBetween>
+              <ThemedText.DeprecatedMain>
+                {endDate &&
+                  (endDate < now ? (
+                    <Trans>Voting ended {endDate.toLocaleString(locale, dateFormat)}</Trans>
+                  ) : (
+                    <Trans>Voting ends approximately {endDate.toLocaleString(locale, dateFormat)}</Trans>
+                  ))}
+              </ThemedText.DeprecatedMain>
+            </RowBetween>
+            {proposalData && proposalData.status === ProposalState.ACTIVE && showVotingButtons === false && (
+              <GrayCard>
+                <Box>
+                  <WarningCircleIcon />
+                </Box>
+                <Trans>
+                  Only vHMT votes that were self delegated before block {proposalData.startBlock} are eligible for
+                  voting.
+                </Trans>{' '}
+                {showLinkForUnlock && (
+                  <span>
+                    <Trans>
+                      <StyledInternalLink to="/vote">Unlock voting</StyledInternalLink> to prepare for the next
+                      proposal.
+                    </Trans>
+                  </span>
+                )}
+              </GrayCard>
             )}
+          </StyledAutoColumn>
 
-            {showQueueButton && (
+          <VotingButtons
+            forVotes={forVotes}
+            againstVotes={againstVotes}
+            abstainVotes={abstainVotes}
+            setVoteOption={setVoteOption}
+            showVotingButtons={showVotingButtons}
+            proposalStatus={proposalData?.status}
+          />
+
+          {showRequestCollectionsButton && !collectionStatusLoading && (
+            <ButtonPrimary
+              onClick={() => toggleRequestCollectionsModal()}
+              disabled={collectionPhaseInProgress || collectionStatusLoading}
+            >
+              <Trans>{collectionPhaseInProgress ? 'Collection phase in progress' : 'Request Collection'}</Trans>
+            </ButtonPrimary>
+          )}
+
+          {showQueueButton && (
+            <RowFixed style={{ width: '100%', gap: '12px' }}>
+              <ButtonPrimary
+                padding="8px"
+                onClick={() => {
+                  toggleQueueModal()
+                }}
+              >
+                <Trans>Queue</Trans>
+              </ButtonPrimary>
+            </RowFixed>
+          )}
+          {showExecuteButton && (
+            <>
               <RowFixed style={{ width: '100%', gap: '12px' }}>
                 <ButtonPrimary
                   padding="8px"
                   onClick={() => {
-                    toggleQueueModal()
+                    toggleExecuteModal()
                   }}
                 >
-                  <Trans>Queue</Trans>
+                  <Trans>Execute</Trans>
                 </ButtonPrimary>
               </RowFixed>
-            )}
-            {showExecuteButton && (
-              <>
-                {/* {eta && (
-                  <RowBetween>
-                    <ThemedText.DeprecatedBlack>
-                      <Trans>This proposal may be executed after {eta.toLocaleString(locale, dateFormat)}.</Trans>
-                    </ThemedText.DeprecatedBlack>
-                  </RowBetween>
-                )} */}
-                <RowFixed style={{ width: '100%', gap: '12px' }}>
-                  <ButtonPrimary
-                    padding="8px"
-                    onClick={() => {
-                      toggleExecuteModal()
-                    }}
-                    // can't execute until the eta has arrived
-                    // disabled={!currentTimestamp || !proposalData?.eta || currentTimestamp.lt(proposalData.eta)}
-                  >
-                    <Trans>Execute</Trans>
-                  </ButtonPrimary>
-                </RowFixed>
-              </>
-            )}
-            <CardWrapper>
-              <StyledDataCard>
-                <CardSection>
-                  <AutoColumn gap="md">
-                    <WrapSmall>
+            </>
+          )}
+          <CardWrapper>
+            <StyledDataCard>
+              <CardSection>
+                <AutoColumn gap="md">
+                  <WrapSmall>
+                    <ThemedText.BodyPrimary>
+                      <Trans>Quorum</Trans>
+                    </ThemedText.BodyPrimary>
+                    {proposalData && (
                       <ThemedText.BodyPrimary>
-                        <Trans>Quorum</Trans>
+                        {totalVotes && totalVotes.toFixed(0, { groupSeparator: ',' })}
+                        {quorumAmount && (
+                          <span>
+                            {` / ${quorumAmount.toExact({
+                              groupSeparator: ',',
+                            })}`}
+                          </span>
+                        )}
                       </ThemedText.BodyPrimary>
-                      {proposalData && (
-                        <ThemedText.BodyPrimary>
-                          {totalVotes && totalVotes.toFixed(0, { groupSeparator: ',' })}
-                          {quorumAmount && (
-                            <span>
-                              {` / ${quorumAmount.toExact({
-                                groupSeparator: ',',
-                              })}`}
-                            </span>
-                          )}
-                        </ThemedText.BodyPrimary>
-                      )}
-                    </WrapSmall>
-                  </AutoColumn>
-                  <ProgressWrapper>
-                    <Progress percentageString={`${quorumPercentage ?? 0}%`} />
-                  </ProgressWrapper>
-                </CardSection>
-              </StyledDataCard>
-            </CardWrapper>
-            <AutoColumn gap="16px">
-              <ThemedText.SubHeaderLarge>
-                <Trans>Details</Trans>
-              </ThemedText.SubHeaderLarge>
-              {proposalData?.details?.map((d, i) => {
-                return (
-                  <DetailText key={i}>
-                    {i + 1}: {linkIfAddress(d.target)}.{d.functionSig}(
-                    {d.callData.split(',').map((content, i) => {
-                      return (
-                        <span key={i}>
-                          {linkIfAddress(content)}
-                          {d.callData.split(',').length - 1 === i ? '' : ','}
-                        </span>
-                      )
-                    })}
+                    )}
+                  </WrapSmall>
+                </AutoColumn>
+                <ProgressWrapper>
+                  <Progress percentageString={`${quorumPercentage ?? 0}%`} />
+                </ProgressWrapper>
+              </CardSection>
+            </StyledDataCard>
+          </CardWrapper>
+          <AutoColumn gap="16px">
+            <ThemedText.SubHeaderLarge>
+              <Trans>Details</Trans>
+            </ThemedText.SubHeaderLarge>
+            {proposalData?.details?.map((d, i) => {
+              return (
+                <DetailText key={i}>
+                  {i + 1}: {linkIfAddress(d.target)}.{d.functionSig}(
+                  {d.callData.split(',').map((content, i) => {
+                    return (
+                      <span key={i}>
+                        {linkIfAddress(content)}
+                        {d.callData.split(',').length - 1 === i ? '' : ','}
+                      </span>
                     )
-                  </DetailText>
-                )
-              })}
-            </AutoColumn>
-            <AutoColumn gap="md">
-              <ThemedText.SubHeaderLarge>
-                <Trans>Description</Trans>
-              </ThemedText.SubHeaderLarge>
-              <MarkDownWrapper>
-                <ReactMarkdown
-                  source={proposalData?.description}
-                  renderers={{
-                    image: MarkdownImage,
-                  }}
-                />
-              </MarkDownWrapper>
-            </AutoColumn>
-            <AutoColumn gap="md">
-              <ThemedText.SubHeaderLarge>
-                <Trans>Proposer</Trans>
-              </ThemedText.SubHeaderLarge>
-              <ProposerAddressLink
-                href={
-                  proposalData?.proposer && chainId
-                    ? getExplorerLink(chainId, proposalData?.proposer, ExplorerDataType.ADDRESS)
-                    : ''
-                }
-              >
-                <ReactMarkdown source={proposalData?.proposer} />
-              </ProposerAddressLink>
-            </AutoColumn>
-          </ProposalInfo>
-        </PageWrapper>
-        <SwitchLocaleLink />
-      </>
-    </Trace>
+                  })}
+                  )
+                </DetailText>
+              )
+            })}
+          </AutoColumn>
+          <AutoColumn gap="md">
+            <ThemedText.SubHeaderLarge>
+              <Trans>Description</Trans>
+            </ThemedText.SubHeaderLarge>
+            <MarkDownWrapper>
+              <ReactMarkdown
+                source={proposalData?.description}
+                renderers={{
+                  image: MarkdownImage,
+                }}
+              />
+            </MarkDownWrapper>
+          </AutoColumn>
+          <AutoColumn gap="md">
+            <ThemedText.SubHeaderLarge>
+              <Trans>Proposer</Trans>
+            </ThemedText.SubHeaderLarge>
+            <ProposerAddressLink
+              href={
+                proposalData?.proposer && chainId
+                  ? getExplorerLink(chainId, proposalData?.proposer, ExplorerDataType.ADDRESS)
+                  : ''
+              }
+            >
+              <ReactMarkdown source={proposalData?.proposer} />
+            </ProposerAddressLink>
+          </AutoColumn>
+        </ProposalInfo>
+      </PageWrapper>
+    </>
   )
 }

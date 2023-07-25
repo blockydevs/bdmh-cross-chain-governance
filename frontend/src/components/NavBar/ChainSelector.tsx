@@ -3,6 +3,8 @@ import { useWeb3React } from '@web3-react/core'
 import GrayCloseButton from 'components/GrayCloseButton/GrayCloseButton'
 import Modal from 'components/Modal'
 import { MouseoverTooltip } from 'components/Tooltip'
+import { HUB_CHAIN_ID } from 'constants/addresses'
+import { GOVERNANCE_SPOKE_ADRESSES } from 'constants/addresses'
 import { getChainInfo } from 'constants/chainInfo'
 import { SupportedChainId } from 'constants/chains'
 import { useOnClickOutside } from 'hooks/useOnClickOutside'
@@ -21,7 +23,7 @@ import * as styles from './ChainSelector.css'
 import ChainSelectorRow from './ChainSelectorRow'
 import { NavDropdown } from './NavDropdown'
 
-const NETWORK_SELECTOR_CHAINS = [SupportedChainId.SEPOLIA, SupportedChainId.POLYGON_MUMBAI]
+const NETWORK_SELECTOR_CHAINS = [HUB_CHAIN_ID, ...Object.keys(GOVERNANCE_SPOKE_ADRESSES).map(Number)]
 
 interface ChainSelectorProps {
   leftAlign?: boolean

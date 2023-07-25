@@ -10,7 +10,7 @@ import { darkDeprecatedTheme, lightDeprecatedTheme } from './deprecatedColors'
 export * from './components'
 export * from './components/text'
 
-export const MEDIA_WIDTHS = {
+const MEDIA_WIDTHS = {
   deprecated_upToExtraSmall: 500,
   deprecated_upToSmall: 720,
   deprecated_upToMedium: 960,
@@ -140,7 +140,7 @@ export const ThemedGlobalStyle = createGlobalStyle`
   }
 
   /* SCROLLBAR GLOBAL STYLES */
-  * {
+  /* * {
     scrollbar-width: thin;
     scrollbar-color: #858EC6;
 
@@ -159,5 +159,5 @@ export const ThemedGlobalStyle = createGlobalStyle`
   *::-webkit-scrollbar-thumb {
     background-color: #858EC6;
     border-radius: 4px;
-  }
+  } */
 `

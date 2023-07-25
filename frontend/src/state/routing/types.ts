@@ -3,13 +3,6 @@ import { Currency, CurrencyAmount, Token, TradeType } from '@uniswap/sdk-core'
 import { Route as V2Route } from '@uniswap/v2-sdk'
 import { Route as V3Route } from '@uniswap/v3-sdk'
 
-export enum TradeState {
-  LOADING,
-  INVALID,
-  NO_ROUTE_FOUND,
-  VALID,
-}
-
 // from https://github.com/Uniswap/routing-api/blob/main/lib/handlers/schema.ts
 
 type TokenInRoute = Pick<Token, 'address' | 'chainId' | 'symbol' | 'decimals'>
@@ -105,7 +98,7 @@ export class ClassicTrade<
   }
 }
 
-export type InterfaceTrade = ClassicTrade<Currency, Currency, TradeType>
+type InterfaceTrade = ClassicTrade<Currency, Currency, TradeType>
 
 export enum QuoteState {
   SUCCESS = 'Success',
