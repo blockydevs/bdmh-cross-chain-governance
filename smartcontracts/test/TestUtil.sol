@@ -14,6 +14,7 @@ abstract contract TestUtil is Test {
     address public wormholeMockAddress = address(100);
     uint16 public spokeChainId = 5;
     uint16 public hubChainId = 10002;
+    string public utilDescription = "test1";
 
     function _createMockUser(uint256 privateKeySeed) internal pure returns (address) {
         return vm.addr(privateKeySeed);

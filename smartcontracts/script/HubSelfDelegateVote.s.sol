@@ -9,7 +9,7 @@ import "../src/vhm-token/VHMToken.sol";
 contract HubSelfDelegateVote is Script {
     function run() external {
         uint256 secondPrivateKey = vm.envUint("SECOND_PRIVATE_KEY");
-        address voteTokenAddress = vm.envAddress("VOTE_TOKEN_ADDRESS");
+        address voteTokenAddress = vm.envAddress("HUB_VOTE_TOKEN_ADDRESS");
         vm.startBroadcast(secondPrivateKey);
         address secondAddress = vm.addr(secondPrivateKey);
         VHMToken vhmToken = VHMToken(voteTokenAddress);
