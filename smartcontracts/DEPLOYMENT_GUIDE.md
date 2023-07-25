@@ -31,17 +31,29 @@ The deployment process consist of deploying:
   chains) -
   The spoke contract that enables to vote on proposal on other chains.
 
+### Vote token deployment
+
+Before deploying the vote token please set the environment variable `HM_TOKEN_ADDRESS` to correct value for given chain.
+
+To deploy the vote token contract please run following command:
+
+```
+forge script script/VHMTDeployment.s.sol:VHMTDeployment --rpc-url $SEPOLIA_RPC_URL --broadcast --verify
+```
+
+After successfully running the script please fill `.env` with address of deployed vote token. Depending on if it will be
+used to deploy Hub or Spoke please fill `HUB_VOTE_TOKEN_ADDRESS` or `SPOKE_VOTE_TOKEN_ADDRESS`.
+
 ### Hub contract deployment
 
-To deploy the Hub contract along with [HMToken.sol](src%2Fhm-token%2FHMToken.sol)
-and [VHMToken.sol](src%2Fvhm-token%2FVHMToken.sol) please run following command:
+To deploy the Hub contract please run following command:
 
 ```
 forge script script/HubDeployment.s.sol:HubDeployment --rpc-url $SEPOLIA_RPC_URL --broadcast --verify
 ```
 
 This will
-deploy [HMToken.sol](src%2Fhm-token%2FHMToken.sol), [VHMToken.sol](src%2Fvhm-token%2FVHMToken.sol), [MetaHumanGovernor.sol](src%2FMetaHumanGovernor.sol), `TimelockController`,
+deploy  [MetaHumanGovernor.sol](src%2FMetaHumanGovernor.sol) and `TimelockController`,
 then grant `PROPOSER_ROLE` on
 Timelock to Governance and then remove `TIMELOCK_ADMIN_ROLE` from the deployer.
 
@@ -49,8 +61,6 @@ After successfully running the script please fill `.env` with addresses of:
 
 - GOVERNOR_ADDRESS
 - TIMELOCK_ADDRESS
-- HM_TOKEN_ADDRESS
-- VOTE_TOKEN_ADDRESS
 
 The addresses can be found in console output of the script and in
 the `/broadcast/HubDeployment.s.sol/<chain_id>/run-latest.json`
@@ -58,28 +68,44 @@ the `/broadcast/HubDeployment.s.sol/<chain_id>/run-latest.json`
 ### Spoke contract deployment
 
 This will
-deploy [HMToken.sol](src%2Fhm-token%2FHMToken.sol), [VHMToken.sol](src%2Fvhm-token%2FVHMToken.sol), [DAOSpokeContract.sol](src%2FDAOSpokeContract.sol)
+deploy [DAOSpokeContract.sol](src%2FDAOSpokeContract.sol)
 on chain provided by the `--rpc-url` variable. In testing, the contract was deployed on Polygon Mumbai.
 
 ```
 forge script script/SpokeDeployment.s.sol:SpokeDeployment --rpc-url $POLYGON_MUMBAI_RPC_URL --etherscan-api-key $MUMBAI_ETHERSCAN_API_KEY --broadcast --legacy --verify
 ```
 
-After successfully running the script please fill `.env` with addresses of:
+After successfully running the script please fill add the deployed contract chain id and address to these lists (comma
+separated addresses):
 
-- SPOKE_1_ADDRESS
-- SPOKE_VOTE_TOKEN_ADDRESS
+- SPOKE_ADDRESSES
+- SPOKE_CHAIN_IDS
 
 The addresses can be found in console output of the script and in
-the `/broadcast/SpokeDeployment.s.sol/<chain_id>/run-latest.json`
+the `/broadcast/SpokeDeployment.s.sol/<chain_id>/run-latest.json`.
+
+Chain id can be found in the [Wormhole documentation](https://book.wormhole.com/reference/contracts.html). The value should be copied from `Wormhole Chain ID` column.
 
 ### Setting spoke contracts in the hub
 
-Next step is to let the Hub know about Spoke addresses and chains. To update the Hub with `SPOKE_1_ADDRESS` please run
+Next step is to let the Hub know about Spoke addresses and chains. To update the Hub with `SPOKE_ADDRESSES`
+and `SPOKE_CHAIN_IDS` please run
 following script:
 
 ```
 forge script script/HubUpdateSpokeContracts.s.sol:HubUpdateSpokeContracts --rpc-url $SEPOLIA_RPC_URL --broadcast
+```
+
+### Transfer governance ownership to timelock
+
+Last(optional) step of infrastructure setup is to transfer the ownership to the timelock contract, which effectively means that every change to the contract would need to be approved by the DAO.
+
+To transfer the ownership please make sure that all the initial setup is finished and fill in the `TIMELOCK_ADDRESS` environment variable.
+
+Then run the following script:
+
+```
+forge script script/HubTransferOwnership.s.sol:HubTransferOwnership --rpc-url $SEPOLIA_RPC_URL --broadcast
 ```
 
 ## Interacting with Governance ecosystem
@@ -164,10 +190,14 @@ There are also two helper scripts that help with the development and testing.
 
 - [FundAccounts.s.sol](script%2FFundAccounts.s.sol) can be used to fund account
   with [HMToken.sol](src%2Fhm-token%2FHMToken.sol). Account address is taken from .env variable `ADDRESS_TO_FUND`.
+
 ```
 forge script script/FundAccounts.s.sol:FundAccounts --rpc-url $SEPOLIA_RPC_URL --broadcast
 ```
-- [TransferTokensToTimelock.s.sol](script%2FTransferTokensToTimelock.s.sol) can be used to transfer tokens to timelock when trying to execute a grant proposal.
+
+- [TransferTokensToTimelock.s.sol](script%2FTransferTokensToTimelock.s.sol) can be used to transfer tokens to timelock
+  when trying to execute a grant proposal.
+
 ```
 forge script script/TransferTokensToTimelock.s.sol:TransferTokensToTimelock --rpc-url $SEPOLIA_RPC_URL --broadcast
 ```

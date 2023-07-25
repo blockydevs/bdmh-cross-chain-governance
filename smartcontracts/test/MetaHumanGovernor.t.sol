@@ -283,10 +283,9 @@ contract MetaHumanGovernorTest is TestUtil, EIP712 {
         address[] memory targets = new address[](1);
         uint256[] memory values = new uint256[](1);
         bytes[] memory calldatas = new bytes[](1);
-        string memory description = vm.envString("DESCRIPTION");
         targets[0] = address(hmToken);
         calldatas[0] = encodedCall;
-        uint256 proposalId = governanceContract.crossChainPropose(targets, values, calldatas, description);
+        uint256 proposalId = governanceContract.crossChainPropose(targets, values, calldatas, utilDescription);
         //mock account with voting power
         voteToken.transfer(someUser, 5 ether);
         vm.startPrank(someUser);
@@ -302,10 +301,10 @@ contract MetaHumanGovernorTest is TestUtil, EIP712 {
         vm.roll(block.number + 50410);
         governanceContract.requestCollections(proposalId);
         _collectVotesFromSpoke(proposalId);
-        governanceContract.queue(targets, values, calldatas, keccak256(bytes(description)));
+        governanceContract.queue(targets, values, calldatas, keccak256(bytes(utilDescription)));
         vm.warp(block.timestamp + 10);
         uint256 balanceBeforeExecution = hmToken.balanceOf(someUser);
-        governanceContract.execute(targets, values, calldatas, keccak256(bytes(description)));
+        governanceContract.execute(targets, values, calldatas, keccak256(bytes(utilDescription)));
         uint256 balanceAfterExecution = hmToken.balanceOf(someUser);
         assertGt(balanceAfterExecution, balanceBeforeExecution);
     }
@@ -318,10 +317,9 @@ contract MetaHumanGovernorTest is TestUtil, EIP712 {
         address[] memory targets = new address[](1);
         uint256[] memory values = new uint256[](1);
         bytes[] memory calldatas = new bytes[](1);
-        string memory description = vm.envString("DESCRIPTION");
         targets[0] = address(hmToken);
         calldatas[0] = encodedCall;
-        uint256 proposalId = governanceContract.crossChainPropose(targets, values, calldatas, description);
+        uint256 proposalId = governanceContract.crossChainPropose(targets, values, calldatas, utilDescription);
         //mock account with voting power
         voteToken.transfer(someUser, 5 ether);
         vm.startPrank(someUser);
@@ -336,7 +334,7 @@ contract MetaHumanGovernorTest is TestUtil, EIP712 {
         //wait for voting to end
         vm.roll(block.number + 50410);
         vm.expectRevert("Governor: proposal not successful");
-        governanceContract.queue(targets, values, calldatas, keccak256(bytes(description)));
+        governanceContract.queue(targets, values, calldatas, keccak256(bytes(utilDescription)));
     }
 
     function testExecuteProposalWhenCollectionPhaseUnfinished() public {
@@ -347,10 +345,9 @@ contract MetaHumanGovernorTest is TestUtil, EIP712 {
         address[] memory targets = new address[](1);
         uint256[] memory values = new uint256[](1);
         bytes[] memory calldatas = new bytes[](1);
-        string memory description = vm.envString("DESCRIPTION");
         targets[0] = address(hmToken);
         calldatas[0] = encodedCall;
-        uint256 proposalId = governanceContract.crossChainPropose(targets, values, calldatas, description);
+        uint256 proposalId = governanceContract.crossChainPropose(targets, values, calldatas, utilDescription);
         //mock account with voting power
         voteToken.transfer(someUser, 5 ether);
         vm.startPrank(someUser);
@@ -365,7 +362,7 @@ contract MetaHumanGovernorTest is TestUtil, EIP712 {
         //wait for voting to end
         vm.roll(block.number + 50410);
         vm.expectRevert("Governor: proposal not successful");
-        governanceContract.execute(targets, values, calldatas, keccak256(bytes(description)));
+        governanceContract.execute(targets, values, calldatas, keccak256(bytes(utilDescription)));
     }
 
 
