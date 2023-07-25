@@ -9,13 +9,6 @@ export { NEVER_RELOAD } from '@uniswap/redux-multicall' // re-export for conveni
 
 type SkipFirstTwoParams<T extends (...args: any) => any> = SkipFirst<Parameters<T>, 2>
 
-export function useMultipleContractSingleData(
-  ...args: SkipFirstTwoParams<typeof multicall.hooks.useMultipleContractSingleData>
-) {
-  const { chainId, latestBlock } = useCallContext()
-  return multicall.hooks.useMultipleContractSingleData(chainId, latestBlock, ...args)
-}
-
 export function useSingleCallResult(...args: SkipFirstTwoParams<typeof multicall.hooks.useSingleCallResult>) {
   const { chainId, latestBlock } = useCallContext()
   return multicall.hooks.useSingleCallResult(chainId, latestBlock, ...args)

@@ -2,7 +2,6 @@ import type { TokenList } from '@uniswap/token-lists'
 import contenthashToUri from 'lib/utils/contenthashToUri'
 import parseENSAddress from 'lib/utils/parseENSAddress'
 import uriToHttp from 'lib/utils/uriToHttp'
-import { validateTokenList } from 'utils/validateTokenList'
 
 const listCache = new Map<string, TokenList>()
 
@@ -13,8 +12,7 @@ const listCache = new Map<string, TokenList>()
  */
 export default async function fetchTokenList(
   listUrl: string,
-  resolveENSContentHash: (ensName: string) => Promise<string>,
-  skipValidation?: boolean
+  resolveENSContentHash: (ensName: string) => Promise<string>
 ): Promise<TokenList> {
   const cached = listCache?.get(listUrl) // avoid spurious re-fetches
   if (cached) {
@@ -69,7 +67,7 @@ export default async function fetchTokenList(
       // The content of the result is sometimes invalid even with a 200 status code.
       // A response can be invalid if it's not a valid JSON or if it doesn't match the TokenList schema.
       const json = await response.json()
-      const list = skipValidation ? json : await validateTokenList(json)
+      const list = json
       listCache?.set(listUrl, list)
       return list
     } catch (error) {

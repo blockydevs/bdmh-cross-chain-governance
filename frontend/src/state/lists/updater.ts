@@ -1,6 +1,6 @@
 import { getVersionUpgrade, VersionUpgrade } from '@uniswap/token-lists'
 import { useWeb3React } from '@web3-react/core'
-import { DEFAULT_LIST_OF_LISTS, UNSUPPORTED_LIST_URLS } from 'constants/lists'
+import { DEFAULT_LIST_OF_LISTS } from 'constants/lists'
 import useInterval from 'lib/hooks/useInterval'
 import ms from 'ms.macro'
 import { useCallback, useEffect } from 'react'
@@ -25,8 +25,8 @@ export default function Updater(): null {
     if (!isWindowVisible) return
     DEFAULT_LIST_OF_LISTS.forEach((url) => {
       // Skip validation on unsupported lists
-      const isUnsupportedList = UNSUPPORTED_LIST_URLS.includes(url)
-      fetchList(url, isUnsupportedList).catch((error) => console.debug('interval list fetching error', error))
+
+      fetchList(url).catch((error) => console.debug('interval list fetching error', error))
     })
   }, [fetchList, isWindowVisible])
 
@@ -39,18 +39,6 @@ export default function Updater(): null {
       const list = lists[listUrl]
       if (!list.current && !list.loadingRequestId && !list.error) {
         fetchList(listUrl).catch((error) => console.debug('list added fetching error', error))
-      }
-    })
-  }, [dispatch, fetchList, lists])
-
-  // if any lists from unsupported lists are loaded, check them too (in case new updates since last visit)
-  useEffect(() => {
-    UNSUPPORTED_LIST_URLS.forEach((listUrl) => {
-      const list = lists[listUrl]
-      if (!list || (!list.current && !list.loadingRequestId && !list.error)) {
-        fetchList(listUrl, /* isUnsupportedList= */ true).catch((error) =>
-          console.debug('list added fetching error', error)
-        )
       }
     })
   }, [dispatch, fetchList, lists])

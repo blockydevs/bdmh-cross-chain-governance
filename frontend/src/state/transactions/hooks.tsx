@@ -1,11 +1,10 @@
 import type { TransactionResponse } from '@ethersproject/providers'
-import { Token } from '@uniswap/sdk-core'
 import { useWeb3React } from '@web3-react/core'
-import { useCallback, useMemo } from 'react'
+import { useCallback } from 'react'
 import { useAppDispatch, useAppSelector } from 'state/hooks'
 
 import { addTransaction, removeTransaction } from './reducer'
-import { TransactionDetails, TransactionInfo, TransactionType } from './types'
+import { TransactionDetails, TransactionInfo } from './types'
 
 // helper that can take a ethers library transaction response and add it to the list of transactions
 export function useTransactionAdder(): (response: TransactionResponse, info: TransactionInfo) => void {
@@ -57,27 +56,6 @@ export function useAllTransactions(): { [txHash: string]: TransactionDetails } {
  */
 export function isTransactionRecent(tx: TransactionDetails): boolean {
   return new Date().getTime() - tx.addedTime < 86_400_000
-}
-
-// returns whether a token has a pending approval transaction
-export function useHasPendingApproval(token?: Token, spender?: string): boolean {
-  const allTransactions = useAllTransactions()
-  return useMemo(
-    () =>
-      typeof token?.address === 'string' &&
-      typeof spender === 'string' &&
-      Object.keys(allTransactions).some((hash) => {
-        const tx = allTransactions[hash]
-        if (!tx) return false
-        if (tx.receipt) {
-          return false
-        } else {
-          if (tx.info.type !== TransactionType.APPROVAL) return false
-          return tx.info.spender === spender && tx.info.tokenAddress === token.address && isTransactionRecent(tx)
-        }
-      }),
-    [allTransactions, spender, token?.address]
-  )
 }
 
 export function useTransaction(transactionHash?: string): TransactionDetails | undefined {
