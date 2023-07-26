@@ -163,7 +163,7 @@ export default function DepositVHMTModal({ isOpen, onDismiss, title, uniBalance 
       {attempting && !withdrawToHash && !validationInputError && (
         <ContentWrapper>
           <GrayCloseButton onClick={wrappedOnDismiss} />
-          <LoadingView onDismiss={wrappedOnDismiss}>
+          <LoadingView onDismiss={wrappedOnDismiss} label="Withdrawing tokens">
             <AutoColumn gap="md" justify="center">
               <ThemedText.HeadlineSmall fontWeight={500} textAlign="center">
                 Confirm this transaction in your wallet

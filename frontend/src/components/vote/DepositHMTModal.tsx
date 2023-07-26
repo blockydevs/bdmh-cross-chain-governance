@@ -207,7 +207,7 @@ export default function DepositHMTModal({ isOpen, onDismiss, title, hmtBalance }
       {attempting && !depositForHash && !isApproveWaitResponse && !validationInputError && (
         <ContentWrapper>
           <GrayCloseButton onClick={wrappedOnDismiss} />
-          <LoadingView onDismiss={wrappedOnDismiss}>
+          <LoadingView onDismiss={wrappedOnDismiss} label="Depositing tokens">
             <AutoColumn gap="md" justify="center">
               <ThemedText.HeadlineSmall fontWeight={500} textAlign="center">
                 <Trans>

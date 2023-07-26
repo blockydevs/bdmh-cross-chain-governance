@@ -49,14 +49,22 @@ const ConfirmedIcon = styled(ColumnCenter)`
   padding: 0 0 32px 0;
 `
 
-export function LoadingView({ children, onDismiss }: { children: any; onDismiss: () => void }) {
+export function LoadingView({
+  children,
+  onDismiss,
+  label = 'Submitting Vote',
+}: {
+  children: any
+  onDismiss: () => void
+  label?: string
+}) {
   const isMobile = useIsMobile()
 
   return (
     <ConfirmOrLoadingWrapper gap>
       <StyledRowBetween>
         <ThemedText.HeadlineLarge>
-          <Trans>Submitting Vote</Trans>
+          <Trans>{label}</Trans>
         </ThemedText.HeadlineLarge>
         <CloseIconWrapper>
           <CloseIcon onClick={onDismiss} />
