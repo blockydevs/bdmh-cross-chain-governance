@@ -322,7 +322,7 @@ export const BUSD_BSC = new Token(
 export const DAI_BSC = new Token(SupportedChainId.BNB, '0x1AF3F329e8BE154074D8769D1FFa4eE058B1DBc3', 18, 'DAI', 'DAI')
 
 export const UNI: { [chainId: number]: Token } = {
-  [HUB_CHAIN_ID]: new Token(HUB_CHAIN_ID, HUB_VOTE_TOKEN_ADDRESS[5], 18, 'UNI', 'Uniswap'),
+  [HUB_CHAIN_ID]: new Token(HUB_CHAIN_ID, HUB_VOTE_TOKEN_ADDRESS[HUB_CHAIN_ID], 18, 'UNI', 'Uniswap'),
 }
 
 for (const chainId in SPOKE_VOTE_TOKEN_ADDRESSES) {

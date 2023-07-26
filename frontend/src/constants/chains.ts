@@ -1,5 +1,3 @@
-/* eslint-disable prettier/prettier */
-
 /**
  * SupportedChainId must be defined inline, without using @uniswap/sdk-core, so that its members are their own types
  * {@see https://www.typescriptlang.org/docs/handbook/enums.html#union-enums-and-enum-member-types}. This allows the
@@ -43,13 +41,6 @@ export const CHAIN_IDS_TO_NAMES = {
   [SupportedChainId.SEPOLIA]: 'sepolia',
 }
 
-/**
- * Array of all the supported chain IDs
- */
-//  const ALL_SUPPORTED_CHAIN_IDS: SupportedChainId[] = Object.values(SupportedChainId).filter(
-//   (id) => typeof id === 'number'
-// ) as SupportedChainId[]
-
 export function isSupportedChain(chainId: number | null | undefined): chainId is SupportedChainId {
   return !!chainId && !!SupportedChainId[chainId]
 }
@@ -83,7 +74,3 @@ export type SupportedL2ChainId = typeof L2_CHAIN_IDS[number]
 export function isPolygonChain(chainId: number): chainId is SupportedChainId.POLYGON | SupportedChainId.POLYGON_MUMBAI {
   return chainId === SupportedChainId.POLYGON || chainId === SupportedChainId.POLYGON_MUMBAI
 }
-
-// export const ALL_SUPPORTED_CHAIN_IDS: SupportedChainId[] = Object.values(SupportedChainId).filter(
-//   (id) => typeof id === 'number'
-// ) as SupportedChainId[]

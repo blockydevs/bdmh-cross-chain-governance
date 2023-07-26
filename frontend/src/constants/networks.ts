@@ -119,7 +119,7 @@ export const RPC_URLS = {
     ...FALLBACK_URLS[SupportedChainId.ARBITRUM_ONE],
   ],
   [SupportedChainId.ARBITRUM_GOERLI]: [
-    `https://arbitrum-goerli.infura.io/v3/${INFURA_KEY}`,
+    `https://arb-goerli.g.alchemy.com/v2/2axGqs0i7fENYBPFwwq9ETskzklDk-Jr`,
     ...FALLBACK_URLS[SupportedChainId.ARBITRUM_GOERLI],
   ],
   [SupportedChainId.POLYGON]: [
@@ -127,14 +127,14 @@ export const RPC_URLS = {
     ...FALLBACK_URLS[SupportedChainId.POLYGON],
   ],
   [SupportedChainId.POLYGON_MUMBAI]: [
-    `https://polygon-mumbai.infura.io/v3/${INFURA_KEY}`,
+    `https://polygon-mumbai.g.alchemy.com/v2/Qt7aIS91c4-j_13hcdNqIjyv3dM0kw-V`,
     ...FALLBACK_URLS[SupportedChainId.POLYGON_MUMBAI],
   ],
   [SupportedChainId.CELO]: FALLBACK_URLS[SupportedChainId.CELO],
   [SupportedChainId.CELO_ALFAJORES]: FALLBACK_URLS[SupportedChainId.CELO_ALFAJORES],
   [SupportedChainId.BNB]: [QUICKNODE_RPC_URL, ...FALLBACK_URLS[SupportedChainId.BNB]],
   [SupportedChainId.SEPOLIA]: [
-    `https://sepolia.infura.io/v3/${INFURA_KEY}`,
+    `https://eth-sepolia.g.alchemy.com/v2/wfXNo_GK-Fm00CrmS2ORmMrXuLDySHGw`,
     ...FALLBACK_URLS[SupportedChainId.SEPOLIA],
   ],
 }
