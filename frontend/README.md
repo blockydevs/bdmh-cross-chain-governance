@@ -50,7 +50,7 @@ Follow the steps below to set up the project on your local machine:
   - Open your terminal as an administrator and type `nvm install 14`
   - After successful installation, type `nvm use 14`
 - Install Yarn globally using the command `npm install -g yarn`
-- Swap to `develop` branch using a `git checkout develop` command
+- Swap to `main` branch using a `git checkout main` command
 - Install the necessary Node modules by typing `yarn install` in your terminal
 - Start the local development server using `yarn start`
 - The project should automatically open in a new tab in your default browser. If not, manually navigate to `localhost:3000` in your browser
