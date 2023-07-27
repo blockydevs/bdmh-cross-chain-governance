@@ -15,17 +15,16 @@ function constructSameAddressMap(address: string, additionalNetworks: SupportedC
 
 const HUB_CHAIN_ADDRESS = process.env.REACT_APP_GOVERNANCE_HUB_ADDRESS as string
 const HUB_TOKEN_ADDRESS = process.env.REACT_APP_HUB_VOTE_TOKEN as string
+
 export const HUB_CHAIN_ID = parseInt(process.env.REACT_APP_HUB_CHAIN_ID as string, 10)
 
 export const GOVERNANCE_HUB_ADDRESS: AddressMap = {
   [HUB_CHAIN_ID]: HUB_CHAIN_ADDRESS as string,
 }
-console.log('GOVERNANCE_HUB_ADDRESS:', GOVERNANCE_HUB_ADDRESS)
+
 export const HUB_VOTE_TOKEN_ADDRESS: AddressMap = {
   [HUB_CHAIN_ID]: HUB_TOKEN_ADDRESS as string,
 }
-
-console.log('HUB_VOTE_TOKEN_ADDRESS:', HUB_VOTE_TOKEN_ADDRESS)
 
 export const GOVERNANCE_SPOKE_ADRESSES: AddressMap = getEnvAddresses('REACT_APP_GOVERNANCE_SPOKE_CHAIN_')
 export const SPOKE_VOTE_TOKEN_ADDRESSES: AddressMap = getEnvAddresses('REACT_APP_GOVERNANCE_SPOKE_VOTE_TOKEN_')

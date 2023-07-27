@@ -9,24 +9,22 @@
 export enum SupportedChainId {
   POLYGON = 137,
   POLYGON_MUMBAI = 80001,
-
   ETHEREUM = 1,
+  GOERLI = 5,
+  BNB = 56,
+  BNB_TESTNET = 97,
+  MOONBEAM = 1284,
+  MOONBASE = 1287,
+  AVALANCHE = 43114,
+  AVALANCHE_FUJI = 43113,
 
   SEPOLIA = 11155111,
-
-  GOERLI = 5,
-  // RINKEBY = 4,
-
   ARBITRUM_ONE = 42161,
   ARBITRUM_GOERLI = 421613,
-
   OPTIMISM = 10,
   OPTIMISM_GOERLI = 420,
-
   CELO = 42220,
   CELO_ALFAJORES = 44787,
-
-  BNB = 56,
 }
 
 export const CHAIN_IDS_TO_NAMES = {
@@ -41,6 +39,11 @@ export const CHAIN_IDS_TO_NAMES = {
   [SupportedChainId.OPTIMISM]: 'optimism',
   [SupportedChainId.OPTIMISM_GOERLI]: 'optimism_goerli',
   [SupportedChainId.BNB]: 'bnb',
+  [SupportedChainId.BNB_TESTNET]: 'bnb_testnet',
+  [SupportedChainId.MOONBEAM]: 'moonbeam',
+  [SupportedChainId.MOONBASE]: 'moonbase',
+  [SupportedChainId.AVALANCHE]: 'avalanche',
+  [SupportedChainId.AVALANCHE_FUJI]: 'avalanche_fuji',
   [SupportedChainId.SEPOLIA]: 'sepolia',
 }
 
@@ -56,6 +59,11 @@ const L1_CHAIN_IDS = [
   SupportedChainId.CELO,
   SupportedChainId.CELO_ALFAJORES,
   SupportedChainId.BNB,
+  SupportedChainId.BNB_TESTNET,
+  SupportedChainId.MOONBEAM,
+  SupportedChainId.MOONBASE,
+  SupportedChainId.AVALANCHE,
+  SupportedChainId.AVALANCHE_FUJI,
   SupportedChainId.SEPOLIA,
 ] as const
 
