@@ -17,7 +17,7 @@ export function useFetchListCallback(): (listUrl: string) => Promise<TokenList> 
       const requestId = nanoid()
       dispatch(fetchTokenList.pending({ requestId, url: listUrl }))
       return getTokenList(listUrl, (ensName: string) =>
-        resolveENSContentHash(ensName, RPC_PROVIDERS[SupportedChainId.MAINNET])
+        resolveENSContentHash(ensName, RPC_PROVIDERS[SupportedChainId.ETHEREUM])
       )
         .then((tokenList) => {
           dispatch(fetchTokenList.fulfilled({ url: listUrl, tokenList, requestId }))

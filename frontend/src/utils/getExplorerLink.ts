@@ -1,7 +1,7 @@
 import { SupportedChainId } from 'constants/chains'
 
 const BLOCK_EXPLORER_PREFIXES: { [chainId: number]: string } = {
-  [SupportedChainId.MAINNET]: 'https://etherscan.io',
+  [SupportedChainId.ETHEREUM]: 'https://etherscan.io',
   [SupportedChainId.GOERLI]: 'https://goerli.etherscan.io',
   [SupportedChainId.OPTIMISM]: 'https://optimistic.etherscan.io',
   [SupportedChainId.OPTIMISM_GOERLI]: 'https://goerli-optimism.etherscan.io',

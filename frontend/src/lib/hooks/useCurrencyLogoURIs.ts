@@ -13,7 +13,7 @@ type Network = 'ethereum' | 'arbitrum' | 'optimism' | 'polygon' | 'smartchain'
 
 export function chainIdToNetworkName(networkId: SupportedChainId): Network {
   switch (networkId) {
-    case SupportedChainId.MAINNET:
+    case SupportedChainId.ETHEREUM:
       return 'ethereum'
     case SupportedChainId.ARBITRUM_ONE:
       return 'arbitrum'
@@ -28,7 +28,7 @@ export function chainIdToNetworkName(networkId: SupportedChainId): Network {
   }
 }
 
-export function getNativeLogoURI(chainId: SupportedChainId = SupportedChainId.MAINNET): string {
+export function getNativeLogoURI(chainId: SupportedChainId = SupportedChainId.ETHEREUM): string {
   switch (chainId) {
     case SupportedChainId.POLYGON:
     case SupportedChainId.POLYGON_MUMBAI:
@@ -43,11 +43,11 @@ export function getNativeLogoURI(chainId: SupportedChainId = SupportedChainId.MA
   }
 }
 
-function getTokenLogoURI(address: string, chainId: SupportedChainId = SupportedChainId.MAINNET): string | void {
+function getTokenLogoURI(address: string, chainId: SupportedChainId = SupportedChainId.ETHEREUM): string | void {
   const networkName = chainIdToNetworkName(chainId)
   const networksWithUrls = [
     SupportedChainId.ARBITRUM_ONE,
-    SupportedChainId.MAINNET,
+    SupportedChainId.ETHEREUM,
     SupportedChainId.OPTIMISM,
     SupportedChainId.BNB,
   ]

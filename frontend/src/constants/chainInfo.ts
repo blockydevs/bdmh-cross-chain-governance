@@ -60,7 +60,7 @@ type ChainInfoMap = { readonly [chainId: number]: L1ChainInfo | L2ChainInfo } & 
 } & { readonly [chainId in SupportedL1ChainId]: L1ChainInfo }
 
 const CHAIN_INFO: ChainInfoMap = {
-  [SupportedChainId.MAINNET]: {
+  [SupportedChainId.ETHEREUM]: {
     networkType: NetworkType.L1,
     docs: 'https://docs.uniswap.org/',
     explorer: 'https://etherscan.io/',

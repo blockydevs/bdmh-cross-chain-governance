@@ -7,18 +7,21 @@
  * Because this is not explicitly derived from @uniswap/sdk-core, there is a unit test to enforce conformance.
  */
 export enum SupportedChainId {
+  POLYGON = 137,
+  POLYGON_MUMBAI = 80001,
+
+  ETHEREUM = 1,
+
   SEPOLIA = 11155111,
-  MAINNET = 1,
+
   GOERLI = 5,
+  // RINKEBY = 4,
 
   ARBITRUM_ONE = 42161,
   ARBITRUM_GOERLI = 421613,
 
   OPTIMISM = 10,
   OPTIMISM_GOERLI = 420,
-
-  POLYGON = 137,
-  POLYGON_MUMBAI = 80001,
 
   CELO = 42220,
   CELO_ALFAJORES = 44787,
@@ -27,7 +30,7 @@ export enum SupportedChainId {
 }
 
 export const CHAIN_IDS_TO_NAMES = {
-  [SupportedChainId.MAINNET]: 'mainnet',
+  [SupportedChainId.ETHEREUM]: 'ethereum',
   [SupportedChainId.GOERLI]: 'goerli',
   [SupportedChainId.POLYGON]: 'polygon',
   [SupportedChainId.POLYGON_MUMBAI]: 'polygon_mumbai',
@@ -46,7 +49,7 @@ export function isSupportedChain(chainId: number | null | undefined): chainId is
 }
 
 const L1_CHAIN_IDS = [
-  SupportedChainId.MAINNET,
+  SupportedChainId.ETHEREUM,
   SupportedChainId.GOERLI,
   SupportedChainId.POLYGON,
   SupportedChainId.POLYGON_MUMBAI,

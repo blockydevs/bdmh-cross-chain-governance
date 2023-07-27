@@ -4,7 +4,7 @@ import { SupportedChainId } from './chains'
 
 export type AddressMap = { [chainId: number]: string }
 
-const DEFAULT_NETWORKS = [SupportedChainId.MAINNET, SupportedChainId.GOERLI]
+const DEFAULT_NETWORKS = [SupportedChainId.ETHEREUM, SupportedChainId.GOERLI]
 
 function constructSameAddressMap(address: string, additionalNetworks: SupportedChainId[] = []): AddressMap {
   return DEFAULT_NETWORKS.concat(additionalNetworks).reduce<AddressMap>((memo, chainId) => {
@@ -57,6 +57,6 @@ export const MULTICALL_ADDRESS: AddressMap = {
 }
 
 export const ENS_REGISTRAR_ADDRESSES: AddressMap = {
-  [SupportedChainId.MAINNET]: '0x00000000000C2E074eC69A0dFb2997BA6C7d2e1e',
+  [SupportedChainId.ETHEREUM]: '0x00000000000C2E074eC69A0dFb2997BA6C7d2e1e',
   [SupportedChainId.GOERLI]: '0x00000000000C2E074eC69A0dFb2997BA6C7d2e1e',
 }
