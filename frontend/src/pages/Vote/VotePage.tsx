@@ -252,17 +252,21 @@ export default function VotePage() {
   const forVotes = isHubChainActive
     ? Number(proposalData?.hubForCount.toExact())
     : Number(proposalData?.spokeForCount.toExact())
+
   const againstVotes =
     proposalData && isHubChainActive
       ? Number(proposalData?.hubAgainstCount.toExact())
       : Number(proposalData?.spokeAgainstCount.toExact())
+
   const abstainVotes =
     proposalData && isHubChainActive
       ? Number(proposalData?.hubAbstainCount.toExact())
       : Number(proposalData?.spokeAbstainCount.toExact())
 
   const quorumPercentage =
-    forVotes && againstVotes && abstainVotes && ((forVotes + againstVotes + abstainVotes) / quorumNumber) * 100
+    Number(totalVotes?.toExact()) > 0 && quorumNumber > 0
+      ? (((forVotes + againstVotes + abstainVotes) / quorumNumber) * 100).toFixed()
+      : 0
 
   // only count available votes as of the proposal start block
   const availableVotes: CurrencyAmount<Token> | undefined = useUserVotesAsOfBlock(
