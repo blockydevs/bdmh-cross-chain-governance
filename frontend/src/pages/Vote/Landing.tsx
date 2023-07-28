@@ -4,7 +4,6 @@ import { useWeb3React } from '@web3-react/core'
 import { ButtonPrimary } from 'components/Button'
 import { AutoColumn } from 'components/Column'
 import FormattedCurrencyAmount from 'components/FormattedCurrencyAmount'
-import Loader from 'components/Icons/LoadingSpinner'
 import { AutoRow, RowBetween, RowFixed } from 'components/Row'
 import DelegateModal from 'components/vote/DelegateModal'
 import DepositHMTModal from 'components/vote/DepositHMTModal'
@@ -234,10 +233,10 @@ export default function Landing() {
   const toggleDepositVHMTModal = useDepositVHMTModal()
 
   // get data to list all proposals
-  const { data: allProposals, loading: loadingProposals } = useAllProposalData()
+  const { data: allProposals } = useAllProposalData()
 
   // user data
-  const { isLoading: loadingAvailableVotes, availableVotes } = useUserVotes()
+  const { availableVotes } = useUserVotes()
 
   const hmtContractToken = useHmtContractToken()
 
@@ -290,7 +289,6 @@ export default function Landing() {
         <ProposalsContainer gap="2px">
           <WrapSmall>
             <StyledButtonsContainer gap="6px" justify="flex-end">
-              {loadingProposals || loadingAvailableVotes ? <Loader /> : null}
               <StyledButtonPrimary disabled={!showDepositHMTButton} onClick={toggleDepositHMTModal}>
                 <Trans>Deposit HMT</Trans>
               </StyledButtonPrimary>

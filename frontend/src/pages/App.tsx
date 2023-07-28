@@ -56,6 +56,13 @@ const FooterWrapper = styled.div`
   background-color: ${({ theme }) => theme.background};
 `
 
+const LoaderContainer = styled.div`
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 80vh;
+`
+
 function getCurrentPageFromLocation(locationPathname: string): InterfacePageName | undefined {
   switch (true) {
     case locationPathname.startsWith('/vote'):
@@ -133,7 +140,13 @@ export default function App() {
                 <Route
                   path="/"
                   element={
-                    <Suspense fallback={<LazyLoadSpinner />}>
+                    <Suspense
+                      fallback={
+                        <LoaderContainer>
+                          <LazyLoadSpinner />
+                        </LoaderContainer>
+                      }
+                    >
                       <Vote />
                     </Suspense>
                   }
