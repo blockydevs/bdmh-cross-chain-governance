@@ -134,7 +134,13 @@ export default function DepositVHMTModal({ isOpen, onDismiss, title, uniBalance 
           <GrayCloseButton onClick={wrappedOnDismiss} />
           <AutoColumn gap="lg" justify="center">
             <RowBetween textAlign="center">
-              <ThemedText.DeprecatedMediumHeader fontWeight={500} width="100%" marginBottom={isMobile ? 16 : 0}>
+              <ThemedText.DeprecatedMediumHeader
+                textAlign="center"
+                fontWeight={isMobile ? 500 : 600}
+                fontSize={isMobile ? 20 : 28}
+                width="100%"
+                marginBottom={isMobile ? 16 : 0}
+              >
                 {title}
               </ThemedText.DeprecatedMediumHeader>
               <StyledClosed stroke={theme.textPrimary} onClick={wrappedOnDismiss} />
