@@ -17,6 +17,7 @@ export enum SupportedChainId {
   MOONBASE = 1287,
   AVALANCHE = 43114,
   AVALANCHE_FUJI = 43113,
+  // BLOCKYTODO: SKALE chain
 
   SEPOLIA = 11155111,
   ARBITRUM_ONE = 42161,

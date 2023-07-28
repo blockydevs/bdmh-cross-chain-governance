@@ -32,7 +32,6 @@ for (const chainId of allChainIds) {
 export const FALLBACK_URLS = {
   [SupportedChainId.ETHEREUM]: [
     // "Safe" URLs
-    'https://api.mycryptoapi.com/eth',
     'https://cloudflare-eth.com',
     // "Fallback" URLs
     'https://rpc.ankr.com/eth',
@@ -45,8 +44,6 @@ export const FALLBACK_URLS = {
     'https://rpc.ankr.com/eth_goerli',
   ],
   [SupportedChainId.POLYGON]: [
-    // "Safe URLs"
-
     // "Fallback" URLs
     'https://polygon-rpc.com/',
     'https://rpc-mainnet.matic.network',
@@ -132,58 +129,6 @@ export const FALLBACK_URLS = {
  * Known JSON-RPC endpoints.
  * These are the URLs used by the interface when there is not another available source of chain data.
  */
-// export const RPC_URLS = {
-//   [SupportedChainId.SEPOLIA]: [RPC_URLS_FROM_ENV[SupportedChainId.SEPOLIA], ...FALLBACK_URLS[SupportedChainId.SEPOLIA]],
-
-//   [SupportedChainId.ETHEREUM]: [
-//     `https://mainnet.infura.io/v3/${INFURA_KEY}`,
-//     ...FALLBACK_URLS[SupportedChainId.ETHEREUM],
-//   ],
-//   [SupportedChainId.GOERLI]: [`https://goerli.infura.io/v3/${INFURA_KEY}`, ...FALLBACK_URLS[SupportedChainId.GOERLI]],
-//   [SupportedChainId.OPTIMISM]: [
-//     `https://optimism-mainnet.infura.io/v3/${INFURA_KEY}`,
-//     ...FALLBACK_URLS[SupportedChainId.OPTIMISM],
-//   ],
-//   [SupportedChainId.OPTIMISM_GOERLI]: [
-//     `https://optimism-goerli.infura.io/v3/${INFURA_KEY}`,
-//     ...FALLBACK_URLS[SupportedChainId.OPTIMISM_GOERLI],
-//   ],
-//   [SupportedChainId.ARBITRUM_ONE]: [
-//     `https://arbitrum-mainnet.infura.io/v3/${INFURA_KEY}`,
-//     ...FALLBACK_URLS[SupportedChainId.ARBITRUM_ONE],
-//   ],
-//   [SupportedChainId.ARBITRUM_GOERLI]: [
-//     `https://arb-goerli.g.alchemy.com/v2/2axGqs0i7fENYBPFwwq9ETskzklDk-Jr`,
-//     ...FALLBACK_URLS[SupportedChainId.ARBITRUM_GOERLI],
-//   ],
-//   [SupportedChainId.POLYGON]: [
-//     `https://polygon-mainnet.infura.io/v3/${INFURA_KEY}`,
-//     ...FALLBACK_URLS[SupportedChainId.POLYGON],
-//   ],
-//   [SupportedChainId.POLYGON_MUMBAI]: [
-//     process.env.REACT_APP_SPOKE_RPC_URL_,
-//     ...FALLBACK_URLS[SupportedChainId.POLYGON_MUMBAI],
-//   ],
-//   [SupportedChainId.CELO]: FALLBACK_URLS[SupportedChainId.CELO],
-//   [SupportedChainId.CELO_ALFAJORES]: FALLBACK_URLS[SupportedChainId.CELO_ALFAJORES],
-//   [SupportedChainId.BNB]: [QUICKNODE_RPC_URL, ...FALLBACK_URLS[SupportedChainId.BNB]],
-//   [SupportedChainId.BNB_TESTNET]: [
-//     'https://bsc-testnet.public.blastapi.io',
-//     'https://bsc-testnet.publicnode.com',
-//     ...FALLBACK_URLS[SupportedChainId.BNB_TESTNET],
-//   ],
-//   [SupportedChainId.MOONBEAM]: ['https://moonbeam.public.blastapi.io', ...FALLBACK_URLS[SupportedChainId.MOONBEAM]],
-//   [SupportedChainId.MOONBASE]: [
-//     'https://moonbase-alpha.public.blastapi.io',
-//     ...FALLBACK_URLS[SupportedChainId.MOONBASE],
-//   ],
-//   [SupportedChainId.AVALANCHE]: ['https://rpc.ankr.com/avalanche', ...FALLBACK_URLS[SupportedChainId.AVALANCHE]],
-//   [SupportedChainId.AVALANCHE_FUJI]: [
-//     'https://endpoints.omniatech.io/v1/avax/fuji/public',
-//     ...FALLBACK_URLS[SupportedChainId.AVALANCHE_FUJI],
-//   ],
-// }
-
 export const RPC_URLS: { [key: string]: string[] } = {}
 
 for (const chainId of allChainIds) {
@@ -192,5 +137,3 @@ for (const chainId of allChainIds) {
   const fallbackUrls = FALLBACK_URLS[numChainId as keyof typeof FALLBACK_URLS] || []
   RPC_URLS[chainId] = envUrl.length > 0 ? [envUrl, ...fallbackUrls] : [...fallbackUrls]
 }
-
-console.log('RPC_URLS:', RPC_URLS)
