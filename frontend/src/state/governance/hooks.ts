@@ -14,6 +14,7 @@ import GOVERNOR_SPOKE_ABI from 'abis/governance-spoke.json'
 import HmtUniJSON from 'abis/HMToken.json'
 import UniJSON from 'abis/VHMToken.json'
 import { GOVERNANCE_HUB_ADDRESS, GOVERNANCE_SPOKE_ADRESSES } from 'constants/addresses'
+import { HUB_CHAIN_ID } from 'constants/addresses'
 import { SupportedChainId } from 'constants/chains'
 import { RPC_PROVIDERS } from 'constants/providers'
 import { useContract, useContractWithCustomProvider } from 'hooks/useContract'
@@ -30,11 +31,10 @@ import { TransactionType } from '../transactions/types'
 import { VoteOption } from './types'
 
 function useGovernanceHubContract(): Contract | null {
-  // BLOCKYTODO: argument chainId który pozwoli odczytać prawidłowy spoke?
   return useContractWithCustomProvider(
     GOVERNANCE_HUB_ADDRESS,
     GOVERNOR_HUB_ABI,
-    RPC_PROVIDERS[SupportedChainId.SEPOLIA]
+    RPC_PROVIDERS[HUB_CHAIN_ID as SupportedChainId]
   )
 }
 
@@ -245,12 +245,10 @@ function useFormattedProposalCreatedLogs(
 
           proposer,
           startBlock,
-          //HACK: endBlock wpisany na razie na sztywno
           endBlock: parsed.endBlock,
-
           targets: parsed.targets,
           values: parsed[3],
-          //BLOCKYTODO: values wstawione na sztywno ponieważ występuje problem z abi. Link: https://github.com/ethers-io/ethers.js/issues/3744
+          //BLOCKYTODO: values hardcoded because there's a known problem with the abi. Link: https://github.com/ethers-io/ethers.js/issues/3744
           calldatas: parsed.calldatas,
           descriptionHash: keccak256(toUtf8Bytes(parsed.description)),
         }
@@ -306,7 +304,6 @@ export function useAllProposalData(): { data: ProposalData[]; loading: boolean }
     }
 
     if (govHubProposalIndexes.length > proposalHubVotes.length) {
-      // BLOCKYTODO: sprawdzic bez govHubProposalIndexes i proposalHubVotes
       getProposalVotes()
     }
   }, [govHubContract?.functions, govHubProposalIndexes, proposalHubVotes, chainId, isHubChainActive, transactions])
