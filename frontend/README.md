@@ -47,8 +47,9 @@ You can define multiple spoke chains. If you want to add another spoke chain ple
 
 Follow the steps below to set up the project on your local machine:
 
-- Clone the repository using the following command: `git clone https://github.com/blockydevs/uniswap-interface.git`
-- Open the uniswap-interface folder in your code editor
+- Clone the repository using the following command: `git clone https://github.com/blockydevs/bdmh-cross-chain-governance.git`
+- Open the bdmh-cross-chain-governance folder in your code editor
+- Change directory to `frontend` folder by typing `cd frontend` in terminal
 - Check your Node.js version by typing `node --version` in your terminal. If your Node.js version is not 14, follow these steps:
     * Install NVM following instructions [here](https://www.freecodecamp.org/news/node-version-manager-nvm-install-guide/)
     * Open your terminal as an administrator and type `nvm install 14`
