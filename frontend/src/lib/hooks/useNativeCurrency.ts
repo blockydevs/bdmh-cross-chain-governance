@@ -9,7 +9,7 @@ export default function useNativeCurrency(chainId: SupportedChainId | null | und
       chainId
         ? nativeOnChain(chainId)
         : // display mainnet when not connected
-          nativeOnChain(SupportedChainId.MAINNET),
+          nativeOnChain(SupportedChainId.ETHEREUM),
     [chainId]
   )
 }

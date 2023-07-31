@@ -1,12 +1,13 @@
 import { SupportedChainId } from 'constants/chains'
 
-const INFURA_KEY = process.env.REACT_APP_INFURA_KEY
-if (typeof INFURA_KEY === 'undefined') {
-  throw new Error(`REACT_APP_INFURA_KEY must be a defined environment variable`)
-}
-const QUICKNODE_RPC_URL = 'https://rough-sleek-hill.bsc.quiknode.pro/413cc98cbc776cda8fdf1d0f47003583ff73d9bf'
-if (typeof QUICKNODE_RPC_URL === 'undefined') {
-  throw new Error(`REACT_APP_BNB_RPC_URL must be a defined environment variable`)
+const allChainIds = Object.values(SupportedChainId)
+  .filter((id) => typeof id === 'number')
+  .map(String)
+
+const RPC_URLS_FROM_ENV: { [key: string]: string | undefined } = {}
+
+for (const chainId of allChainIds) {
+  RPC_URLS_FROM_ENV[chainId] = process.env[`REACT_APP_RPC_URL_${chainId}`]
 }
 
 /**
@@ -20,9 +21,8 @@ if (typeof QUICKNODE_RPC_URL === 'undefined') {
  * These "Safe" URLs are listed first, followed by other fallback URLs, which are taken from chainlist.org.
  */
 export const FALLBACK_URLS = {
-  [SupportedChainId.MAINNET]: [
+  [SupportedChainId.ETHEREUM]: [
     // "Safe" URLs
-    'https://api.mycryptoapi.com/eth',
     'https://cloudflare-eth.com',
     // "Fallback" URLs
     'https://rpc.ankr.com/eth',
@@ -35,7 +35,7 @@ export const FALLBACK_URLS = {
     'https://rpc.ankr.com/eth_goerli',
   ],
   [SupportedChainId.POLYGON]: [
-    // "Safe" URLs
+    // "Fallback" URLs
     'https://polygon-rpc.com/',
     'https://rpc-mainnet.matic.network',
     'https://matic-mainnet.chainstacklabs.com',
@@ -88,6 +88,30 @@ export const FALLBACK_URLS = {
     'https://bsc-dataseed4.defibit.io',
     'https://rpc.ankr.com/bsc',
   ],
+  [SupportedChainId.BNB_TESTNET]: [
+    // "Safe" URLs
+    'https://bsc-testnet.publicnode.com',
+  ],
+  [SupportedChainId.MOONBEAM]: [
+    // "Safe" URLs
+    'https://moonbeam.public.blastapi.io',
+  ],
+  [SupportedChainId.MOONBASE]: [
+    // "Safe" URLs
+    'https://moonbase-alpha.public.blastapi.io',
+  ],
+  [SupportedChainId.AVALANCHE]: [
+    // "Safe" URLs
+    'https://rpc.ankr.com/avalanche',
+  ],
+  [SupportedChainId.AVALANCHE_FUJI]: [
+    // "Safe" URLs
+    'https://avalanche-fuji-c-chain.publicnode.com',
+  ],
+  [SupportedChainId.SKALE]: [
+    // "Safe" URLs
+    'https://mainnet.skalenodes.com/v1/wan-red-ain',
+  ],
   [SupportedChainId.SEPOLIA]: [
     // "Safe" URLs
     'https://rpc.sepolia.org',
@@ -100,41 +124,11 @@ export const FALLBACK_URLS = {
  * Known JSON-RPC endpoints.
  * These are the URLs used by the interface when there is not another available source of chain data.
  */
-export const RPC_URLS = {
-  [SupportedChainId.MAINNET]: [
-    `https://mainnet.infura.io/v3/${INFURA_KEY}`,
-    ...FALLBACK_URLS[SupportedChainId.MAINNET],
-  ],
-  [SupportedChainId.GOERLI]: [`https://goerli.infura.io/v3/${INFURA_KEY}`, ...FALLBACK_URLS[SupportedChainId.GOERLI]],
-  [SupportedChainId.OPTIMISM]: [
-    `https://optimism-mainnet.infura.io/v3/${INFURA_KEY}`,
-    ...FALLBACK_URLS[SupportedChainId.OPTIMISM],
-  ],
-  [SupportedChainId.OPTIMISM_GOERLI]: [
-    `https://optimism-goerli.infura.io/v3/${INFURA_KEY}`,
-    ...FALLBACK_URLS[SupportedChainId.OPTIMISM_GOERLI],
-  ],
-  [SupportedChainId.ARBITRUM_ONE]: [
-    `https://arbitrum-mainnet.infura.io/v3/${INFURA_KEY}`,
-    ...FALLBACK_URLS[SupportedChainId.ARBITRUM_ONE],
-  ],
-  [SupportedChainId.ARBITRUM_GOERLI]: [
-    `https://arbitrum-goerli.infura.io/v3/${INFURA_KEY}`,
-    ...FALLBACK_URLS[SupportedChainId.ARBITRUM_GOERLI],
-  ],
-  [SupportedChainId.POLYGON]: [
-    `https://polygon-mainnet.infura.io/v3/${INFURA_KEY}`,
-    ...FALLBACK_URLS[SupportedChainId.POLYGON],
-  ],
-  [SupportedChainId.POLYGON_MUMBAI]: [
-    `https://polygon-mumbai.infura.io/v3/${INFURA_KEY}`,
-    ...FALLBACK_URLS[SupportedChainId.POLYGON_MUMBAI],
-  ],
-  [SupportedChainId.CELO]: FALLBACK_URLS[SupportedChainId.CELO],
-  [SupportedChainId.CELO_ALFAJORES]: FALLBACK_URLS[SupportedChainId.CELO_ALFAJORES],
-  [SupportedChainId.BNB]: [QUICKNODE_RPC_URL, ...FALLBACK_URLS[SupportedChainId.BNB]],
-  [SupportedChainId.SEPOLIA]: [
-    `https://sepolia.infura.io/v3/${INFURA_KEY}`,
-    ...FALLBACK_URLS[SupportedChainId.SEPOLIA],
-  ],
+export const RPC_URLS: { [key: string]: string[] } = {}
+
+for (const chainId of allChainIds) {
+  const numChainId = Number(chainId)
+  const envUrl = RPC_URLS_FROM_ENV[numChainId as keyof typeof RPC_URLS_FROM_ENV] || ''
+  const fallbackUrls = FALLBACK_URLS[numChainId as keyof typeof FALLBACK_URLS] || []
+  RPC_URLS[chainId] = envUrl.length > 0 ? [envUrl, ...fallbackUrls] : [...fallbackUrls]
 }

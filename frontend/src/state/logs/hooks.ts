@@ -1,5 +1,5 @@
 import type { Filter } from '@ethersproject/providers'
-import { SupportedChainId } from 'constants/chains'
+import { HUB_CHAIN_ID } from 'constants/addresses'
 import useBlockNumber from 'lib/hooks/useBlockNumber'
 import { useEffect, useMemo } from 'react'
 
@@ -31,11 +31,9 @@ interface UseLogsResult {
  * The filter parameter should _always_ be memoized, or else will trigger constant refetching
  */
 export function useLogs(filter: Filter | undefined): UseLogsResult {
-  const chainId = SupportedChainId.SEPOLIA
+  const chainId = HUB_CHAIN_ID
   const blockNumber = useBlockNumber()
-
   const logs = useAppSelector((state) => state.logs)
-
   const dispatch = useAppDispatch()
 
   useEffect(() => {

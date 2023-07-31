@@ -21,7 +21,6 @@ export function useHmtContractToken() {
     const fetchUnderlyingAddress = async () => {
       try {
         if (uniContract && account) {
-          // BLOCKYTODO: find out why uniContract.underlying() is throwing out an error or maybe it's something else?
           const address = await uniContract.underlying()
           const hmtToken = address && chainId && new Token(chainId, address, 18, 'HMT', 'Human')
           setHmtToken(hmtToken)

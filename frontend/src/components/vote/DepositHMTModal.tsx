@@ -157,8 +157,6 @@ export default function DepositHMTModal({ isOpen, onDismiss, title, hmtBalance }
       setError(error)
       setAttempting(false)
       setIsTransactionApproved(false)
-
-      // BLOCKYTODO: w przyszłości można spróbować zastosować paczkę eth-rpc-errors i wyświetlać dokładniejsze komunikaty błędów ponieważ wiadomość error jest zbyt ogólna
     }
   }
 

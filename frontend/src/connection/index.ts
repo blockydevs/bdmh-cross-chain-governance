@@ -10,8 +10,7 @@ import METAMASK_ICON from 'assets/images/metamask.svg'
 import WALLET_CONNECT_ICON from 'assets/images/walletConnectIcon.svg'
 import INJECTED_DARK_ICON from 'assets/svg/browser-wallet-dark.svg'
 import INJECTED_LIGHT_ICON from 'assets/svg/browser-wallet-light.svg'
-import UNISWAP_LOGO from 'assets/svg/logo.svg'
-import { SupportedChainId } from 'constants/chains'
+import { HUB_CHAIN_ID } from 'constants/addresses'
 import { useCallback } from 'react'
 import { isMobile } from 'utils/userAgent'
 
@@ -26,7 +25,7 @@ function onError(error: Error) {
 }
 
 const [web3Network, web3NetworkHooks] = initializeConnector<Network>(
-  (actions) => new Network({ actions, urlMap: RPC_PROVIDERS, defaultChainId: SupportedChainId.SEPOLIA })
+  (actions) => new Network({ actions, urlMap: RPC_PROVIDERS, defaultChainId: HUB_CHAIN_ID })
 )
 export const networkConnection: Connection = {
   getName: () => 'Network',
@@ -91,9 +90,8 @@ const [web3CoinbaseWallet, web3CoinbaseWalletHooks] = initializeConnector<Coinba
     new CoinbaseWallet({
       actions,
       options: {
-        url: RPC_URLS[SupportedChainId.SEPOLIA][0],
-        appName: 'Uniswap',
-        appLogoUrl: UNISWAP_LOGO,
+        url: RPC_URLS[HUB_CHAIN_ID][0],
+        appName: 'Human Governance',
         reloadOnDisconnect: false,
       },
       onError,

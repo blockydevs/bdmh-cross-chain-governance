@@ -159,7 +159,7 @@ function TransactionSubmittedContent({
           {chainId && hash && (
             <ExternalLink href={getExplorerLink(chainId, hash, ExplorerDataType.TRANSACTION)}>
               <ThemedText.Link color={theme.accentAction}>
-                <Trans>View on {chainId === SupportedChainId.MAINNET ? 'Etherscan' : 'Block Explorer'}</Trans>
+                <Trans>View on {chainId === SupportedChainId.ETHEREUM ? 'Etherscan' : 'Block Explorer'}</Trans>
               </ThemedText.Link>
             </ExternalLink>
           )}

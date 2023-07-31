@@ -207,7 +207,6 @@ const UnlockVotingContainer = styled.div`
 
       > button {
         width: 204px !important;
-        /* BLOCKYTODO - nie działa szerokość buttona unlock voting na mobilkach? */
       }
     }
   }

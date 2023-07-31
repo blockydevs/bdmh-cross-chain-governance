@@ -1,5 +1,5 @@
 import { useWeb3React } from '@web3-react/core'
-import { SupportedChainId } from 'constants/chains'
+import { HUB_CHAIN_ID } from 'constants/addresses'
 import useDebounce from 'hooks/useDebounce'
 import useIsWindowVisible from 'hooks/useIsWindowVisible'
 import { useEffect, useRef, useState } from 'react'
@@ -18,8 +18,7 @@ export default function Updater(): null {
 
   const closeModal = useCloseModal()
   const previousAccountValue = useRef(account)
-
-  const isHubChainActive = activeChainId === SupportedChainId.SEPOLIA
+  const isHubChainActive = activeChainId === HUB_CHAIN_ID
 
   useEffect(() => {
     if (account && account !== previousAccountValue.current) {

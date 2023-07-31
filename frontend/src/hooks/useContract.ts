@@ -2,16 +2,14 @@ import { Contract } from '@ethersproject/contracts'
 import type { JsonRpcProvider } from '@ethersproject/providers'
 import UniswapInterfaceMulticallJson from '@uniswap/v3-periphery/artifacts/contracts/lens/UniswapInterfaceMulticall.sol/UniswapInterfaceMulticall.json'
 import { useWeb3React } from '@web3-react/core'
-import ARGENT_WALLET_DETECTOR_ABI from 'abis/argent-wallet-detector.json'
-import EIP_2612 from 'abis/eip_2612.json'
 import ENS_PUBLIC_RESOLVER_ABI from 'abis/ens-public-resolver.json'
 import ENS_ABI from 'abis/ens-registrar.json'
 import ERC20_ABI from 'abis/erc20.json'
 import ERC20_BYTES32_ABI from 'abis/erc20_bytes32.json'
 import ERC721_ABI from 'abis/erc721.json'
 import ERC1155_ABI from 'abis/erc1155.json'
-import { ARGENT_WALLET_DETECTOR_ADDRESS, ENS_REGISTRAR_ADDRESSES, MULTICALL_ADDRESS } from 'constants/addresses'
-import { SupportedChainId } from 'constants/chains'
+import { ENS_REGISTRAR_ADDRESSES, MULTICALL_ADDRESS } from 'constants/addresses'
+import { HUB_CHAIN_ID } from 'constants/addresses'
 import { useMemo } from 'react'
 
 import { getContract } from '../utils'
@@ -46,7 +44,7 @@ export function useContractWithCustomProvider<T extends Contract = Contract>(
   ABI: any,
   provider: JsonRpcProvider | undefined
 ): T | null {
-  const chainId = SupportedChainId.SEPOLIA
+  const chainId = HUB_CHAIN_ID
   const { account } = useWeb3React()
 
   return useMemo(() => {
@@ -76,10 +74,6 @@ export function useERC1155Contract(nftAddress?: string) {
   return useContract(nftAddress, ERC1155_ABI, false)
 }
 
-export function useArgentWalletDetectorContract() {
-  return useContract(ARGENT_WALLET_DETECTOR_ADDRESS, ARGENT_WALLET_DETECTOR_ABI, false)
-}
-
 export function useENSRegistrarContract(withSignerIfPossible?: boolean) {
   return useContract(ENS_REGISTRAR_ADDRESSES, ENS_ABI, withSignerIfPossible)
 }
@@ -90,10 +84,6 @@ export function useENSResolverContract(address: string | undefined, withSignerIf
 
 export function useBytes32TokenContract(tokenAddress?: string, withSignerIfPossible?: boolean): Contract | null {
   return useContract(tokenAddress, ERC20_BYTES32_ABI, withSignerIfPossible)
-}
-
-export function useEIP2612Contract(tokenAddress?: string): Contract | null {
-  return useContract(tokenAddress, EIP_2612, false)
 }
 
 export function useInterfaceMulticall() {

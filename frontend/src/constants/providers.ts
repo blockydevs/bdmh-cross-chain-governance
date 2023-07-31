@@ -58,7 +58,7 @@ class AppJsonRpcProvider extends StaticJsonRpcProvider {
  * These are the only JsonRpcProviders used directly by the interface.
  */
 export const RPC_PROVIDERS: { [key in SupportedChainId]: StaticJsonRpcProvider } = {
-  [SupportedChainId.MAINNET]: new AppJsonRpcProvider(SupportedChainId.MAINNET),
+  [SupportedChainId.ETHEREUM]: new AppJsonRpcProvider(SupportedChainId.ETHEREUM),
   [SupportedChainId.GOERLI]: new AppJsonRpcProvider(SupportedChainId.GOERLI),
   [SupportedChainId.OPTIMISM]: new AppJsonRpcProvider(SupportedChainId.OPTIMISM),
   [SupportedChainId.OPTIMISM_GOERLI]: new AppJsonRpcProvider(SupportedChainId.OPTIMISM_GOERLI),
@@ -69,5 +69,11 @@ export const RPC_PROVIDERS: { [key in SupportedChainId]: StaticJsonRpcProvider }
   [SupportedChainId.CELO]: new AppJsonRpcProvider(SupportedChainId.CELO),
   [SupportedChainId.CELO_ALFAJORES]: new AppJsonRpcProvider(SupportedChainId.CELO_ALFAJORES),
   [SupportedChainId.BNB]: new AppJsonRpcProvider(SupportedChainId.BNB),
+  [SupportedChainId.BNB_TESTNET]: new AppJsonRpcProvider(SupportedChainId.BNB_TESTNET),
+  [SupportedChainId.MOONBEAM]: new AppJsonRpcProvider(SupportedChainId.MOONBEAM),
+  [SupportedChainId.MOONBASE]: new AppJsonRpcProvider(SupportedChainId.MOONBASE),
+  [SupportedChainId.AVALANCHE]: new AppJsonRpcProvider(SupportedChainId.AVALANCHE),
+  [SupportedChainId.AVALANCHE_FUJI]: new AppJsonRpcProvider(SupportedChainId.AVALANCHE_FUJI),
+  [SupportedChainId.SKALE]: new AppJsonRpcProvider(SupportedChainId.SKALE),
   [SupportedChainId.SEPOLIA]: new AppJsonRpcProvider(SupportedChainId.SEPOLIA),
 }

@@ -30,21 +30,24 @@ There can be only one hub chain, defined by three specific environment variables
 
 - `REACT_APP_GOVERNANCE_HUB_ADDRESS` corresponds to its address,
 - `REACT_APP_HUB_VOTE_TOKEN` refers to its voting token,
-- `REACT_APP_HUB_CHAIN_ID` specifies the hub chain ID.
+- `REACT_APP_HUB_<CHAIN_ID>` specifies the hub chain ID,
+- `REACT_APP_RPC_URL_<CHAIN_ID>` is used to set the RPC URL for a particular chain.
 
-You can define multiple spoke chains. If you want to add another spoke chain please create two variables:
+You can define multiple spoke chains. If you want to add another spoke chain please create three variables:
 
 - `REACT_APP_GOVERNANCE_SPOKE_CHAIN_<CHAINID>`,
-- `REACT_APP_GOVERNANCE_SPOKE_VOTE_TOKEN_<CHAINID>`.
+- `REACT_APP_GOVERNANCE_SPOKE_VOTE_TOKEN_<CHAINID>`,
+- `REACT_APP_RPC_URL_<CHAIN_ID>`
 
-(remember to change <CHAINID> with the actual number for both cases and assign address to them).
+(remember to change `<CHAINID>` with the actual number for both cases and assign address to them).
 
 ## Setup and Installation
 
 Follow the steps below to set up the project on your local machine:
 
-- Clone the repository using the following command: `git clone https://github.com/blockydevs/uniswap-interface.git`
-- Open the uniswap-interface folder in your code editor
+- Clone the repository using the following command: `git clone https://github.com/blockydevs/bdmh-cross-chain-governance.git`
+- Open the bdmh-cross-chain-governance folder in your code editor
+- Change directory to `frontend` folder by typing `cd frontend` in terminal
 - Check your Node.js version by typing `node --version` in your terminal. If your Node.js version is not 14, follow these steps:
   - Install NVM following instructions [here](https://www.freecodecamp.org/news/node-version-manager-nvm-install-guide/)
   - Open your terminal as an administrator and type `nvm install 14`

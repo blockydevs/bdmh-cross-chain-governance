@@ -28,11 +28,7 @@ import { CardSection, DataCard } from '../../components/earn/styled'
 import { RowBetween, RowFixed } from '../../components/Row'
 import DelegateModal from '../../components/vote/DelegateModal'
 import VoteModal from '../../components/vote/VoteModal'
-import {
-  AVERAGE_BLOCK_TIME_IN_SECS,
-  COMMON_CONTRACT_NAMES,
-  DEFAULT_AVERAGE_BLOCK_TIME_IN_SECS,
-} from '../../constants/governance'
+import { AVERAGE_BLOCK_TIME_IN_SECS, DEFAULT_AVERAGE_BLOCK_TIME_IN_SECS } from '../../constants/governance'
 import { ZERO_ADDRESS } from '../../constants/misc'
 import { UNI } from '../../constants/tokens'
 import {
@@ -324,10 +320,7 @@ export default function VotePage() {
   // if content is contract with common name, replace address with common name
   const linkIfAddress = (content: string) => {
     if (isAddress(content) && chainId) {
-      const commonName = COMMON_CONTRACT_NAMES[chainId]?.[content] ?? content
-      return (
-        <ExternalLink href={getExplorerLink(chainId, content, ExplorerDataType.ADDRESS)}>{commonName}</ExternalLink>
-      )
+      return <ExternalLink href={getExplorerLink(chainId, content, ExplorerDataType.ADDRESS)}>{content}</ExternalLink>
     }
     return <span>{content}</span>
   }

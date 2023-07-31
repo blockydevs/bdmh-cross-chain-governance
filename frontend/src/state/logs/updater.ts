@@ -1,4 +1,5 @@
 import type { Filter } from '@ethersproject/providers'
+import { HUB_CHAIN_ID } from 'constants/addresses'
 import { SupportedChainId } from 'constants/chains'
 import { RPC_PROVIDERS } from 'constants/providers'
 import useBlockNumber from 'lib/hooks/useBlockNumber'
@@ -8,8 +9,8 @@ import { useAppDispatch, useAppSelector } from '../hooks'
 import { fetchedLogs, fetchedLogsError, fetchingLogs } from './slice'
 import { isHistoricalLog, keyToFilter } from './utils'
 
-const chainId = SupportedChainId.SEPOLIA
-const sepoliaProvider = RPC_PROVIDERS[SupportedChainId.SEPOLIA]
+const chainId = HUB_CHAIN_ID
+const hubProvider = RPC_PROVIDERS[HUB_CHAIN_ID as SupportedChainId]
 
 export default function Updater(): null {
   const dispatch = useAppDispatch()
@@ -37,7 +38,7 @@ export default function Updater(): null {
   }, [blockNumber, state])
 
   useEffect(() => {
-    if (!sepoliaProvider || !chainId || typeof blockNumber !== 'number' || filtersNeedFetch.length === 0) return
+    if (!hubProvider || !chainId || typeof blockNumber !== 'number' || filtersNeedFetch.length === 0) return
 
     dispatch(fetchingLogs({ chainId, filters: filtersNeedFetch, blockNumber }))
     filtersNeedFetch.forEach((filter) => {
@@ -48,7 +49,7 @@ export default function Updater(): null {
       if (typeof fromBlock === 'string') fromBlock = Number.parseInt(fromBlock)
       if (typeof toBlock === 'string') toBlock = Number.parseInt(toBlock)
 
-      sepoliaProvider
+      hubProvider
         .getLogs({
           ...filter,
           fromBlock,
