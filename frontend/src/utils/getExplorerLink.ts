@@ -11,6 +11,14 @@ const BLOCK_EXPLORER_PREFIXES: { [chainId: number]: string } = {
   [SupportedChainId.CELO_ALFAJORES]: 'https://alfajores-blockscout.celo-testnet.org',
   [SupportedChainId.BNB]: 'https://bscscan.com',
   [SupportedChainId.SEPOLIA]: 'https://sepolia.etherscan.io',
+  [SupportedChainId.ARBITRUM_ONE]: 'https://arbiscan.io',
+  [SupportedChainId.ARBITRUM_GOERLI]: 'https://goerli.arbiscan.io',
+  [SupportedChainId.BNB_TESTNET]: 'https://testnet.bscscan.com',
+  [SupportedChainId.MOONBEAM]: 'https://blockscout.moonbeam.network',
+  [SupportedChainId.MOONBASE]: 'https://moonbase-blockscout.testnet.moonbeam.network',
+  [SupportedChainId.AVALANCHE]: 'https://explorer.avax.network',
+  [SupportedChainId.AVALANCHE_FUJI]: 'https://cchain.explorer.avax-test.network',
+  [SupportedChainId.SKALE]: 'https://wan-red-ain.explorer.mainnet.skalenodes.com',
 }
 
 export enum ExplorerDataType {
