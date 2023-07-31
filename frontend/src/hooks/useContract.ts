@@ -9,7 +9,7 @@ import ERC20_BYTES32_ABI from 'abis/erc20_bytes32.json'
 import ERC721_ABI from 'abis/erc721.json'
 import ERC1155_ABI from 'abis/erc1155.json'
 import { ENS_REGISTRAR_ADDRESSES, MULTICALL_ADDRESS } from 'constants/addresses'
-import { SupportedChainId } from 'constants/chains'
+import { HUB_CHAIN_ID } from 'constants/addresses'
 import { useMemo } from 'react'
 
 import { getContract } from '../utils'
@@ -44,7 +44,7 @@ export function useContractWithCustomProvider<T extends Contract = Contract>(
   ABI: any,
   provider: JsonRpcProvider | undefined
 ): T | null {
-  const chainId = SupportedChainId.SEPOLIA
+  const chainId = HUB_CHAIN_ID
   const { account } = useWeb3React()
 
   return useMemo(() => {

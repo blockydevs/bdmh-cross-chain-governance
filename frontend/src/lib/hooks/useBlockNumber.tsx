@@ -1,10 +1,11 @@
 import { useWeb3React } from '@web3-react/core'
+import { HUB_CHAIN_ID } from 'constants/addresses'
 import { SupportedChainId } from 'constants/chains'
 import { RPC_PROVIDERS } from 'constants/providers'
 import useIsWindowVisible from 'hooks/useIsWindowVisible'
 import { createContext, ReactNode, useCallback, useContext, useEffect, useMemo, useState } from 'react'
 
-const hubProvider = RPC_PROVIDERS[SupportedChainId.SEPOLIA]
+const hubProvider = RPC_PROVIDERS[HUB_CHAIN_ID as SupportedChainId]
 
 const MISSING_PROVIDER = Symbol()
 const BlockNumberContext = createContext<
