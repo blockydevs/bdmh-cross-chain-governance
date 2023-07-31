@@ -17,7 +17,7 @@ export enum SupportedChainId {
   MOONBASE = 1287,
   AVALANCHE = 43114,
   AVALANCHE_FUJI = 43113,
-  // BLOCKYTODO: SKALE chain
+  SKALE = 1273227453,
 
   SEPOLIA = 11155111,
   ARBITRUM_ONE = 42161,
@@ -45,6 +45,7 @@ export const CHAIN_IDS_TO_NAMES = {
   [SupportedChainId.MOONBASE]: 'moonbase',
   [SupportedChainId.AVALANCHE]: 'avalanche',
   [SupportedChainId.AVALANCHE_FUJI]: 'avalanche_fuji',
+  [SupportedChainId.SKALE]: 'skale',
   [SupportedChainId.SEPOLIA]: 'sepolia',
 }
 
@@ -79,6 +80,7 @@ const L2_CHAIN_IDS = [
   SupportedChainId.OPTIMISM,
   SupportedChainId.OPTIMISM_GOERLI,
   SupportedChainId.ARBITRUM_GOERLI,
+  SupportedChainId.SKALE,
 ] as const
 
 export type SupportedL2ChainId = typeof L2_CHAIN_IDS[number]

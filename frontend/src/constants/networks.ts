@@ -117,6 +117,10 @@ export const FALLBACK_URLS = {
     // "Safe" URLs
     'https://avalanche-fuji-c-chain.publicnode.com',
   ],
+  [SupportedChainId.SKALE]: [
+    // "Safe" URLs
+    'https://mainnet.skalenodes.com/v1/wan-red-ain',
+  ],
   [SupportedChainId.SEPOLIA]: [
     // "Safe" URLs
     'https://rpc.sepolia.org',

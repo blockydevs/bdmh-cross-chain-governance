@@ -74,5 +74,6 @@ export const RPC_PROVIDERS: { [key in SupportedChainId]: StaticJsonRpcProvider }
   [SupportedChainId.MOONBASE]: new AppJsonRpcProvider(SupportedChainId.MOONBASE),
   [SupportedChainId.AVALANCHE]: new AppJsonRpcProvider(SupportedChainId.AVALANCHE),
   [SupportedChainId.AVALANCHE_FUJI]: new AppJsonRpcProvider(SupportedChainId.AVALANCHE_FUJI),
+  [SupportedChainId.SKALE]: new AppJsonRpcProvider(SupportedChainId.SKALE),
   [SupportedChainId.SEPOLIA]: new AppJsonRpcProvider(SupportedChainId.SEPOLIA),
 }
