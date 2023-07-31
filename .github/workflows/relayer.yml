@@ -74,8 +74,8 @@ jobs:
       - name: Setup metadata
         uses: cuchi/jinja2-action@v1.2.0
         with:
-          template: infra/nginx.conf.j2
-          output_file: infra/nginx.conf
+          template: .github/workflow/files/gcp-run-metadata.yml
+          output_file: gcp-run-metadata.yml
           strict: true
 
       - name: Google Auth
@@ -92,7 +92,7 @@ jobs:
           # service: ${{ env.HUMAN_RELAYER_SERVICE }}
           # region: ${{ env.REGION }}
           # image: ghcr.io/${{ github.repository }}:latest
-          metadata: /my/path.yml
+          metadata: gcp-run-metadata.yml
 
       # If required, use the Cloud Run url output in later steps
       - name: Show Output
