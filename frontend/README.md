@@ -8,28 +8,27 @@
 - [LinkedIn](http://hmt.ai/linkedin)
 - [Youtube](https://www.youtube.com/@HUMANProtocol)
 
-
 ## Overview
 
 This repository is a fork of the Uniswap Interface, a decentralized trading protocol, guaranteeing secure and efficient transactions on the Ethereum blockchain. The original Uniswap Interface can be found [here](https://github.com/Uniswap/interface).
 
 Our project modifies the Uniswap Interface to introduce our user-friendly and transparent custom governance system, where users can efficiently navigate, explore, and actively participate in the governance structure of the primary hub chain and understand the activities of the associated spoke chains.
 
-
 ## Prerequisites
 
 Before you proceed, ensure that you have the following installed:
-- Node.js (version 14 is required) - it's the JavaScript runtime that allows us to run our JavaScript code server-side - [download link](https://nodejs.org/en/download) 
-- NVM (Node Version Manager) - a tool that allows you to install and manage multiple versions of Node.js. You need it if you already have a newer version of Node installed so you can swap it to version 14 - [download link](https://github.com/coreybutler/nvm-windows/releases) 
-- Yarn - Human Governor uses Yarn to handle its dependencies, making it a necessary tool for the project setup. - [download link](https://yarnpkg.com/cli/install)
 
+- Node.js (version 14 is required) - it's the JavaScript runtime that allows us to run our JavaScript code server-side - [download link](https://nodejs.org/en/download)
+- NVM (Node Version Manager) - a tool that allows you to install and manage multiple versions of Node.js. You need it if you already have a newer version of Node installed so you can swap it to version 14 - [download link](https://github.com/coreybutler/nvm-windows/releases)
+- Yarn - Human Governor uses Yarn to handle its dependencies, making it a necessary tool for the project setup. - [download link](https://yarnpkg.com/cli/install)
 
 ## Environment Variables
 
-Please copy or rename .env.example to .env and fill in all environment variables.
+Please copy or rename `.env.example` to `.env` and fill in all environment variables.
 
-There can be only one hub chain, defined by three specific environment variables. 
-- `REACT_APP_GOVERNANCE_HUB_ADDRESS` corresponds to its address, 
+There can be only one hub chain, defined by three specific environment variables:
+
+- `REACT_APP_GOVERNANCE_HUB_ADDRESS` corresponds to its address,
 - `REACT_APP_HUB_VOTE_TOKEN` refers to its voting token,
 - `REACT_APP_HUB_<CHAIN_ID>` specifies the hub chain ID,
 - `REACT_APP_RPC_URL_<CHAIN_ID>` is used to set the RPC URL for a particular chain.
@@ -42,7 +41,6 @@ You can define multiple spoke chains. If you want to add another spoke chain ple
 
 (remember to change `<CHAINID>` with the actual number for both cases and assign address to them).
 
-
 ## Setup and Installation
 
 Follow the steps below to set up the project on your local machine:
@@ -51,21 +49,19 @@ Follow the steps below to set up the project on your local machine:
 - Open the bdmh-cross-chain-governance folder in your code editor
 - Change directory to `frontend` folder by typing `cd frontend` in terminal
 - Check your Node.js version by typing `node --version` in your terminal. If your Node.js version is not 14, follow these steps:
-    * Install NVM following instructions [here](https://www.freecodecamp.org/news/node-version-manager-nvm-install-guide/)
-    * Open your terminal as an administrator and type `nvm install 14`
-    * After successful installation, type `nvm use 14`
+  - Install NVM following instructions [here](https://www.freecodecamp.org/news/node-version-manager-nvm-install-guide/)
+  - Open your terminal as an administrator and type `nvm install 14`
+  - After successful installation, type `nvm use 14`
 - Install Yarn globally using the command `npm install -g yarn`
-- Swap to `develop` branch using a `git checkout develop` command
+- Swap to `main` branch using a `git checkout main` command
 - Install the necessary Node modules by typing `yarn install` in your terminal
 - Start the local development server using `yarn start`
 - The project should automatically open in a new tab in your default browser. If not, manually navigate to `localhost:3000` in your browser
-
 
 ## Troubleshooting
 
 - If you encounter an error when checking your Node.js version, it most likely means that Node.js has not been correctly installed, and you should consider reinstalling it.
 - If you encounter errors related to missing packages after installing Node modules, try running yarn install again and restart the project.
-
 
 ## Key App Features
 
