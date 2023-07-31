@@ -1,5 +1,3 @@
-import { TraceEvent } from '@uniswap/analytics'
-import { BrowserEvent, InterfaceEventName } from '@uniswap/analytics-events'
 import { ScrollBarStyles } from 'components/Common'
 import GrayCloseButton from 'components/GrayCloseButton/GrayCloseButton'
 import { useWindowSize } from 'hooks/useWindowSize'
@@ -184,15 +182,9 @@ function AccountDrawer() {
   return (
     <Container>
       {walletDrawerOpen && (
-        <TraceEvent
-          events={[BrowserEvent.onClick]}
-          name={InterfaceEventName.MINI_PORTFOLIO_TOGGLED}
-          properties={{ type: 'close' }}
-        >
-          <CloseDrawer onClick={toggleWalletDrawer}>
-            <CloseDrawerIcon />
-          </CloseDrawer>
-        </TraceEvent>
+        <CloseDrawer onClick={toggleWalletDrawer}>
+          <CloseDrawerIcon />
+        </CloseDrawer>
       )}
       <Scrim onClick={toggleWalletDrawer} open={walletDrawerOpen} />
       <AccountDrawerWrapper open={walletDrawerOpen}>

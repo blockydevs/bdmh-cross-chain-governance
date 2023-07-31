@@ -1,6 +1,4 @@
 import { Trans } from '@lingui/macro'
-import { sendAnalyticsEvent, TraceEvent } from '@uniswap/analytics'
-import { BrowserEvent, InterfaceElementName, InterfaceEventName } from '@uniswap/analytics-events'
 import { useWeb3React } from '@web3-react/core'
 import PortfolioDrawer, { useAccountDrawer } from 'components/AccountDrawer'
 import Loader from 'components/Icons/LoadingSpinner'
@@ -154,7 +152,6 @@ function Web3StatusInner() {
   const [isDrawerOpen, setIsDrawerOpen] = useAccountDrawer()
 
   const handleWalletDropdownClick = useCallback(() => {
-    sendAnalyticsEvent(InterfaceEventName.ACCOUNT_DROPDOWN_BUTTON_CLICKED)
     setIsDrawerOpen()
   }, [setIsDrawerOpen])
   const isClaimAvailable = useIsNftClaimAvailable((state) => state.isClaimAvailable)
@@ -185,52 +182,40 @@ function Web3StatusInner() {
     )
   } else if (account) {
     return (
-      <TraceEvent
-        events={[BrowserEvent.onClick]}
-        name={InterfaceEventName.MINI_PORTFOLIO_TOGGLED}
-        properties={{ type: 'open' }}
+      <Web3StatusConnected
+        data-testid="web3-status-connected"
+        onClick={handleWalletDropdownClick}
+        pending={hasPendingTransactions}
+        isClaimAvailable={isClaimAvailable}
       >
-        <Web3StatusConnected
-          data-testid="web3-status-connected"
-          onClick={handleWalletDropdownClick}
-          pending={hasPendingTransactions}
-          isClaimAvailable={isClaimAvailable}
-        >
-          {!hasPendingTransactions && <StatusIcon size={24} connection={connection} showMiniIcons={false} />}
-          {hasPendingTransactions ? (
-            <RowBetween>
-              <Text>
-                <Trans>{pending?.length} Pending</Trans>
-              </Text>{' '}
-              <Loader stroke="white" />
-            </RowBetween>
-          ) : (
-            <AddressAndChevronContainer>
-              <Text>{ENSName || shortenAddress(account)}</Text>
-            </AddressAndChevronContainer>
-          )}
-          {isDrawerOpen && pending.length > 0 ? <ArrowUp /> : undefined}
-        </Web3StatusConnected>
-      </TraceEvent>
+        {!hasPendingTransactions && <StatusIcon size={24} connection={connection} showMiniIcons={false} />}
+        {hasPendingTransactions ? (
+          <RowBetween>
+            <Text>
+              <Trans>{pending?.length} Pending</Trans>
+            </Text>{' '}
+            <Loader stroke="white" />
+          </RowBetween>
+        ) : (
+          <AddressAndChevronContainer>
+            <Text>{ENSName || shortenAddress(account)}</Text>
+          </AddressAndChevronContainer>
+        )}
+        {isDrawerOpen && pending.length > 0 ? <ArrowUp /> : undefined}
+      </Web3StatusConnected>
     )
   } else {
     return (
-      <TraceEvent
-        events={[BrowserEvent.onClick]}
-        name={InterfaceEventName.CONNECT_WALLET_BUTTON_CLICKED}
-        element={InterfaceElementName.CONNECT_WALLET_BUTTON}
+      <Web3StatusConnectWrapper
+        tabIndex={0}
+        faded={!account}
+        onKeyPress={(e) => e.key === 'Enter' && handleWalletDropdownClick()}
+        onClick={handleWalletDropdownClick}
       >
-        <Web3StatusConnectWrapper
-          tabIndex={0}
-          faded={!account}
-          onKeyPress={(e) => e.key === 'Enter' && handleWalletDropdownClick()}
-          onClick={handleWalletDropdownClick}
-        >
-          <StyledConnectButton tabIndex={-1} data-testid="navbar-connect-wallet">
-            <Trans>Connect</Trans>
-          </StyledConnectButton>
-        </Web3StatusConnectWrapper>
-      </TraceEvent>
+        <StyledConnectButton tabIndex={-1} data-testid="navbar-connect-wallet">
+          <Trans>Connect</Trans>
+        </StyledConnectButton>
+      </Web3StatusConnectWrapper>
     )
   }
 }
