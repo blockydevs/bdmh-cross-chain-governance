@@ -1,14 +1,5 @@
 import { SupportedChainId } from 'constants/chains'
 
-const INFURA_KEY = process.env.REACT_APP_INFURA_KEY
-if (typeof INFURA_KEY === 'undefined') {
-  throw new Error(`REACT_APP_INFURA_KEY must be a defined environment variable`)
-}
-const QUICKNODE_RPC_URL = 'https://rough-sleek-hill.bsc.quiknode.pro/413cc98cbc776cda8fdf1d0f47003583ff73d9bf'
-if (typeof QUICKNODE_RPC_URL === 'undefined') {
-  throw new Error(`REACT_APP_BNB_RPC_URL must be a defined environment variable`)
-}
-
 const allChainIds = Object.values(SupportedChainId)
   .filter((id) => typeof id === 'number')
   .map(String)
