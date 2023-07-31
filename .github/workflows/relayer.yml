@@ -70,7 +70,10 @@ jobs:
     needs: [build-image]
     strategy:
       fail-fast: true
-
+      
+    name: deploy image
+    runs-on: ubuntu-latest
+    steps:
       - name: Setup metadata
         uses: cuchi/jinja2-action@v1.2.0
         with:
