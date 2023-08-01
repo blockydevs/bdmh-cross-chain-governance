@@ -16,10 +16,6 @@ abstract contract CrossChainGovernorCountingSimple is Governor, Ownable {
     mapping(uint256 => mapping(bytes32 => mapping(uint16 => SpokeProposalVote))) public spokeVotes;
     mapping(uint256 => ProposalVote) private _proposalVotes;
 
-    constructor(CrossChainAddress[] memory _spokeContracts) {
-        updateSpokeContracts(_spokeContracts);
-    }
-
     struct CrossChainAddress {
         bytes32 contractAddress;
         uint16 chainId;
@@ -46,6 +42,10 @@ abstract contract CrossChainGovernorCountingSimple is Governor, Ownable {
         uint256 forVotes;
         uint256 abstainVotes;
         mapping(address => bool) hasVoted;
+    }
+
+    constructor(CrossChainAddress[] memory _spokeContracts) {
+        updateSpokeContracts(_spokeContracts);
     }
 
     /**
