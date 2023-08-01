@@ -62,7 +62,4 @@ spec:
           value: {{ env['PRIVATE_KEYS_CHAIN_5'] }}
         - name: PROVIDERS_CHAIN_5
           value: {{ env['PROVIDERS_CHAIN_5'] }}
-
-
-# {{ env['SERVER_HOST'] }} <-- This is always strict
-# {{ env.get('SERVER_HOST') }} <-- This is never strict, and displays `None` if you don't specify a default value
+          
