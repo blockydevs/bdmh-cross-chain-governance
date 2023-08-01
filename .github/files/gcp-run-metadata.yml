@@ -8,7 +8,6 @@ spec:
       name: {{ env['HUMAN_RELAYER_SERVICE'] }}
       annotations:
         run.googleapis.com/container-dependencies: '{"relayer-app":["guardian"]}'
-        run.googleapis.com/ingress: all
 
     spec:
       containers:      
