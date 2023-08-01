@@ -13,6 +13,21 @@ import "./wormhole/IWormhole.sol";
   It integrates with the MetaHumanGovernor contract for governance operations.
  */
 contract DAOSpokeContract {
+
+    bytes32 public hubContractAddress;
+    uint16 public hubContractChainId;
+    IVotes public immutable token;
+    uint256 public immutable targetSecondsPerBlock;
+    IWormhole immutable public coreBridge;
+    uint16 immutable public chainId;
+
+    uint16 public nonce = 0;
+    //TODO:prod please change the consistency level to value of choice. Right now it's set up to `1` which is `finalized` value
+    uint8 public consistencyLevel = 1;
+    mapping(uint256 => RemoteProposal) public proposals;
+    mapping(uint256 => ProposalVote) public proposalVotes;
+    mapping(bytes32 => bool) public processedMessages;
+
     struct ProposalVote {
         uint256 againstVotes;
         uint256 forVotes;
@@ -49,20 +64,6 @@ contract DAOSpokeContract {
         hubContractAddress = _hubContractAddress;
         hubContractChainId = _hubContractChainId;
     }
-
-    bytes32 public hubContractAddress;
-    uint16 public hubContractChainId;
-    IVotes public immutable token;
-    uint256 public immutable targetSecondsPerBlock;
-    IWormhole immutable public coreBridge;
-    uint16 immutable public chainId;
-
-    uint16 public nonce = 0;
-    //TODO:prod please change the consistency level to value of choice. Right now it's set up to `1` which is `finalized` value
-    uint8 public consistencyLevel = 1;
-    mapping(uint256 => RemoteProposal) public proposals;
-    mapping(uint256 => ProposalVote) public proposalVotes;
-    mapping(bytes32 => bool) public processedMessages;
 
     /**
      @dev Checks if a proposal exists.
