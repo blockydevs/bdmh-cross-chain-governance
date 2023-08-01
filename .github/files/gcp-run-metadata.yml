@@ -8,6 +8,7 @@ spec:
       name: {{ env['HUMAN_RELAYER_SERVICE'] }}
       annotations:
         run.googleapis.com/container-dependencies: '{"relayer-app":["guardian"]}'
+        run.googleapis.com/ingress: all
 
     spec:
       containers:
@@ -21,6 +22,13 @@ spec:
         command: /guardiand spy --nodeKey /node.key --spyRPC "[::]:7073" --network {{ env['GUARDIAN_NETWORK'] }} --bootstrap {{ env['GUARDIAN_BOOTSTRAP'] }}
         ports:
         - containerPort: 7073
+        env:
+        - name: REDIS_HOST
+          value: {{ env['REDIS_HOST'] }}
+        - name: REDIS_PORT
+          value: {{ env['REDIS_PORT'] }}
+        - name: REDIS_CURRENT_LOCATION_ID
+          value: {{ env['REDIS_CURRENT_LOCATION_ID'] }}
         # args:
         # - "ARG1"
         # - "ARG-N"
@@ -32,6 +40,12 @@ spec:
         env:
         - name: ENVIRONMENT
           value: {{ env['ENVIRONMENT'] }}
+        - name: REDIS_HOST
+          value: {{ env['REDIS_HOST'] }}
+        - name: REDIS_PORT
+          value: {{ env['REDIS_PORT'] }}
+        - name: REDIS_CURRENT_LOCATION_ID
+          value: {{ env['REDIS_CURRENT_LOCATION_ID'] }}
         - name: PROVIDERS_CHAIN_10002
           value: {{ env['PROVIDERS_CHAIN_10002'] }}
         - name: HUB_RELAY_CHAIN_ID
