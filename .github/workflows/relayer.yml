@@ -81,7 +81,7 @@ jobs:
       - name: Setup metadata
         uses: cuchi/jinja2-action@v1.2.0
         with:
-          template: .github/workflow/files/gcp-run-metadata.yml
+          template: .github/files/gcp-run-metadata.yml
           output_file: gcp-run-metadata.yml
           strict: true
 
