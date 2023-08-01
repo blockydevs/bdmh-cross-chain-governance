@@ -11,12 +11,7 @@ spec:
         run.googleapis.com/ingress: all
 
     spec:
-      containers:
-      # - image: redis
-      #   name: redis
-      #   ports:
-      #     - containerPort: 6379
-      
+      containers:      
       - image: ghcr.io/wormhole-foundation/guardiand:latest
         name: guardian
         command: /guardiand spy --nodeKey /node.key --spyRPC "[::]:7073" --network {{ env['GUARDIAN_NETWORK'] }} --bootstrap {{ env['GUARDIAN_BOOTSTRAP'] }}
@@ -29,9 +24,6 @@ spec:
           value: {{ env['REDIS_PORT'] }}
         - name: REDIS_CURRENT_LOCATION_ID
           value: {{ env['REDIS_CURRENT_LOCATION_ID'] }}
-        # args:
-        # - "ARG1"
-        # - "ARG-N"
       
       - image: ghcr.io/{{ env['GITHUB_REPOSITORY'] }}:latest
         name: relayer-app
