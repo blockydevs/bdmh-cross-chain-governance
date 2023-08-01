@@ -1,0 +1,79 @@
+name: smartcontracts
+
+on: 
+  workflow_dispatch:
+  # Inputs the workflow accepts.
+    inputs:
+      HM_TOKEN_ADDRESS:
+        # Friendly description to be shown in the UI instead of 'name'
+        description: 'Person to greet'
+        # Default value if no value is explicitly provided
+        default: 'World'
+        # Input has to be provided for the workflow to run
+        required: true
+        # The data type of the input
+        type: string
+
+env:
+  FOUNDRY_PROFILE: ci
+  SECOND_PRIVATE_KEY: ${{ secrets.SECOND_PRIVATE_KEY }}
+  THIRD_PRIVATE_KEY: ${{ secrets.THIRD_PRIVATE_KEY }}
+  SEPOLIA_RPC_URL: ${{ vars.SEPOLIA_RPC_URL }}
+  HM_TOKEN_ADDRESS: ${{ vars.HM_TOKEN_ADDRESS }} # z inputów?  ${{ inputs.HM_TOKEN_ADDRESS }}"
+  HUB_VOTE_TOKEN_ADDRESS: ${{ vars.HUB_VOTE_TOKEN_ADDRESS }} # z vote token deployment?
+  SPOKE_VOTE_TOKEN_ADDRESS: ${{ vars.SPOKE_VOTE_TOKEN_ADDRESS }} # z vote token deployment?
+  POLYGON_MUMBAI_RPC_URL: ${{ vars.POLYGON_MUMBAI_RPC_URL }}
+  MUMBAI_ETHERSCAN_API_KEY: ${{ secrets.MUMBAI_ETHERSCAN_API_KEY }}
+  # SPOKE_ADDRESSES: ${{ vars.SPOKE_ADDRESSES }} # z wyniku komendy
+  SPOKE_CHAIN_IDS: ${{ vars.SPOKE_CHAIN_IDS }} # z inputów?
+  TIMELOCK_ADDRESS: ${{ vars.TIMELOCK_ADDRESS }}
+
+
+jobs:
+  check:
+    strategy:
+      fail-fast: true
+
+    name: Foundry project
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          submodules: recursive
+
+      - name: Install Foundry
+        uses: foundry-rs/foundry-toolchain@v1
+        with:
+          version: nightly
+
+      - name: Run Forge build
+        run: |
+          forge --version
+          forge build --sizes
+        id: build
+
+      - name: Run Forge tests
+        run: |
+          forge test -vvv
+        id: test
+
+      - name: Vote token deployment
+        run: |
+          forge script smartcontracts/script/VHMTDeployment.s.sol:VHMTDeployment --rpc-url $SEPOLIA_RPC_URL --broadcast --verify
+
+      - name: Hub contract deployment
+        run: |
+          forge script smartcontracts/script/HubDeployment.s.sol:HubDeployment --rpc-url $SEPOLIA_RPC_URL --broadcast --verify
+
+      - name: Spoke contract deployment
+        run: |
+          forge script smartcontracts/script/SpokeDeployment.s.sol:SpokeDeployment --rpc-url $POLYGON_MUMBAI_RPC_URL --etherscan-api-key $MUMBAI_ETHERSCAN_API_KEY --broadcast --legacy --verify
+          SPOKE_ADDRESSES: ${{ vars.SPOKE_ADDRESSES }} # wziąc z wyniku komendy
+
+      - name: Setting spoke contracts in the hub
+        run: |
+          forge script script/HubUpdateSpokeContracts.s.sol:HubUpdateSpokeContracts --rpc-url $SEPOLIA_RPC_URL --broadcast
+
+      - name: Transfer governance ownership to timelock
+        run: |
+          forge script script/HubTransferOwnership.s.sol:HubTransferOwnership --rpc-url $SEPOLIA_RPC_URL --broadcast

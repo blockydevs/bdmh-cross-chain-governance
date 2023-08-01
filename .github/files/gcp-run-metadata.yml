@@ -1,0 +1,68 @@
+apiVersion: serving.knative.dev/v1
+kind: Service
+metadata:
+  name: {{ env['HUMAN_RELAYER_SERVICE'] }}
+spec:
+  template:
+    metadata:
+      name: {{ env['HUMAN_RELAYER_SERVICE'] }}
+      annotations:
+        run.googleapis.com/container-dependencies: '{"relayer-app":["guardian"]}'
+        run.googleapis.com/ingress: all
+
+    spec:
+      containers:
+      # - image: redis
+      #   name: redis
+      #   ports:
+      #     - containerPort: 6379
+      
+      - image: ghcr.io/wormhole-foundation/guardiand:latest
+        name: guardian
+        command: /guardiand spy --nodeKey /node.key --spyRPC "[::]:7073" --network {{ env['GUARDIAN_NETWORK'] }} --bootstrap {{ env['GUARDIAN_BOOTSTRAP'] }}
+        ports:
+        - containerPort: 7073
+        env:
+        - name: REDIS_HOST
+          value: {{ env['REDIS_HOST'] }}
+        - name: REDIS_PORT
+          value: {{ env['REDIS_PORT'] }}
+        - name: REDIS_CURRENT_LOCATION_ID
+          value: {{ env['REDIS_CURRENT_LOCATION_ID'] }}
+        # args:
+        # - "ARG1"
+        # - "ARG-N"
+      
+      - image: ghcr.io/{{ env['GITHUB_REPOSITORY'] }}:latest
+        name: relayer-app
+        ports:
+        - containerPort: 8080
+        env:
+        - name: ENVIRONMENT
+          value: {{ env['ENVIRONMENT'] }}
+        - name: REDIS_HOST
+          value: {{ env['REDIS_HOST'] }}
+        - name: REDIS_PORT
+          value: {{ env['REDIS_PORT'] }}
+        - name: REDIS_CURRENT_LOCATION_ID
+          value: {{ env['REDIS_CURRENT_LOCATION_ID'] }}
+        - name: PROVIDERS_CHAIN_10002
+          value: {{ env['PROVIDERS_CHAIN_10002'] }}
+        - name: HUB_RELAY_CHAIN_ID
+          value: {{ env['HUB_RELAY_CHAIN_ID'] }}
+        - name: HUB_RELAY_CHAIN_ADDRESS
+          value: {{ env['HUB_RELAY_CHAIN_ADDRESS'] }}
+        - name: SPOKE_RELAY_CHAIN_5
+          value: {{ env['SPOKE_RELAY_CHAIN_5'] }}
+        - name: PROVIDERS_CHAIN_10002
+          value: {{ env['PROVIDERS_CHAIN_10002'] }}
+        - name: PRIVATE_KEYS_CHAIN_10002
+          value: {{ env['PRIVATE_KEYS_CHAIN_10002'] }}
+        - name: PRIVATE_KEYS_CHAIN_5
+          value: {{ env['PRIVATE_KEYS_CHAIN_5'] }}
+        - name: PROVIDERS_CHAIN_5
+          value: {{ env['PROVIDERS_CHAIN_5'] }}
+
+
+# {{ env['SERVER_HOST'] }} <-- This is always strict
+# {{ env.get('SERVER_HOST') }} <-- This is never strict, and displays `None` if you don't specify a default value

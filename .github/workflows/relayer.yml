@@ -1,0 +1,105 @@
+name: relayer
+
+on: 
+  workflow_dispatch:
+#   push:
+#     branches:
+#       - main
+
+env:
+  ENVIRONMENT: ${{ vars.ENVIRONMENT }}
+  REDIS_HOST: ${{ vars.REDIS_HOST }}
+  REDIS_PORT: ${{ vars.REDIS_PORT }}
+  REDIS_CURRENT_LOCATION_ID: ${{ vars.REDIS_CURRENT_LOCATION_ID }}
+  PROVIDERS_CHAIN_10002: ${{ vars.PROVIDERS_CHAIN_10002 }}
+  HUB_RELAY_CHAIN_ID: ${{ vars.HUB_RELAY_CHAIN_ID }}
+  HUB_RELAY_CHAIN_ADDRESS: ${{ vars.HUB_RELAY_CHAIN_ADDRESS }}
+  SPOKE_RELAY_CHAIN_5: ${{ vars.SPOKE_RELAY_CHAIN_5 }}
+  #comma-separated values
+  PRIVATE_KEYS_CHAIN_10002: ${{ secrets.PRIVATE_KEYS_CHAIN_10002 }}
+  PRIVATE_KEYS_CHAIN_5: ${{ secrets.PRIVATE_KEYS_CHAIN_5 }}
+  GITHUB_REPOSITORY: ${{ github.repository }}
+  HUMAN_RELAYER_SERVICE: ${{ vars.HUMAN_RELAYER_SERVICE }}
+  GUARDIAN_NETWORK: ${{ vars.GUARDIAN_NETWORK }}
+  GUARDIAN_BOOTSTRAP: ${{ vars.GUARDIAN_BOOTSTRAP }}
+  PROVIDERS_CHAIN_5: ${{ vars.PROVIDERS_CHAIN_5 }}
+
+
+jobs:
+  # check if files changed in relayer dir
+  relayer-filter:
+    runs-on: ubuntu-latest
+    outputs:
+      relayer-filter: ${{ steps.relayer-filter.outputs.relayer }}
+    steps:
+      - uses: actions/checkout@v3
+      - uses: dorny/paths-filter@v2
+        id: relayer-filter
+        with:
+          filters: |
+            relayer:
+              - 'relayer/**'
+      # run only if 'relayer' files were changed
+      - name: workflow tests
+        if: steps.relayer-filter.outputs.relayer-filter == 'true'
+        run: echo "Workflow file"
+
+      # run only if not 'relayer' files were changed
+      - name: not workflow tests
+        if: steps.relayer-filter.outputs.relayer-filter != 'true'
+        run: echo "NOT relayer file"
+
+  build-image:
+    needs: [relayer-filter]
+    if: needs.relayer-filter.outputs.relayer-filter == 'true'
+    strategy:
+      fail-fast: true
+
+    name: Build image
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          submodules: recursive
+      - name: Build and publish a Docker image for ${{ github.repository }}
+        uses: macbre/push-to-ghcr@v12
+        with:
+          image_name: ${{ github.repository }}
+          github_token: ${{ secrets.RELAYER_GITHUB_TOKEN }}
+          context: ./relayer/
+          dockerfile: ./relayer/Dockerfile.human-relayer-app
+
+  deploy-image:
+    needs: [build-image]
+    strategy:
+      fail-fast: true
+      
+    name: prepare metadata
+    runs-on: ubuntu-latest
+    steps:
+      - name: Setup metadata
+        uses: cuchi/jinja2-action@v1.2.0
+        with:
+          template: .github/workflow/files/gcp-run-metadata.yml
+          output_file: gcp-run-metadata.yml
+          strict: true
+
+      - name: Google Auth
+        id: auth
+        uses: google-github-actions/auth@v1
+        with:
+          workload_identity_provider: ${{ secrets.WIF_PROVIDER }} # e.g. - projects/123456789/locations/global/workloadIdentityPools/my-pool/providers/my-provider
+          service_account: ${{ secrets.WIF_SERVICE_ACCOUNT }} # e.g. - my-service-account@my-project.iam.gserviceaccount.com
+
+      - name: Deploy to Cloud Run
+        id: deploy
+        uses: google-github-actions/deploy-cloudrun@v1
+        with:
+          # service: ${{ env.HUMAN_RELAYER_SERVICE }}
+          # region: ${{ env.REGION }}
+          # image: ghcr.io/${{ github.repository }}:latest
+          metadata: gcp-run-metadata.yml
+
+      # If required, use the Cloud Run url output in later steps
+      - name: Show Output
+        run: echo ${{ steps.deploy.outputs.url }}
