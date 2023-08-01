@@ -13,6 +13,8 @@ abstract contract CrossChainGovernorCountingSimple is Governor, Ownable {
 
     mapping(bytes32 => mapping(uint16 => bool)) public spokeContractsMapping;
     CrossChainAddress[] public spokeContracts;
+    mapping(uint256 => mapping(bytes32 => mapping(uint16 => SpokeProposalVote))) public spokeVotes;
+    mapping(uint256 => ProposalVote) private _proposalVotes;
 
     constructor(CrossChainAddress[] memory _spokeContracts) {
         updateSpokeContracts(_spokeContracts);
@@ -30,8 +32,6 @@ abstract contract CrossChainGovernorCountingSimple is Governor, Ownable {
         bool initialized;
     }
 
-    mapping(uint256 => mapping(bytes32 => mapping(uint16 => SpokeProposalVote))) public spokeVotes;
-
     /**
      * @dev Supported vote types. Matches Governor Bravo ordering.
      */
@@ -47,8 +47,6 @@ abstract contract CrossChainGovernorCountingSimple is Governor, Ownable {
         uint256 abstainVotes;
         mapping(address => bool) hasVoted;
     }
-
-    mapping(uint256 => ProposalVote) private _proposalVotes;
 
     /**
       @dev Updates the spoke contracts.

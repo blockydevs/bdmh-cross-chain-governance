@@ -21,6 +21,18 @@ import "./magistrate/Magistrate.sol";
 */
 contract MetaHumanGovernor is Governor, GovernorSettings, CrossChainGovernorCountingSimple,
     GovernorVotes, GovernorVotesQuorumFraction, GovernorTimelockControl, Magistrate {
+
+    //https://book.wormhole.com/wormhole/3_coreLayerContracts.html#consistency-levels
+    //TODO:prod please change the consistency level to value of choice. Right now it's set up to `1` which is `finalized` value
+    uint8 public consistencyLevel = 1;
+    IWormhole immutable public coreBridge;
+    uint16 public nonce = 0;
+    uint16 immutable public chainId;
+
+    mapping(bytes32 => bool) public processedMessages;
+    mapping(uint256 => bool) public collectionStarted;
+    mapping(uint256 => bool) public collectionFinished;
+
     /**
      @dev Contract constructor.
      @param _token The address of the token contract used for voting.
@@ -41,17 +53,6 @@ contract MetaHumanGovernor is Governor, GovernorSettings, CrossChainGovernorCoun
         chainId = _chainId;
         coreBridge = IWormhole(_wormholeCoreBridgeAddress);
     }
-
-    IWormhole immutable public coreBridge;
-    uint16 immutable public chainId;
-    uint16 public nonce = 0;
-    //https://book.wormhole.com/wormhole/3_coreLayerContracts.html#consistency-levels
-    //TODO:prod please change the consistency level to value of choice. Right now it's set up to `1` which is `finalized` value
-    uint8 public consistencyLevel = 1;
-    mapping(bytes32 => bool) public processedMessages;
-
-    mapping(uint256 => bool) public collectionStarted;
-    mapping(uint256 => bool) public collectionFinished;
 
     /**
       @dev Receives a message from the relayer.
