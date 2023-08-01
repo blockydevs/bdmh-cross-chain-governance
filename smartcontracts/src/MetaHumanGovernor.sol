@@ -114,7 +114,7 @@ contract MetaHumanGovernor is Governor, GovernorSettings, CrossChainGovernorCoun
                 true
             );
 
-            finishCollectionPhase(_proposalId);
+            _finishCollectionPhase(_proposalId);
         }
     }
 
@@ -133,7 +133,7 @@ contract MetaHumanGovernor is Governor, GovernorSettings, CrossChainGovernorCoun
         bytes[] memory calldatas,
         bytes32 descriptionHash
     ) internal override {
-        finishCollectionPhase(proposalId);
+        _finishCollectionPhase(proposalId);
 
         require(
             collectionFinished[proposalId],
@@ -147,7 +147,7 @@ contract MetaHumanGovernor is Governor, GovernorSettings, CrossChainGovernorCoun
      @dev Checks if the collection phase for a proposal has finished.
      @param proposalId The ID of the proposal.
     */
-    function finishCollectionPhase(uint256 proposalId) public {
+    function _finishCollectionPhase(uint256 proposalId) internal {
         bool phaseFinished = true;
         uint spokeContractsLength = spokeContracts.length;
         for (uint16 i = 1; i <= spokeContractsLength && phaseFinished; ++i) {

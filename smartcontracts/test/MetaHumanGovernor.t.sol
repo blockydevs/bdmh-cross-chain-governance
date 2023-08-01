@@ -618,16 +618,8 @@ contract MetaHumanGovernorTest is TestUtil, EIP712 {
         vm.roll(block.number + 50410);
         governanceContract.requestCollections(proposalId);
         _collectVotesFromSpoke(proposalId);
-        governanceContract.finishCollectionPhase(proposalId);
         bool collectionFinished = governanceContract.collectionFinished(proposalId);
         assertTrue(collectionFinished);
-    }
-
-    function testFinishCollectionPhaseWhenCollectionNotFinished() public {
-        uint256 proposalId = _createBasicProposal();
-        governanceContract.finishCollectionPhase(proposalId);
-        bool collectionFinished = governanceContract.collectionFinished(proposalId);
-        assertFalse(collectionFinished);
     }
 
     function testRequestCollections() public {
