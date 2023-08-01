@@ -53,14 +53,16 @@ abstract contract CrossChainGovernorCountingSimple is Governor, Ownable {
       @param _spokeContracts An array of CrossChainAddress structs representing the spoke contracts.
     */
     function updateSpokeContracts(CrossChainAddress[] memory _spokeContracts) public onlyOwner {
+        uint spokeContractsLength = spokeContracts.length;
         //clear existing mapping
-        for (uint i = 0; i < spokeContracts.length; i++) {
-            CrossChainAddress memory addressToRemove = spokeContracts[i];
+        for (uint i = 1; i <= spokeContractsLength; ++i) {
+            CrossChainAddress memory addressToRemove = spokeContracts[i-1];
             spokeContractsMapping[addressToRemove.contractAddress][addressToRemove.chainId] = false;
         }
         delete spokeContracts;
-        for (uint i = 0; i < _spokeContracts.length; i++) {
-            CrossChainAddress memory addressToAdd = _spokeContracts[i];
+        uint newSpokeContractsLength = _spokeContracts.length;
+        for (uint i = 1; i <= newSpokeContractsLength; ++i) {
+            CrossChainAddress memory addressToAdd = _spokeContracts[i-1];
             spokeContractsMapping[addressToAdd.contractAddress][addressToAdd.chainId] = true;
             spokeContracts.push(addressToAdd);
         }
@@ -97,8 +99,9 @@ abstract contract CrossChainGovernorCountingSimple is Governor, Ownable {
         uint256 sumForVotes = proposalVote.forVotes;
         uint256 sumAbstainVotes = proposalVote.abstainVotes;
 
-        for (uint16 i = 0; i < spokeContracts.length; i++) {
-            CrossChainAddress memory currentContract = spokeContracts[i];
+        uint spokeContractsLength = spokeContracts.length;
+        for (uint16 i = 1; i <= spokeContractsLength; ++i) {
+            CrossChainAddress memory currentContract = spokeContracts[i-1];
             SpokeProposalVote storage v = spokeVotes[proposalId][currentContract.contractAddress][currentContract.chainId];
             sumAgainstVotes += v.againstVotes;
             sumForVotes += v.forVotes;
@@ -116,8 +119,9 @@ abstract contract CrossChainGovernorCountingSimple is Governor, Ownable {
         uint256 abstainVotes = proposalVote.abstainVotes;
         uint256 forVotes = proposalVote.forVotes;
 
-        for (uint16 i = 0; i < spokeContracts.length; i++) {
-            CrossChainAddress memory currentContract = spokeContracts[i];
+        uint spokeContractsLength = spokeContracts.length;
+        for (uint16 i = 1; i <= spokeContractsLength; ++i) {
+            CrossChainAddress memory currentContract = spokeContracts[i-1];
             SpokeProposalVote storage v = spokeVotes[proposalId][currentContract.contractAddress][currentContract.chainId];
             abstainVotes += v.abstainVotes;
             forVotes += v.forVotes;
@@ -134,8 +138,9 @@ abstract contract CrossChainGovernorCountingSimple is Governor, Ownable {
         uint256 againstVotes = proposalVote.againstVotes;
         uint256 forVotes = proposalVote.forVotes;
 
-        for (uint16 i = 0; i < spokeContracts.length; i++) {
-            CrossChainAddress memory currentContract = spokeContracts[i];
+        uint spokeContractsLength = spokeContracts.length;
+        for (uint16 i = 1; i <= spokeContractsLength; ++i) {
+            CrossChainAddress memory currentContract = spokeContracts[i-1];
             SpokeProposalVote storage v = spokeVotes[proposalId][currentContract.contractAddress][currentContract.chainId];
             againstVotes += v.againstVotes;
             forVotes += v.forVotes;

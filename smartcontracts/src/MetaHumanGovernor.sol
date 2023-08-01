@@ -149,10 +149,11 @@ contract MetaHumanGovernor is Governor, GovernorSettings, CrossChainGovernorCoun
     */
     function finishCollectionPhase(uint256 proposalId) public {
         bool phaseFinished = true;
-        for (uint16 i = 0; i < spokeContracts.length && phaseFinished; i++) {
+        uint spokeContractsLength = spokeContracts.length;
+        for (uint16 i = 1; i <= spokeContractsLength && phaseFinished; ++i) {
             phaseFinished =
             phaseFinished &&
-            spokeVotes[proposalId][spokeContracts[i].contractAddress][spokeContracts[i].chainId].initialized;
+            spokeVotes[proposalId][spokeContracts[i-1].contractAddress][spokeContracts[i-1].chainId].initialized;
         }
 
         collectionFinished[proposalId] = phaseFinished;
@@ -176,12 +177,13 @@ contract MetaHumanGovernor is Governor, GovernorSettings, CrossChainGovernorCoun
 
         // Sends an empty message to each of the aggregators. If they receive a
         // message at all, it is their cue to send data back
-        for (uint16 i = 0; i < spokeContracts.length; i++) {
+        uint spokeContractsLength = spokeContracts.length;
+        for (uint16 i = 1; i <= spokeContractsLength; ++i) {
             // Using "1" as the function selector
             bytes memory message = abi.encode(1, proposalId);
             bytes memory payload = abi.encode(
-                spokeContracts[i].contractAddress,
-                spokeContracts[i].chainId,
+                spokeContracts[i-1].contractAddress,
+                spokeContracts[i-1].chainId,
                 msg.sender,
                 message
             );
@@ -208,7 +210,8 @@ contract MetaHumanGovernor is Governor, GovernorSettings, CrossChainGovernorCoun
         if (spokeContracts.length > 0) {
 
             // Iterate over every spoke contract
-            for (uint16 i = 0; i < spokeContracts.length; i++) {
+            uint spokeContractsLength = spokeContracts.length;
+            for (uint16 i = 1; i <= spokeContractsLength; ++i) {
                 bytes memory message = abi.encode(
                     0, // Function selector "0" for destination contract
                     proposalId,
@@ -216,8 +219,8 @@ contract MetaHumanGovernor is Governor, GovernorSettings, CrossChainGovernorCoun
                 );
 
                 bytes memory payload = abi.encode(
-                    spokeContracts[i].contractAddress,
-                    spokeContracts[i].chainId,
+                    spokeContracts[i-1].contractAddress,
+                    spokeContracts[i-1].chainId,
                     bytes32(uint256(uint160(address(this)))),
                     message
                 );
