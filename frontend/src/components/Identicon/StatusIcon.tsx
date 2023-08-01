@@ -1,6 +1,5 @@
 import { useWeb3React } from '@web3-react/core'
-import { Connection, ConnectionType } from 'connection/types'
-import useENSAvatar from 'hooks/useENSAvatar'
+import { Connection } from 'connection/types'
 import styled from 'styled-components/macro'
 import { useIsDarkMode } from 'theme/components/ThemeToggle'
 import { flexColumnNoWrap } from 'theme/styles'
@@ -56,16 +55,13 @@ const MiniWalletIcon = ({ connection, side }: { connection: Connection; side: 'l
   )
 }
 
-const MainWalletIcon = ({ connection, size }: { connection: Connection; size: number }) => {
+const MainWalletIcon = ({ size }: { size: number }) => {
   const { account } = useWeb3React()
-  const { avatar } = useENSAvatar(account ?? undefined)
 
   if (!account) {
     return null
-  } else if (avatar || (connection.type === ConnectionType.INJECTED && connection.getName() === 'MetaMask')) {
-    return <Identicon size={size} />
   } else {
-    return null
+    return <Identicon size={size} />
   }
 }
 
@@ -80,7 +76,7 @@ export default function StatusIcon({
 }) {
   return (
     <IconWrapper size={size} data-testid="StatusIconRoot">
-      <MainWalletIcon connection={connection} size={size} />
+      <MainWalletIcon size={size} />
       {showMiniIcons && <MiniWalletIcon connection={connection} side="right" />}
     </IconWrapper>
   )
