@@ -73,6 +73,9 @@ jobs:
     needs: [build-image]
     strategy:
       fail-fast: true
+    permissions:
+      contents: 'read'
+      id-token: 'write'
       
     name: prepare metadata
     runs-on: ubuntu-latest
