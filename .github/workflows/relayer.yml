@@ -32,22 +32,22 @@ jobs:
     outputs:
       relayer-filter: ${{ steps.relayer-filter.outputs.relayer }}
     steps:
-    - uses: actions/checkout@v3
-    - uses: dorny/paths-filter@v2
-      id: relayer-filter
-      with:
-        filters: |
-          relayer:
-            - 'relayer/**'
-    # run only if 'relayer' files were changed
-    - name: workflow tests
-      if: steps.relayer-filter.outputs.relayer-filter == 'true'
-      run: echo "Workflow file"
+      - uses: actions/checkout@v3
+      - uses: dorny/paths-filter@v2
+        id: relayer-filter
+        with:
+          filters: |
+            relayer:
+              - 'relayer/**'
+      # run only if 'relayer' files were changed
+      - name: workflow tests
+        if: steps.relayer-filter.outputs.relayer-filter == 'true'
+        run: echo "Workflow file"
 
-    # run only if not 'relayer' files were changed
-    - name: not workflow tests
-      if: steps.relayer-filter.outputs.relayer-filter != 'true'
-      run: echo "NOT relayer file"
+      # run only if not 'relayer' files were changed
+      - name: not workflow tests
+        if: steps.relayer-filter.outputs.relayer-filter != 'true'
+        run: echo "NOT relayer file"
 
   build-image:
     needs: [relayer-filter]
@@ -74,7 +74,7 @@ jobs:
     strategy:
       fail-fast: true
       
-    name: deploy image
+    name: prepare metadata
     runs-on: ubuntu-latest
     steps:
       - name: Setup metadata
