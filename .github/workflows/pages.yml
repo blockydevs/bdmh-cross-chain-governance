@@ -102,9 +102,9 @@ jobs:
       working-directory: frontend
 
     - name: Upload artifact
-        uses: actions/upload-pages-artifact@v2
-        with:
-          path: frontend/build
+      uses: actions/upload-pages-artifact@v2
+      with:
+        path: frontend/build
 
   # Deployment job
   deploy:
