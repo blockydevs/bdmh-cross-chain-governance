@@ -23,6 +23,7 @@ env:
   GUARDIAN_NETWORK: ${{ vars.GUARDIAN_NETWORK }}
   GUARDIAN_BOOTSTRAP: ${{ vars.GUARDIAN_BOOTSTRAP }}
   PROVIDERS_CHAIN_5: ${{ vars.PROVIDERS_CHAIN_5 }}
+  GCP_PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
 
 
 jobs:
@@ -49,28 +50,28 @@ jobs:
   #       if: steps.relayer-filter.outputs.relayer-filter != 'true'
   #       run: echo "NOT relayer file"
 
-  build-image:
-    # needs: [relayer-filter]
-    # if: needs.relayer-filter.outputs.relayer-filter == 'true'
-    strategy:
-      fail-fast: true
+  # build-image:
+  #   # needs: [relayer-filter]
+  #   # if: needs.relayer-filter.outputs.relayer-filter == 'true'
+  #   strategy:
+  #     fail-fast: true
 
-    name: Build image
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-        with:
-          submodules: recursive
-      - name: Build and publish a Docker image for ${{ github.repository }}
-        uses: macbre/push-to-ghcr@v12
-        with:
-          image_name: ${{ github.repository }}
-          github_token: ${{ secrets.RELAYER_GITHUB_TOKEN }}
-          context: ./relayer/
-          dockerfile: ./relayer/Dockerfile.human-relayer-app
+  #   name: Build image
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - uses: actions/checkout@v3
+  #       with:
+  #         submodules: recursive
+  #     - name: Build and publish a Docker image for ${{ github.repository }}
+  #       uses: macbre/push-to-ghcr@v12
+  #       with:
+  #         image_name: ${{ github.repository }}
+  #         github_token: ${{ secrets.RELAYER_GITHUB_TOKEN }}
+  #         context: ./relayer/
+  #         dockerfile: ./relayer/Dockerfile.human-relayer-app
 
   deploy-image:
-    needs: [build-image]
+    # needs: [build-image]
     strategy:
       fail-fast: true
     permissions:
@@ -102,6 +103,20 @@ jobs:
           workload_identity_provider: ${{ secrets.WIF_PROVIDER }} # e.g. - projects/123456789/locations/global/workloadIdentityPools/my-pool/providers/my-provider
           service_account: ${{ secrets.WIF_SERVICE_ACCOUNT }} # e.g. - my-service-account@my-project.iam.gserviceaccount.com
 
+      - name: Docker Auth
+        id: docker-auth
+        uses: 'docker/login-action@v1'
+        with:
+          username: 'oauth2accesstoken'
+          password: '${{ steps.auth.outputs.access_token }}'
+          registry: 'us-central1-docker.pkg.dev'
+
+      - name: Pull, retag guardiand and push to Google Cloud Artifacts
+        run: |
+          docker pull ghcr.io/wormhole-foundation/guardiand:latest
+          docker tag ghcr.io/wormhole-foundation/guardiand:latest us-central1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/wormhole-foundation/guardiand:latest
+          docker push us-central1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/wormhole-foundation/guardiand:latest
+
       - name: Deploy to Cloud Run – guardiand
         id: deploy-guardiand
         uses: google-github-actions/deploy-cloudrun@v1
@@ -109,8 +124,14 @@ jobs:
           metadata: gcp-metadata-guardiand.yml
 
       # If required, use the Cloud Run url output in later steps
-      - name: Show Output
+      - name: Show Output – guardiand
         run: echo ${{ steps.deploy-guardiand.outputs.url }}
+
+      - name: Build and push relayer
+        run: |
+          cd relayer
+          docker build -t "us-central1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/${{ github.repository }}" -f Dockerfile.human-relayer-app
+          docker push "us-central1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/${{ github.repository }}"
 
       - name: Deploy to Cloud Run
         id: deploy-relayer
@@ -122,5 +143,5 @@ jobs:
           metadata: gcp-metadata-relayer.yml
 
       # If required, use the Cloud Run url output in later steps
-      - name: Show Output
+      - name: Show Output – relayer
         run: echo ${{ steps.deploy-relayer.outputs.url }}

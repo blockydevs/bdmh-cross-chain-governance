@@ -10,7 +10,7 @@ spec:
 
     spec:
       containers:      
-      - image: ghcr.io/{{ env['GITHUB_REPOSITORY'] }}:latest
+      - image: us-central1-docker.pkg.dev/{{ env['GCP_PROJECT_ID'] }}/{{ env['GITHUB_REPOSITORY'] }}:latest
         name: relayer-app
         ports:
         - containerPort: 8080
