@@ -27,31 +27,31 @@ env:
 
 jobs:
   # check if files changed in relayer dir
-  relayer-filter:
-    runs-on: ubuntu-latest
-    outputs:
-      relayer-filter: ${{ steps.relayer-filter.outputs.relayer }}
-    steps:
-      - uses: actions/checkout@v3
-      - uses: dorny/paths-filter@v2
-        id: relayer-filter
-        with:
-          filters: |
-            relayer:
-              - 'relayer/**'
-      # run only if 'relayer' files were changed
-      - name: workflow tests
-        if: steps.relayer-filter.outputs.relayer-filter == 'true'
-        run: echo "Workflow file"
+  # relayer-filter:
+  #   runs-on: ubuntu-latest
+  #   outputs:
+  #     relayer-filter: ${{ steps.relayer-filter.outputs.relayer }}
+  #   steps:
+  #     - uses: actions/checkout@v3
+  #     - uses: dorny/paths-filter@v2
+  #       id: relayer-filter
+  #       with:
+  #         filters:
+  #           relayer:
+  #             - './relayer/**'
+  #     # run only if 'relayer' files were changed
+  #     - name: workflow tests
+  #       if: steps.relayer-filter.outputs.relayer-filter == 'true'
+  #       run: echo "Workflow file"
 
-      # run only if not 'relayer' files were changed
-      - name: not workflow tests
-        if: steps.relayer-filter.outputs.relayer-filter != 'true'
-        run: echo "NOT relayer file"
+  #     # run only if not 'relayer' files were changed
+  #     - name: not workflow tests
+  #       if: steps.relayer-filter.outputs.relayer-filter != 'true'
+  #       run: echo "NOT relayer file"
 
   build-image:
-    needs: [relayer-filter]
-    if: needs.relayer-filter.outputs.relayer-filter == 'true'
+    # needs: [relayer-filter]
+    # if: needs.relayer-filter.outputs.relayer-filter == 'true'
     strategy:
       fail-fast: true
 
@@ -81,11 +81,18 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - name: Setup metadata
+      - name: Setup metadata – guardiand
         uses: cuchi/jinja2-action@v1.2.0
         with:
-          template: .github/files/gcp-run-metadata.yml
-          output_file: gcp-run-metadata.yml
+          template: .github/files/gcp-metadata-guardiand.yml
+          output_file: gcp-metadata-guardiand.yml
+          strict: true
+
+      - name: Setup metadata – relayer
+        uses: cuchi/jinja2-action@v1.2.0
+        with:
+          template: .github/files/gcp-metadata-relayer.yml
+          output_file: gcp-metadata-relayer.yml
           strict: true
 
       - name: Google Auth
@@ -95,15 +102,25 @@ jobs:
           workload_identity_provider: ${{ vars.WIF_PROVIDER }} # e.g. - projects/123456789/locations/global/workloadIdentityPools/my-pool/providers/my-provider
           service_account: ${{ vars.WIF_SERVICE_ACCOUNT }} # e.g. - my-service-account@my-project.iam.gserviceaccount.com
 
+      - name: Deploy to Cloud Run – guardiand
+        id: deploy-guardiand
+        uses: google-github-actions/deploy-cloudrun@v1
+        with:
+          metadata: gcp-metadata-guardiand.yml
+
+      # If required, use the Cloud Run url output in later steps
+      - name: Show Output
+        run: echo ${{ steps.deploy-guardiand.outputs.url }}
+
       - name: Deploy to Cloud Run
-        id: deploy
+        id: deploy-relayer
         uses: google-github-actions/deploy-cloudrun@v1
         with:
           # service: ${{ env.HUMAN_RELAYER_SERVICE }}
           # region: ${{ env.REGION }}
           # image: ghcr.io/${{ github.repository }}:latest
-          metadata: gcp-run-metadata.yml
+          metadata: gcp-metadata-relayer.yml
 
       # If required, use the Cloud Run url output in later steps
       - name: Show Output
-        run: echo ${{ steps.deploy.outputs.url }}
+        run: echo ${{ steps.deploy-relayer.outputs.url }}

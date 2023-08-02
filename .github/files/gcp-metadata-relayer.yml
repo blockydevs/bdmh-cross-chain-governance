@@ -10,19 +10,6 @@ spec:
 
     spec:
       containers:      
-      - image: ghcr.io/wormhole-foundation/guardiand:latest
-        name: guardian
-        command: /guardiand spy --nodeKey /node.key --spyRPC "[::]:7073" --network {{ env['GUARDIAN_NETWORK'] }} --bootstrap {{ env['GUARDIAN_BOOTSTRAP'] }}
-        ports:
-        - containerPort: 7073
-        env:
-        - name: REDIS_HOST
-          value: {{ env['REDIS_HOST'] }}
-        - name: REDIS_PORT
-          value: {{ env['REDIS_PORT'] }}
-        - name: REDIS_CURRENT_LOCATION_ID
-          value: {{ env['REDIS_CURRENT_LOCATION_ID'] }}
-      
       - image: ghcr.io/{{ env['GITHUB_REPOSITORY'] }}:latest
         name: relayer-app
         ports:
