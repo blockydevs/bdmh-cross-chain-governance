@@ -1,0 +1,119 @@
+name: Frontend
+
+on: 
+  workflow_dispatch:
+  # push:
+  #   branches:
+  #     - main
+
+jobs:
+  # check if files changed in frontend dir
+  frontend-filter:
+    runs-on: ubuntu-latest
+    outputs:
+      frontend-filter: ${{ steps.frontend-filter.outputs.frontend }}
+    steps:
+    - uses: actions/checkout@v3
+    - uses: dorny/paths-filter@v2
+      id: frontend-filter
+      with:
+        filters:
+          frontend:
+            - 'frontend/**'
+    # run only if 'frontend' files were changed
+    - name: workflow tests
+      if: steps.frontend-filter.outputs.frontend-filter == 'true'
+      run: echo "Workflow file"
+
+    # run only if not 'frontend' files were changed
+    - name: not workflow tests
+      if: steps.frontend-filter.outputs.frontend-filter != 'true'
+      run: echo "NOT frontend file"
+
+  build:
+    runs-on: ubuntu-latest
+    needs: [frontend-filter]
+    if: needs.frontend-filter.outputs.frontend-filter == 'true'
+    steps:
+    - uses: actions/checkout@v3
+
+    - uses: actions/setup-node@v3
+      with:
+        node-version: 18
+        registry-url: https://registry.npmjs.org
+        # cache is intentionally omitted, as it is faster with yarn v1 to cache node_modules.
+
+    - uses: actions/cache@v3
+      id: install-cache
+      with:
+        # node_modules/.cache is intentionally omitted, as this is used for build tool caches.
+        path: |
+          frontend/node_modules
+          !frontend/node_modules/.cache
+        key: ${{ runner.os }}-install-${{ hashFiles('yarn.lock') }}
+    - if: steps.install-cache.outputs.cache-hit != 'true'
+      run: yarn install --frozen-lockfile --ignore-scripts
+      working-directory: frontend
+      shell: bash
+
+    # Validators compile quickly, so caching can be omitted.
+    - run: yarn ajv
+      working-directory: frontend
+      shell: bash
+
+    # Contracts are compiled from source. If source hasn't changed, the contracts do not need to be re-compiled.
+    - uses: actions/cache@v3
+      id: contracts-cache
+      with:
+        path: |
+          frontend/src/abis/types
+          frontend/src/types/v3
+        key: ${{ runner.os }}-contracts-${{ hashFiles('src/abis/**/*.json', 'node_modules/@uniswap/**/artifacts/contracts/**/*.json') }}
+    - if: steps.contracts-cache.outputs.cache-hit != 'true'
+      run: yarn contracts
+      working-directory: frontend
+      shell: bash
+
+    - run: yarn graphql
+      working-directory: frontend
+      shell: bash
+
+    - uses: ./.github/actions/cache-on-main
+      with:
+        path: frontend/node_modules/.cache
+        key: ${{ runner.os }}-i18n-extract-${{ github.run_id }}
+        restore-keys: ${{ runner.os }}-i18n-extract-
+    - run: yarn i18n:extract
+      working-directory: frontend
+      shell: bash
+
+    # Translations are compiled from messages. If messages haven't changed, the translations do not need to be re-compiled.
+    - uses: actions/cache@v3
+      id: i18n-compile-cache
+      with:
+        path: frontend/src/locales/*.js
+        key: ${{ runner.os }}-i18n-compile-${{ hashFiles('src/locales/*.po') }}
+    - if: steps.i18n-compile-cache.outputs.cache-hit !='true'
+      run: yarn i18n:compile
+      working-directory: frontend
+      shell: bash
+
+    - run: yarn build
+      working-directory: frontend
+
+    - name: Upload artifact
+        uses: actions/upload-pages-artifact@v2
+        with:
+          path: frontend/build
+
+  # Deployment job
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v2

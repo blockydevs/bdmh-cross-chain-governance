@@ -129,8 +129,8 @@ jobs:
         run: echo ${{ steps.deploy-guardiand.outputs.url }}
 
       - name: Build and push relayer
+        working-directory: relayer
         run: |
-          cd relayer
           docker build -t "us-central1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/${{ github.repository }}" -f Dockerfile.human-relayer-app
           docker push "us-central1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/${{ github.repository }}"
 
