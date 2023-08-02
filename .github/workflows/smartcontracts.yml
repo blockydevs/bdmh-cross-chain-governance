@@ -14,6 +14,10 @@ on:
         # The data type of the input
         type: string
 
+defaults:
+  run:
+    working-directory: smartcontracts
+
 env:
   FOUNDRY_PROFILE: ci
   SECOND_PRIVATE_KEY: ${{ secrets.SECOND_PRIVATE_KEY }}
@@ -59,15 +63,15 @@ jobs:
 
       - name: Vote token deployment
         run: |
-          forge script smartcontracts/script/VHMTDeployment.s.sol:VHMTDeployment --rpc-url $SEPOLIA_RPC_URL --broadcast --verify
+          forge script script/VHMTDeployment.s.sol:VHMTDeployment --rpc-url $SEPOLIA_RPC_URL --broadcast --verify
 
       - name: Hub contract deployment
         run: |
-          forge script smartcontracts/script/HubDeployment.s.sol:HubDeployment --rpc-url $SEPOLIA_RPC_URL --broadcast --verify
+          forge script script/HubDeployment.s.sol:HubDeployment --rpc-url $SEPOLIA_RPC_URL --broadcast --verify
 
       - name: Spoke contract deployment
         run: |
-          forge script smartcontracts/script/SpokeDeployment.s.sol:SpokeDeployment --rpc-url $POLYGON_MUMBAI_RPC_URL --etherscan-api-key $MUMBAI_ETHERSCAN_API_KEY --broadcast --legacy --verify
+          forge script script/SpokeDeployment.s.sol:SpokeDeployment --rpc-url $POLYGON_MUMBAI_RPC_URL --etherscan-api-key $MUMBAI_ETHERSCAN_API_KEY --broadcast --legacy --verify
           SPOKE_ADDRESSES: ${{ vars.SPOKE_ADDRESSES }} # wziąc z wyniku komendy
 
       - name: Setting spoke contracts in the hub
