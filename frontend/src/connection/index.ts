@@ -3,22 +3,19 @@ import { initializeConnector } from '@web3-react/core'
 import { GnosisSafe } from '@web3-react/gnosis-safe'
 import { MetaMask } from '@web3-react/metamask'
 import { Network } from '@web3-react/network'
-import { Connector } from '@web3-react/types'
+import { Actions, Connector } from '@web3-react/types'
 import COINBASE_ICON from 'assets/images/coinbaseWalletIcon.svg'
 import GNOSIS_ICON from 'assets/images/gnosis.png'
-import METAMASK_ICON from 'assets/images/metamask.svg'
 import WALLET_CONNECT_ICON from 'assets/images/walletConnectIcon.svg'
-import INJECTED_DARK_ICON from 'assets/svg/browser-wallet-dark.svg'
-import INJECTED_LIGHT_ICON from 'assets/svg/browser-wallet-light.svg'
 import { HUB_CHAIN_ID } from 'constants/addresses'
-import { useCallback } from 'react'
+import { SupportedChainId } from 'constants/chains'
 import { isMobile } from 'utils/userAgent'
 
 import { RPC_URLS } from '../constants/networks'
 import { RPC_PROVIDERS } from '../constants/providers'
 import { Connection, ConnectionType } from './types'
-import { getIsCoinbaseWallet, getIsInjected, getIsMetaMaskWallet } from './utils'
-import { WalletConnectPopup } from './WalletConnect'
+import { getInjection, getIsCoinbaseWallet, getIsInjected, getIsMetaMaskWallet } from './utils'
+import { WalletConnectV2 } from './WalletConnectV2'
 
 function onError(error: Error) {
   console.debug(`web3-react error: ${error}`)
@@ -46,13 +43,11 @@ const getIsGenericInjector = () => getIsInjected() && !getIsMetaMaskWallet() && 
 const [web3Injected, web3InjectedHooks] = initializeConnector<MetaMask>((actions) => new MetaMask({ actions, onError }))
 
 const injectedConnection: Connection = {
-  // TODO(WEB-3131) re-add "Install MetaMask" string when no injector is present
-  getName: () => (getIsGenericInjector() ? 'Browser Wallet' : 'MetaMask'),
+  getName: () => getInjection().name,
   connector: web3Injected,
   hooks: web3InjectedHooks,
   type: ConnectionType.INJECTED,
-  getIcon: (isDarkMode: boolean) =>
-    getIsGenericInjector() ? (isDarkMode ? INJECTED_DARK_ICON : INJECTED_LIGHT_ICON) : METAMASK_ICON,
+  getIcon: (isDarkMode: boolean) => getInjection(isDarkMode).icon,
   shouldDisplay: () => getIsMetaMaskWallet() || getShouldAdvertiseMetaMask() || getIsGenericInjector(),
   // If on non-injected, non-mobile browser, prompt user to install Metamask
   overrideActivate: () => {
@@ -63,7 +58,9 @@ const injectedConnection: Connection = {
     return false
   },
 }
+
 const [web3GnosisSafe, web3GnosisSafeHooks] = initializeConnector<GnosisSafe>((actions) => new GnosisSafe({ actions }))
+
 export const gnosisSafeConnection: Connection = {
   getName: () => 'Gnosis Safe',
   connector: web3GnosisSafe,
@@ -73,17 +70,28 @@ export const gnosisSafeConnection: Connection = {
   shouldDisplay: () => false,
 }
 
-const [web3WalletConnect, web3WalletConnectHooks] = initializeConnector<WalletConnectPopup>(
-  (actions) => new WalletConnectPopup({ actions, onError })
-)
-export const walletConnectConnection: Connection = {
-  getName: () => 'WalletConnect',
-  connector: web3WalletConnect,
-  hooks: web3WalletConnectHooks,
-  type: ConnectionType.WALLET_CONNECT,
-  getIcon: () => WALLET_CONNECT_ICON,
-  shouldDisplay: () => !getIsInjectedMobileBrowser(),
-}
+export const walletConnectV2Connection: Connection = new (class implements Connection {
+  private initializer = (actions: Actions, defaultChainId = HUB_CHAIN_ID) =>
+    new WalletConnectV2({ actions, defaultChainId, onError })
+
+  type = ConnectionType.WALLET_CONNECT_V2
+  getName = () => 'WalletConnect'
+  getIcon = () => WALLET_CONNECT_ICON
+  shouldDisplay = () => !getIsInjectedMobileBrowser()
+
+  private _connector = initializeConnector<WalletConnectV2>(this.initializer)
+  overrideActivate = (chainId?: SupportedChainId) => {
+    // Always re-create the connector, so that the chainId is updated.
+    this._connector = initializeConnector((actions) => this.initializer(actions, chainId))
+    return false
+  }
+  get connector() {
+    return this._connector[0]
+  }
+  get hooks() {
+    return this._connector[1]
+  }
+})()
 
 const [web3CoinbaseWallet, web3CoinbaseWalletHooks] = initializeConnector<CoinbaseWallet>(
   (actions) =>
@@ -119,34 +127,32 @@ const coinbaseWalletConnection: Connection = {
 export function getConnections() {
   return [
     injectedConnection,
-    walletConnectConnection,
+    walletConnectV2Connection,
     coinbaseWalletConnection,
     gnosisSafeConnection,
     networkConnection,
   ]
 }
 
-export function useGetConnection() {
-  return useCallback((c: Connector | ConnectionType) => {
-    if (c instanceof Connector) {
-      const connection = getConnections().find((connection) => connection.connector === c)
-      if (!connection) {
-        throw Error('unsupported connector')
-      }
-      return connection
-    } else {
-      switch (c) {
-        case ConnectionType.INJECTED:
-          return injectedConnection
-        case ConnectionType.COINBASE_WALLET:
-          return coinbaseWalletConnection
-        case ConnectionType.WALLET_CONNECT:
-          return walletConnectConnection
-        case ConnectionType.NETWORK:
-          return networkConnection
-        case ConnectionType.GNOSIS_SAFE:
-          return gnosisSafeConnection
-      }
+export function getConnection(c: Connector | ConnectionType) {
+  if (c instanceof Connector) {
+    const connection = getConnections().find((connection) => connection.connector === c)
+    if (!connection) {
+      throw Error('unsupported connector')
     }
-  }, [])
+    return connection
+  } else {
+    switch (c) {
+      case ConnectionType.INJECTED:
+        return injectedConnection
+      case ConnectionType.COINBASE_WALLET:
+        return coinbaseWalletConnection
+      case ConnectionType.WALLET_CONNECT_V2:
+        return walletConnectV2Connection
+      case ConnectionType.NETWORK:
+        return networkConnection
+      case ConnectionType.GNOSIS_SAFE:
+        return gnosisSafeConnection
+    }
+  }
 }

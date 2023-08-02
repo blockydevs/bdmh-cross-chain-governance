@@ -1,6 +1,6 @@
 import { useWeb3React } from '@web3-react/core'
 import StatusIcon from 'components/Identicon/StatusIcon'
-import { useGetConnection } from 'connection'
+import { getConnection } from 'connection'
 import { LogoutIcon } from 'nft/components/icons'
 import { useCallback } from 'react'
 import { Copy } from 'react-feather'
@@ -74,7 +74,6 @@ const CopyText = styled(CopyHelper).attrs({
 export default function AuthenticatedHeader({ account }: { account: string }) {
   const { connector, ENSName } = useWeb3React()
   const dispatch = useAppDispatch()
-  const getConnection = useGetConnection()
   const connection = getConnection(connector)
 
   const disconnect = useCallback(() => {

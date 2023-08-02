@@ -1,7 +1,8 @@
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react'
 import { Protocol } from '@uniswap/router-sdk'
 import { TradeType } from '@uniswap/sdk-core'
-import { AlphaRouter, ChainId } from '@uniswap/smart-order-router'
+import { AlphaRouter } from '@uniswap/smart-order-router'
+import { SupportedChainId } from 'constants/chains'
 import { RPC_PROVIDERS } from 'constants/providers'
 import { getClientSideQuote, toSupportedChainId } from 'lib/hooks/routing/clientSideSmartOrderRouter'
 import ms from 'ms.macro'
@@ -20,8 +21,8 @@ export enum RouterPreference {
 // internally for token -> USDC trades to get a USD value.
 export const INTERNAL_ROUTER_PREFERENCE_PRICE = 'price' as const
 
-const routers = new Map<ChainId, AlphaRouter>()
-function getRouter(chainId: ChainId): AlphaRouter {
+const routers = new Map<SupportedChainId, AlphaRouter>()
+function getRouter(chainId: SupportedChainId): AlphaRouter {
   const router = routers.get(chainId)
   if (router) return router
 
@@ -72,11 +73,11 @@ const PRICE_PARAMS = {
 
 export interface GetQuoteArgs {
   tokenInAddress: string
-  tokenInChainId: ChainId
+  tokenInChainId: SupportedChainId
   tokenInDecimals: number
   tokenInSymbol?: string
   tokenOutAddress: string
-  tokenOutChainId: ChainId
+  tokenOutChainId: SupportedChainId
   tokenOutDecimals: number
   tokenOutSymbol?: string
   amount: string

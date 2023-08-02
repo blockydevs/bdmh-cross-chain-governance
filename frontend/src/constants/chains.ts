@@ -53,7 +53,7 @@ export function isSupportedChain(chainId: number | null | undefined): chainId is
   return !!chainId && !!SupportedChainId[chainId]
 }
 
-const L1_CHAIN_IDS = [
+export const L1_CHAIN_IDS = [
   SupportedChainId.ETHEREUM,
   SupportedChainId.GOERLI,
   SupportedChainId.POLYGON,
@@ -75,7 +75,7 @@ export type SupportedL1ChainId = typeof L1_CHAIN_IDS[number]
  * Controls some L2 specific behavior, e.g. slippage tolerance, special UI behavior.
  * The expectation is that all of these networks have immediate transaction confirmation.
  */
-const L2_CHAIN_IDS = [
+export const L2_CHAIN_IDS = [
   SupportedChainId.ARBITRUM_ONE,
   SupportedChainId.OPTIMISM,
   SupportedChainId.OPTIMISM_GOERLI,

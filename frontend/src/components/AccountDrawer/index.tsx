@@ -18,7 +18,7 @@ const DRAWER_TOP_MARGIN_MOBILE_WEB = '72px'
 
 const accountDrawerOpenAtom = atom(false)
 
-function useToggleAccountDrawer() {
+export function useToggleAccountDrawer() {
   const updateAccountDrawerOpen = useUpdateAtom(accountDrawerOpenAtom)
   return useCallback(() => {
     updateAccountDrawerOpen((open) => !open)
