@@ -77,7 +77,8 @@ export const walletConnectV2Connection: Connection = new (class implements Conne
   type = ConnectionType.WALLET_CONNECT_V2
   getName = () => 'WalletConnect'
   getIcon = () => WALLET_CONNECT_ICON
-  shouldDisplay = () => !getIsInjectedMobileBrowser()
+  shouldDisplay = () => false
+  // BLOCKYTODO: if you want to see WalletConnect on the "Connect a wallet" list you need to change false to !getIsInjectedMobileBrowser()
 
   private _connector = initializeConnector<WalletConnectV2>(this.initializer)
   overrideActivate = (chainId?: SupportedChainId) => {
