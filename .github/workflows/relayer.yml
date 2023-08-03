@@ -164,6 +164,7 @@ jobs:
           file: relayer/Dockerfile.human-relayer-app
           push: true
           tags: "${{ vars.GCP_REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/humanprotocol/relayer-app"
+          labels: "${{ vars.GCP_REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/humanprotocol/relayer-app"
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
