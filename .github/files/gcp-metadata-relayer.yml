@@ -10,33 +10,33 @@ spec:
 
     spec:
       containers:      
-      - image: us-central1-docker.pkg.dev/{{ env['GCP_PROJECT_ID'] }}/{{ env['GITHUB_REPOSITORY'] }}:latest
+      - image: "{{ env['GCP_REGION'] }}-docker.pkg.dev/{{ env['GCP_PROJECT_ID'] }}/metahuman/relayer-app:latest"
         name: relayer-app
         ports:
         - containerPort: 8080
         env:
         - name: ENVIRONMENT
-          value: {{ env['ENVIRONMENT'] }}
+          value: "{{ env['ENVIRONMENT'] }}"
         - name: REDIS_HOST
-          value: {{ env['REDIS_HOST'] }}
+          value: "{{ env['REDIS_HOST'] }}"
         - name: REDIS_PORT
-          value: {{ env['REDIS_PORT'] }}
+          value: "{{ env['REDIS_PORT'] }}"
         - name: REDIS_CURRENT_LOCATION_ID
-          value: {{ env['REDIS_CURRENT_LOCATION_ID'] }}
+          value: "{{ env['REDIS_CURRENT_LOCATION_ID'] }}"
         - name: PROVIDERS_CHAIN_10002
-          value: {{ env['PROVIDERS_CHAIN_10002'] }}
+          value: "{{ env['PROVIDERS_CHAIN_10002'] }}"
         - name: HUB_RELAY_CHAIN_ID
-          value: {{ env['HUB_RELAY_CHAIN_ID'] }}
+          value: "{{ env['HUB_RELAY_CHAIN_ID'] }}"
         - name: HUB_RELAY_CHAIN_ADDRESS
-          value: {{ env['HUB_RELAY_CHAIN_ADDRESS'] }}
+          value: "{{ env['HUB_RELAY_CHAIN_ADDRESS'] }}"
         - name: SPOKE_RELAY_CHAIN_5
-          value: {{ env['SPOKE_RELAY_CHAIN_5'] }}
+          value: "{{ env['SPOKE_RELAY_CHAIN_5'] }}"
         - name: PROVIDERS_CHAIN_10002
-          value: {{ env['PROVIDERS_CHAIN_10002'] }}
+          value: "{{ env['PROVIDERS_CHAIN_10002'] }}"
         - name: PRIVATE_KEYS_CHAIN_10002
-          value: {{ env['PRIVATE_KEYS_CHAIN_10002'] }}
+          value: "{{ env['PRIVATE_KEYS_CHAIN_10002'] }}"
         - name: PRIVATE_KEYS_CHAIN_5
-          value: {{ env['PRIVATE_KEYS_CHAIN_5'] }}
+          value: "{{ env['PRIVATE_KEYS_CHAIN_5'] }}"
         - name: PROVIDERS_CHAIN_5
-          value: {{ env['PROVIDERS_CHAIN_5'] }}
+          value: "{{ env['PROVIDERS_CHAIN_5'] }}"
           
