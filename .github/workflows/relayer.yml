@@ -140,7 +140,7 @@ jobs:
         if: inputs.deploy_guardian == true
         run: |
           docker buildx imagetools create \
-            --tag ${{ vars.GCP_REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/humanprotocol/guardiand:latest \
+            --tag ${{ vars.GCP_REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/humanprotocol/guardiand \
             ghcr.io/wormhole-foundation/guardiand:latest
 
       - name: Build the image – relayer
@@ -161,7 +161,7 @@ jobs:
           context: relayer
           file: relayer/Dockerfile.human-relayer-app
           push: true
-          tags: "${{ vars.GCP_REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/metahuman/relayer-app:${{ github.sha }}"
+          tags: "${{ vars.GCP_REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/humanprotocol/relayer-app"
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
