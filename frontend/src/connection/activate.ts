@@ -1,6 +1,5 @@
-import { sendAnalyticsEvent } from '@uniswap/analytics'
-import { InterfaceEventName, WalletConnectionResult } from '@uniswap/analytics-events'
 import { Connection } from 'connection/types'
+import { SupportedChainId } from 'constants/chains'
 import { atom } from 'jotai'
 import { useAtomValue, useUpdateAtom } from 'jotai/utils'
 import { useCallback } from 'react'
@@ -27,15 +26,14 @@ function useTryActivation() {
   const setActivationState = useUpdateAtom(activationStateAtom)
 
   return useCallback(
-    async (connection: Connection, onSuccess: () => void) => {
-      // Skips wallet connection if the connection should override the default
-      // behavior, i.e. install MetaMask or launch Coinbase app
-      if (connection.overrideActivate?.()) return
+    async (connection: Connection, onSuccess: () => void, chainId?: SupportedChainId) => {
+      if (connection.overrideActivate?.(chainId)) return
 
       try {
         setActivationState({ status: ActivationStatus.PENDING, connection })
 
         console.debug(`Connection activating: ${connection.getName()}`)
+        dispatch(updateSelectedWallet({ wallet: undefined }))
         await connection.connector.activate()
 
         console.debug(`Connection activated: ${connection.getName()}`)
@@ -52,15 +50,10 @@ function useTryActivation() {
           return
         }
 
-        // TODO(WEB-3162): re-add special treatment for already-pending injected errors & move debug to after didUserReject() check
+        // TODO(WEB-1859): re-add special treatment for already-pending injected errors & move debug to after didUserReject() check
         console.debug(`Connection failed: ${connection.getName()}`)
         console.error(error)
 
-        // Failed Connection events are logged here, while successful ones are logged by Web3Provider
-        sendAnalyticsEvent(InterfaceEventName.WALLET_CONNECT_TXN_COMPLETED, {
-          result: WalletConnectionResult.FAILED,
-          wallet_type: connection.getName(),
-        })
         setActivationState({ status: ActivationStatus.ERROR, connection, error })
       }
     },

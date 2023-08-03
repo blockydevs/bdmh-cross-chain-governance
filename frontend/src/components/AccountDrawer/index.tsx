@@ -1,5 +1,3 @@
-import { TraceEvent } from '@uniswap/analytics'
-import { BrowserEvent, InterfaceEventName } from '@uniswap/analytics-events'
 import { ScrollBarStyles } from 'components/Common'
 import GrayCloseButton from 'components/GrayCloseButton/GrayCloseButton'
 import { useWindowSize } from 'hooks/useWindowSize'
@@ -20,7 +18,7 @@ const DRAWER_TOP_MARGIN_MOBILE_WEB = '72px'
 
 const accountDrawerOpenAtom = atom(false)
 
-function useToggleAccountDrawer() {
+export function useToggleAccountDrawer() {
   const updateAccountDrawerOpen = useUpdateAtom(accountDrawerOpenAtom)
   return useCallback(() => {
     updateAccountDrawerOpen((open) => !open)
@@ -184,15 +182,9 @@ function AccountDrawer() {
   return (
     <Container>
       {walletDrawerOpen && (
-        <TraceEvent
-          events={[BrowserEvent.onClick]}
-          name={InterfaceEventName.MINI_PORTFOLIO_TOGGLED}
-          properties={{ type: 'close' }}
-        >
-          <CloseDrawer onClick={toggleWalletDrawer}>
-            <CloseDrawerIcon />
-          </CloseDrawer>
-        </TraceEvent>
+        <CloseDrawer onClick={toggleWalletDrawer}>
+          <CloseDrawerIcon />
+        </CloseDrawer>
       )}
       <Scrim onClick={toggleWalletDrawer} open={walletDrawerOpen} />
       <AccountDrawerWrapper open={walletDrawerOpen}>

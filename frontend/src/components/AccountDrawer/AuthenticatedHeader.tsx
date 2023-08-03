@@ -1,7 +1,6 @@
-import { TraceEvent } from '@uniswap/analytics'
-import { BrowserEvent, InterfaceElementName, SharedEventName } from '@uniswap/analytics-events'
 import { useWeb3React } from '@web3-react/core'
-import { useGetConnection } from 'connection'
+import StatusIcon from 'components/Identicon/StatusIcon'
+import { getConnection } from 'connection'
 import { LogoutIcon } from 'nft/components/icons'
 import { useCallback } from 'react'
 import { Copy } from 'react-feather'
@@ -11,7 +10,6 @@ import styled from 'styled-components/macro'
 import { CopyHelper, ThemedText } from 'theme'
 
 import { shortenAddress } from '../../nft/utils/address'
-import StatusIcon from '../Identicon/StatusIcon'
 import IconButton, { IconHoverText } from './IconButton'
 
 const AuthenticatedHeaderWrapper = styled.div`
@@ -76,7 +74,6 @@ const CopyText = styled(CopyHelper).attrs({
 export default function AuthenticatedHeader({ account }: { account: string }) {
   const { connector, ENSName } = useWeb3React()
   const dispatch = useAppDispatch()
-  const getConnection = useGetConnection()
   const connection = getConnection(connector)
 
   const disconnect = useCallback(() => {
@@ -107,13 +104,7 @@ export default function AuthenticatedHeader({ account }: { account: string }) {
           )}
         </StatusWrapper>
         <IconContainer>
-          <TraceEvent
-            events={[BrowserEvent.onClick]}
-            name={SharedEventName.ELEMENT_CLICKED}
-            element={InterfaceElementName.DISCONNECT_WALLET_BUTTON}
-          >
-            <IconButton data-testid="wallet-disconnect" onClick={disconnect} Icon={LogoutIcon} />
-          </TraceEvent>
+          <IconButton data-testid="wallet-disconnect" onClick={disconnect} Icon={LogoutIcon} />
         </IconContainer>
       </HeaderWrapper>
     </AuthenticatedHeaderWrapper>

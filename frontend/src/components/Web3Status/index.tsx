@@ -1,18 +1,14 @@
 import { Trans } from '@lingui/macro'
-import { sendAnalyticsEvent, TraceEvent } from '@uniswap/analytics'
-import { BrowserEvent, InterfaceElementName, InterfaceEventName } from '@uniswap/analytics-events'
 import { useWeb3React } from '@web3-react/core'
 import PortfolioDrawer, { useAccountDrawer } from 'components/AccountDrawer'
 import Loader from 'components/Icons/LoadingSpinner'
 import { IconWrapper } from 'components/Identicon/StatusIcon'
-import { useGetConnection } from 'connection'
+import { getConnection } from 'connection'
 import { Portal } from 'nft/components/common/Portal'
 import { ArrowUp } from 'nft/components/icons'
 import { useIsNftClaimAvailable } from 'nft/hooks/useIsNftClaimAvailable'
 import { darken } from 'polished'
 import { useCallback, useMemo } from 'react'
-import { AlertTriangle } from 'react-feather'
-import { useAppSelector } from 'state/hooks'
 import styled from 'styled-components/macro'
 import { colors } from 'theme/colors'
 import { flexRowNoWrap } from 'theme/styles'
@@ -40,16 +36,6 @@ const Web3StatusGeneric = styled(ButtonSecondary)`
   margin-left: 2px;
   :focus {
     outline: none;
-  }
-`
-const Web3StatusError = styled(Web3StatusGeneric)`
-  background-color: ${({ theme }) => theme.accentFailure};
-  border: 1px solid ${({ theme }) => theme.accentFailure};
-  color: ${({ theme }) => theme.white};
-  font-weight: 500;
-  :hover,
-  :focus {
-    background-color: ${({ theme }) => darken(0.1, theme.accentFailure)};
   }
 `
 
@@ -123,13 +109,6 @@ const Text = styled.p`
   font-weight: 700;
 `
 
-const NetworkIcon = styled(AlertTriangle)`
-  margin-left: 0.25rem;
-  margin-right: 0.5rem;
-  width: 16px;
-  height: 16px;
-`
-
 // we want the latest one to come first, so return negative if a is after b
 function newTransactionsFirst(a: TransactionDetails, b: TransactionDetails) {
   return b.addedTime - a.addedTime
@@ -148,18 +127,14 @@ const StyledConnectButton = styled.button`
 `
 
 function Web3StatusInner() {
-  const { account, connector, chainId, ENSName } = useWeb3React()
-  const getConnection = useGetConnection()
+  const { account, connector, ENSName } = useWeb3React()
   const connection = getConnection(connector)
   const [isDrawerOpen, setIsDrawerOpen] = useAccountDrawer()
 
   const handleWalletDropdownClick = useCallback(() => {
-    sendAnalyticsEvent(InterfaceEventName.ACCOUNT_DROPDOWN_BUTTON_CLICKED)
     setIsDrawerOpen()
   }, [setIsDrawerOpen])
   const isClaimAvailable = useIsNftClaimAvailable((state) => state.isClaimAvailable)
-
-  const error = useAppSelector((state) => state.connection.errorByConnectionType[getConnection(connector).type])
 
   const allTransactions = useAllTransactions()
 
@@ -172,65 +147,42 @@ function Web3StatusInner() {
 
   const hasPendingTransactions = !!pending.length
 
-  if (!chainId) {
-    return null
-  } else if (error) {
+  if (account) {
     return (
-      <Web3StatusError onClick={handleWalletDropdownClick}>
-        <NetworkIcon />
-        <Text>
-          <Trans>Error</Trans>
-        </Text>
-      </Web3StatusError>
-    )
-  } else if (account) {
-    return (
-      <TraceEvent
-        events={[BrowserEvent.onClick]}
-        name={InterfaceEventName.MINI_PORTFOLIO_TOGGLED}
-        properties={{ type: 'open' }}
+      <Web3StatusConnected
+        data-testid="web3-status-connected"
+        onClick={handleWalletDropdownClick}
+        pending={hasPendingTransactions}
+        isClaimAvailable={isClaimAvailable}
       >
-        <Web3StatusConnected
-          data-testid="web3-status-connected"
-          onClick={handleWalletDropdownClick}
-          pending={hasPendingTransactions}
-          isClaimAvailable={isClaimAvailable}
-        >
-          {!hasPendingTransactions && <StatusIcon size={24} connection={connection} showMiniIcons={false} />}
-          {hasPendingTransactions ? (
-            <RowBetween>
-              <Text>
-                <Trans>{pending?.length} Pending</Trans>
-              </Text>{' '}
-              <Loader stroke="white" />
-            </RowBetween>
-          ) : (
-            <AddressAndChevronContainer>
-              <Text>{ENSName || shortenAddress(account)}</Text>
-            </AddressAndChevronContainer>
-          )}
-          {isDrawerOpen && pending.length > 0 ? <ArrowUp /> : undefined}
-        </Web3StatusConnected>
-      </TraceEvent>
+        {!hasPendingTransactions && <StatusIcon size={24} connection={connection} showMiniIcons={false} />}
+        {hasPendingTransactions ? (
+          <RowBetween>
+            <Text>
+              <Trans>{pending?.length} Pending</Trans>
+            </Text>{' '}
+            <Loader stroke="white" />
+          </RowBetween>
+        ) : (
+          <AddressAndChevronContainer>
+            <Text>{ENSName || shortenAddress(account)}</Text>
+          </AddressAndChevronContainer>
+        )}
+        {isDrawerOpen && pending.length > 0 ? <ArrowUp /> : undefined}
+      </Web3StatusConnected>
     )
   } else {
     return (
-      <TraceEvent
-        events={[BrowserEvent.onClick]}
-        name={InterfaceEventName.CONNECT_WALLET_BUTTON_CLICKED}
-        element={InterfaceElementName.CONNECT_WALLET_BUTTON}
+      <Web3StatusConnectWrapper
+        tabIndex={0}
+        faded={!account}
+        onKeyPress={(e) => e.key === 'Enter' && handleWalletDropdownClick()}
+        onClick={handleWalletDropdownClick}
       >
-        <Web3StatusConnectWrapper
-          tabIndex={0}
-          faded={!account}
-          onKeyPress={(e) => e.key === 'Enter' && handleWalletDropdownClick()}
-          onClick={handleWalletDropdownClick}
-        >
-          <StyledConnectButton tabIndex={-1} data-testid="navbar-connect-wallet">
-            <Trans>Connect</Trans>
-          </StyledConnectButton>
-        </Web3StatusConnectWrapper>
-      </TraceEvent>
+        <StyledConnectButton tabIndex={-1} data-testid="navbar-connect-wallet">
+          <Trans>Connect</Trans>
+        </StyledConnectButton>
+      </Web3StatusConnectWrapper>
     )
   }
 }
