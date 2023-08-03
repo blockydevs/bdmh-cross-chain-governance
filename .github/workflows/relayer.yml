@@ -153,6 +153,8 @@ jobs:
           context: relayer
           file: relayer/Dockerfile.human-relayer-app
           push: false
+          tags: "${{ vars.GCP_REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/humanprotocol/relayer-app"
+          labels: "${{ vars.GCP_REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/humanprotocol/relayer-app"
           cache-from: type=gha
           cache-to: type=gha,mode=max    
       - name: Build and push the image – relayer
