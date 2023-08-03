@@ -6,7 +6,7 @@
     "start": "ts-node ./src/app.ts",
     "build": "tsc",
     "watch": "tsc --watch",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "jest"
   },
   "dependencies": {
     "@certusone/wormhole-sdk": "^0.9.11",
@@ -25,10 +25,12 @@
   "author": "",
   "license": "ISC",
   "devDependencies": {
+    "@types/jest": "^29.5.3",
     "@types/koa-router": "^7.4.4",
     "@types/winston": "^2.4.4",
     "@types/yargs": "^17.0.22",
     "ganache": "^7.8.0",
-    "prettier": "^2.8.4"
+    "prettier": "^2.8.4",
+    "ts-jest": "^29.1.1"
   }
 }
