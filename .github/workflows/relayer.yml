@@ -128,8 +128,8 @@ jobs:
         if: inputs.deploy_guardian == true
         run: |
           docker pull ghcr.io/wormhole-foundation/guardiand:latest
-          docker tag ghcr.io/wormhole-foundation/guardiand:latest ${{ vars.GCP_REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/metahuman/guardiand:latest
-          docker push ${{ vars.GCP_REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/metahuman/guardiand:latest
+          docker tag ghcr.io/wormhole-foundation/guardiand:latest ${{ vars.GCP_REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/metahuman/guardiand:${{ github.sha }}
+          docker push ${{ vars.GCP_REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/metahuman/guardiand:${{ github.sha }}
 
       - name: Deploy to Cloud Run – guardiand
         if: inputs.deploy_guardian == true
@@ -147,8 +147,8 @@ jobs:
       - name: Build and push relayer
         working-directory: relayer
         run: |
-          docker build -t "${{ vars.GCP_REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/metahuman/relayer-app:latest" -f Dockerfile.human-relayer-app .
-          docker push "${{ vars.GCP_REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/metahuman/relayer-app:latest"
+          docker build -t "${{ vars.GCP_REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/metahuman/relayer-app:${{ github.sha }}" -f Dockerfile.human-relayer-app .
+          docker push "${{ vars.GCP_REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/metahuman/relayer-app:${{ github.sha }}"
 
       - name: Deploy to Cloud Run
         id: deploy-relayer
