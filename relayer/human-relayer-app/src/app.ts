@@ -16,15 +16,37 @@ import {rootLogger} from "./log";
 import {ChainId} from "@certusone/wormhole-sdk";
 import {ApiController} from "./controller";
 
-const privateKeys: Partial<Record<ChainId, any[]>> = {};
-Object.keys(process.env)
-    .filter(key => key.startsWith("PRIVATE_KEYS_CHAIN_"))
-    .forEach(key => {
-        const chainId = Number(key.replace("PRIVATE_KEYS_CHAIN_", "")) as ChainId;
-        privateKeys[chainId] = [process.env[key] as string];
-    });
+function getPrivateKeys() {
+    const privateKeys: Partial<Record<ChainId, any[]>> = {};
 
-(async function main() {
+    Object.keys(process.env)
+        .filter(key => key.startsWith("PRIVATE_KEYS_CHAIN_"))
+        .forEach(key => {
+            const chainId = Number(key.replace("PRIVATE_KEYS_CHAIN_", "")) as ChainId;
+            privateKeys[chainId] = [process.env[key] as string];
+        });
+
+    return privateKeys;
+}
+
+function getProvidersConfig() {
+    return Object.keys(process.env)
+        .filter(key => key.startsWith("PROVIDERS_CHAIN_"))
+        .reduce((obj, key) => {
+            const chainId = Number(key.replace("PROVIDERS_CHAIN_", "")) as ChainId;
+            return {
+                ...obj,
+                [chainId]: {
+                    endpoints: [process.env[key] as string]
+                }
+            };
+        }, {});
+}
+
+async function main() {
+    const privateKeys = getPrivateKeys();
+    const providersConfig = getProvidersConfig();
+
     if (!Object.values(Environment).includes(process.env.ENVIRONMENT as Environment)) {
         throw new Error("Invalid environment");
     }
@@ -50,18 +72,6 @@ Object.keys(process.env)
     app.logger(rootLogger);
     app.use(logging(rootLogger)); // <-- logging middleware
     app.use(missedVaas(app, { namespace: "simple", logger: rootLogger, redis: redisOpts }));
-
-    const providersConfig = Object.keys(process.env)
-        .filter(key => key.startsWith("PROVIDERS_CHAIN_"))
-        .reduce((obj, key) => {
-            const chainId = Number(key.replace("PROVIDERS_CHAIN_", "")) as ChainId;
-            return {
-                ...obj,
-                [chainId]: {
-                    endpoints: [process.env[key] as string]
-                }
-            };
-        }, {});
 
     app.use(providers({
         chains: providersConfig
@@ -105,4 +115,6 @@ Object.keys(process.env)
         });
 
     await app.listen();
-})();
+};
+
+export { getPrivateKeys, getProvidersConfig, main };
