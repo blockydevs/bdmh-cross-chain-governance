@@ -94,7 +94,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - name: Setup metadata – guardiand
-        if: inputs.deploy_guardian == 'true'
+        if: inputs.deploy_guardian == true
         uses: cuchi/jinja2-action@v1.2.0
         with:
           template: .github/files/gcp-metadata-guardiand.yml
@@ -125,14 +125,14 @@ jobs:
           registry: '${{ vars.GCP_REGION }}-docker.pkg.dev'
 
       - name: Pull, retag guardiand and push to Google Cloud Artifacts
-        if: inputs.deploy_guardian == 'true'
+        if: inputs.deploy_guardian == true
         run: |
           docker pull ghcr.io/wormhole-foundation/guardiand:latest
           docker tag ghcr.io/wormhole-foundation/guardiand:latest ${{ vars.GCP_REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/metahuman/guardiand:latest
           docker push ${{ vars.GCP_REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/metahuman/guardiand:latest
 
       - name: Deploy to Cloud Run – guardiand
-        if: inputs.deploy_guardian == 'true'
+        if: inputs.deploy_guardian == true
         id: deploy-guardiand
         uses: google-github-actions/deploy-cloudrun@v1
         with:
@@ -141,13 +141,13 @@ jobs:
 
       # If required, use the Cloud Run url output in later steps
       - name: Show Output – guardiand
-        if: inputs.deploy_guardian == 'true'
+        if: inputs.deploy_guardian == true
         run: echo ${{ steps.deploy-guardiand.outputs.url }}
 
       - name: Build and push relayer
         working-directory: relayer
         run: |
-          docker build -t "${{ vars.GCP_REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/metahuman/relayer-app:latest" -f Dockerfile.human-relayer-app
+          docker build -t "${{ vars.GCP_REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/metahuman/relayer-app:latest" -f Dockerfile.human-relayer-app .
           docker push "${{ vars.GCP_REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/metahuman/relayer-app:latest"
 
       - name: Deploy to Cloud Run
