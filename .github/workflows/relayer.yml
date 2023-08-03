@@ -128,40 +128,40 @@ jobs:
       #     registry: '${{ vars.GCP_REGION }}-docker.pkg.dev'
 
 
-    - name: Authenticate docker
-      # if: inputs.ref == 'refs/heads/develop'
-      run: |
-        gcloud auth configure-docker --quiet ${{ vars.GCP_REGION }}-docker.pkg.dev    
+      - name: Authenticate docker
+        # if: inputs.ref == 'refs/heads/develop'
+        run: |
+          gcloud auth configure-docker --quiet ${{ vars.GCP_REGION }}-docker.pkg.dev    
     
 
-    - name: Push image to Google Artifacts – guardian
-      if: inputs.deploy_guardian == true
-      run: |
-        docker buildx imagetools create \
-          --tag ${{ vars.GCP_REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/humanprotocol/guardiand:latest \
-          ghcr.io/wormhole-foundation/guardiand:latest
+      - name: Push image to Google Artifacts – guardian
+        if: inputs.deploy_guardian == true
+        run: |
+          docker buildx imagetools create \
+            --tag ${{ vars.GCP_REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/humanprotocol/guardiand:latest \
+            ghcr.io/wormhole-foundation/guardiand:latest
 
-    - name: Build the image – relayer
-      id: build-image
-      # if: inputs.trigger == 'pull_request'
-      uses: docker/build-push-action@v3
-      with:
-        context: relayer
-        file: relayer/Dockerfile.human-relayer-app
-        push: false
-        cache-from: type=gha
-        cache-to: type=gha,mode=max    
-    - name: Build and push the image – relayer
-      id: build-push-image
-      # if: inputs.ref == 'refs/heads/develop'
-      uses: docker/build-push-action@v3
-      with:
-        context: relayer
-        file: relayer/Dockerfile.human-relayer-app
-        push: true
-        tags: "${{ vars.GCP_REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/metahuman/relayer-app:${{ github.sha }}"
-        cache-from: type=gha
-        cache-to: type=gha,mode=max
+      - name: Build the image – relayer
+        id: build-image
+        # if: inputs.trigger == 'pull_request'
+        uses: docker/build-push-action@v3
+        with:
+          context: relayer
+          file: relayer/Dockerfile.human-relayer-app
+          push: false
+          cache-from: type=gha
+          cache-to: type=gha,mode=max    
+      - name: Build and push the image – relayer
+        id: build-push-image
+        # if: inputs.ref == 'refs/heads/develop'
+        uses: docker/build-push-action@v3
+        with:
+          context: relayer
+          file: relayer/Dockerfile.human-relayer-app
+          push: true
+          tags: "${{ vars.GCP_REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/metahuman/relayer-app:${{ github.sha }}"
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
 
 
       # - name: Pull, retag guardiand and push to Google Cloud Artifacts
