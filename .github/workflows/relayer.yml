@@ -144,7 +144,7 @@ jobs:
         id: deploy-guardiand
         uses: google-github-actions/deploy-cloudrun@v1
         with:
-          region: ${{ vars.REDIS_CURRENT_LOCATION_ID }}
+          region: ${{ vars.GCP_REGION }}
           metadata: gcp-metadata-guardiand.yml
 
       # If required, use the Cloud Run url output in later steps
@@ -185,7 +185,7 @@ jobs:
         id: deploy-relayer
         uses: google-github-actions/deploy-cloudrun@v1
         with:
-          region: ${{ vars.REDIS_CURRENT_LOCATION_ID }}
+          region: ${{ vars.GCP_REGION }}
           metadata: gcp-metadata-relayer.yml
 
       # If required, use the Cloud Run url output in later steps
