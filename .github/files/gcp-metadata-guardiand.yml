@@ -2,8 +2,7 @@ apiVersion: serving.knative.dev/v1
 kind: Service
 metadata:
   name: blockydevs
-  namespace: 983957683823
-  run.googleapis.com/ingress: all
+  namespace: "{{ env['GCP_PROJECT_ID'] }}"
 spec:
   template:
     spec:
