@@ -6,7 +6,7 @@ spec:
   template:
     spec:
       containers:      
-      - image: "{{ env['REDIS_CURRENT_LOCATION_ID'] }}-docker.pkg.dev/{{ env['GCP_PROJECT_ID'] }}/blockydevs/guardiand:latest"
+      - image: "{{ env['GCP_REGION'] }}-docker.pkg.dev/{{ env['GCP_PROJECT_ID'] }}/blockydevs/guardiand:latest"
         name: guardian
         command: /guardiand spy --nodeKey /node.key --spyRPC "[::]:7073" --network {{ env['GUARDIAN_NETWORK'] }} --bootstrap {{ env['GUARDIAN_BOOTSTRAP'] }}
         ports:
