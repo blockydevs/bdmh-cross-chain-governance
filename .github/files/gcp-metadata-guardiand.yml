@@ -1,7 +1,9 @@
 apiVersion: serving.knative.dev/v1
 kind: Service
 metadata:
-  name: {{ env['HUMAN_RELAYER_SERVICE'] }}
+  name: blockydevs
+  namespace: 983957683823
+  run.googleapis.com/ingress: all
 spec:
   template:
     spec:
