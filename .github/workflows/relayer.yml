@@ -136,7 +136,7 @@ jobs:
         if: inputs.deploy_guardian == true
         run: |
           docker buildx imagetools create \
-            --tag ${{ vars.GCP_REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/humanprotocol/guardiand \
+            --tag ${{ vars.GCP_REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/blockydevs/guardiand \
             ghcr.io/wormhole-foundation/guardiand:latest
 
       - name: Deploy to Cloud Run – guardiand
@@ -159,8 +159,8 @@ jobs:
           context: relayer
           file: relayer/Dockerfile.human-relayer-app
           push: false
-          tags: "${{ vars.GCP_REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/humanprotocol/relayer-app"
-          labels: "${{ vars.GCP_REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/humanprotocol/relayer-app"
+          tags: "${{ vars.GCP_REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/blockydevs/relayer-app"
+          labels: "${{ vars.GCP_REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/blockydevs/relayer-app"
           cache-from: type=gha
           cache-to: type=gha,mode=max    
       - name: Build and push the image – relayer
@@ -170,16 +170,16 @@ jobs:
           context: relayer
           file: relayer/Dockerfile.human-relayer-app
           push: true
-          tags: "${{ vars.GCP_REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/humanprotocol/relayer-app"
-          labels: "${{ vars.GCP_REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/humanprotocol/relayer-app"
+          tags: "${{ vars.GCP_REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/blockydevs/relayer-app"
+          labels: "${{ vars.GCP_REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/blockydevs/relayer-app"
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
-      - name: Build and push relayer
-        working-directory: relayer
-        run: |
-          docker build -t "${{ vars.GCP_REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/metahuman/relayer-app:${{ github.sha }}" -f Dockerfile.human-relayer-app .
-          docker push "${{ vars.GCP_REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/metahuman/relayer-app:${{ github.sha }}"
+      # - name: Build and push relayer
+      #   working-directory: relayer
+      #   run: |
+      #     docker build -t "${{ vars.GCP_REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/blockydevs/relayer-app:${{ github.sha }}" -f Dockerfile.human-relayer-app .
+      #     docker push "${{ vars.GCP_REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/blockydevs/relayer-app:${{ github.sha }}"
 
       - name: Deploy to Cloud Run
         id: deploy-relayer

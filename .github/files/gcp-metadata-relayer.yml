@@ -10,7 +10,7 @@ spec:
 
     spec:
       containers:      
-      - image: "{{ env['GCP_REGION'] }}-docker.pkg.dev/{{ env['GCP_PROJECT_ID'] }}/humanprotocol/relayer-app:latest"
+      - image: "{{ env['GCP_REGION'] }}-docker.pkg.dev/{{ env['GCP_PROJECT_ID'] }}/blockydevs/relayer-app:latest"
         name: relayer-app
         ports:
         - containerPort: 8080
