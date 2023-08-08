@@ -1,7 +1,6 @@
 import { BigintIsh, CurrencyAmount, Token, TradeType } from '@uniswap/sdk-core'
 // This file is lazy-loaded, so the import of smart-order-router is intentional.
 // eslint-disable-next-line no-restricted-imports
-import { AlphaRouter, AlphaRouterConfig } from '@uniswap/smart-order-router'
 import { SupportedChainId } from 'constants/chains'
 import { nativeOnChain } from 'constants/tokens'
 import JSBI from 'jsbi'
@@ -27,8 +26,8 @@ async function getQuote(
     tokenOut: { address: string; chainId: number; decimals: number; symbol?: string }
     amount: BigintIsh
   },
-  router: AlphaRouter,
-  routerConfig: Partial<AlphaRouterConfig>
+  router: any,
+  routerConfig: any
 ): Promise<QuoteResult> {
   const tokenInIsNative = Object.values(SwapRouterNativeAssets).includes(tokenIn.address as SwapRouterNativeAssets)
   const tokenOutIsNative = Object.values(SwapRouterNativeAssets).includes(tokenOut.address as SwapRouterNativeAssets)
@@ -67,8 +66,8 @@ export async function getClientSideQuote(
     amount,
     tradeType,
   }: GetQuoteArgs,
-  router: AlphaRouter,
-  config: Partial<AlphaRouterConfig>
+  router: any,
+  config: any
 ) {
   return getQuote(
     {
