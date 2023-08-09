@@ -4,15 +4,27 @@ on:
   workflow_dispatch:
   # Inputs the workflow accepts.
     inputs:
-      HM_TOKEN_ADDRESS:
-        # Friendly description to be shown in the UI instead of 'name'
-        description: 'Person to greet'
-        # Default value if no value is explicitly provided
-        default: 'World'
-        # Input has to be provided for the workflow to run
+      CHAIN:
+        description: 'Chain ID'
         required: true
-        # The data type of the input
+        type: number
+      HM_TOKEN_ADDRESS:
+        # description: 'HM Token Address'
+        required: true
         type: string
+      TIMELOCK:
+        description: "Use timelock"
+        required: true
+        type: boolean
+        default: false
+      ADDRESS_TO_FUND:
+        required: false
+        type: string
+      DESCRIPTION:
+        required: true
+        type: string
+        default: "# Test proposal 4"
+        description: "Proposal description"
 
 defaults:
   run:
@@ -20,17 +32,30 @@ defaults:
 
 env:
   FOUNDRY_PROFILE: ci
+  # user data
+  PRIVATE_KEY: ${{ secrets.PRIVATE_KEY }}
   SECOND_PRIVATE_KEY: ${{ secrets.SECOND_PRIVATE_KEY }}
   THIRD_PRIVATE_KEY: ${{ secrets.THIRD_PRIVATE_KEY }}
   SEPOLIA_RPC_URL: ${{ vars.SEPOLIA_RPC_URL }}
-  HM_TOKEN_ADDRESS: ${{ vars.HM_TOKEN_ADDRESS }} # z inputów?  ${{ inputs.HM_TOKEN_ADDRESS }}"
-  HUB_VOTE_TOKEN_ADDRESS: ${{ vars.HUB_VOTE_TOKEN_ADDRESS }} # z vote token deployment?
-  SPOKE_VOTE_TOKEN_ADDRESS: ${{ vars.SPOKE_VOTE_TOKEN_ADDRESS }} # z vote token deployment?
+  HUB_VOTE_TOKEN_ADDRESS: ${{ vars.HUB_VOTE_TOKEN_ADDRESS }}
   POLYGON_MUMBAI_RPC_URL: ${{ vars.POLYGON_MUMBAI_RPC_URL }}
   MUMBAI_ETHERSCAN_API_KEY: ${{ secrets.MUMBAI_ETHERSCAN_API_KEY }}
-  # SPOKE_ADDRESSES: ${{ vars.SPOKE_ADDRESSES }} # z wyniku komendy
-  SPOKE_CHAIN_IDS: ${{ vars.SPOKE_CHAIN_IDS }} # z inputów?
-  TIMELOCK_ADDRESS: ${{ vars.TIMELOCK_ADDRESS }}
+  ETHERSCAN_API_KEY: ${{ secrets.ETHERSCAN_API_KEY }}
+  MAGISTRATE_ADDRESS: ${{ secrets.MAGISTRATE_ADDRESS }}
+  # hub 
+  HUB_CORE_BRIDGE_ADDRESS: ${{ vars.HUB_CORE_BRIDGE_ADDRESS }}
+  HUB_CHAIN_ID: ${{ vars.HUB_CHAIN_ID }}
+  VOTE_TOKEN_ADDRESS: ${{ vars.VOTE_TOKEN_ADDRESS }}
+  # spoke deployment
+  SPOKE_CORE_BRIDGE_ADDRESS: ${{ vars.SPOKE_CORE_BRIDGE_ADDRESS }}
+  SPOKE_CHAIN_ID: ${{ vars.SPOKE_CHAIN_ID }}
+  SPOKE_VOTE_TOKEN_ADDRESS: ${{ vars.SPOKE_VOTE_TOKEN_ADDRESS }}
+  # from inputs
+  HM_TOKEN_ADDRESS: ${{ inputs.HM_TOKEN_ADDRESS }}
+  ADDRESS_TO_FUND: ${{ inputs.ADDRESS_TO_FUND }}
+  CHAIN: ${{ inputs.CHAIN }}
+  TIMELOCK: ${{ inputs.TIMELOCK }}
+  DESCRIPTION: ${{ inputs.DESCRIPTION }}
 
 
 jobs:
@@ -50,34 +75,14 @@ jobs:
         with:
           version: nightly
 
-      - name: Run Forge build
-        run: |
-          forge --version
-          forge build --sizes
-        id: build
+      - name: Deploy contracts
+        run: ./deploy.sh
 
-      - name: Run Forge tests
-        run: |
-          forge test -vvv
-        id: test
+      # store output jsons as artifact, for download see https://docs.github.com/en/rest/actions/artifacts?apiVersion=2022-11-28#download-an-artifact
+      - uses: actions/upload-artifact@v3
+        with:
+          name: run-latest
+          path: |
+            broadcast/SpokeDeployment.s.sol/
+            broadcast/HubDeployment.s.sol/
 
-      - name: Vote token deployment
-        run: |
-          forge script script/VHMTDeployment.s.sol:VHMTDeployment --rpc-url $SEPOLIA_RPC_URL --broadcast --verify
-
-      - name: Hub contract deployment
-        run: |
-          forge script script/HubDeployment.s.sol:HubDeployment --rpc-url $SEPOLIA_RPC_URL --broadcast --verify
-
-      - name: Spoke contract deployment
-        run: |
-          forge script script/SpokeDeployment.s.sol:SpokeDeployment --rpc-url $POLYGON_MUMBAI_RPC_URL --etherscan-api-key $MUMBAI_ETHERSCAN_API_KEY --broadcast --legacy --verify
-          SPOKE_ADDRESSES: ${{ vars.SPOKE_ADDRESSES }} # wziąc z wyniku komendy
-
-      - name: Setting spoke contracts in the hub
-        run: |
-          forge script script/HubUpdateSpokeContracts.s.sol:HubUpdateSpokeContracts --rpc-url $SEPOLIA_RPC_URL --broadcast
-
-      - name: Transfer governance ownership to timelock
-        run: |
-          forge script script/HubTransferOwnership.s.sol:HubTransferOwnership --rpc-url $SEPOLIA_RPC_URL --broadcast
