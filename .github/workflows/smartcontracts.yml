@@ -4,10 +4,10 @@ on:
   workflow_dispatch:
   # Inputs the workflow accepts.
     inputs:
-      CHAIN:
-        description: 'Chain ID'
+      SPOKE_PARAMS:
+        description: 'Json with parameters for spoke deploy'
         required: true
-        type: number
+        type: string
       HM_TOKEN_ADDRESS:
         # description: 'HM Token Address'
         required: true
@@ -53,9 +53,9 @@ env:
   # from inputs
   HM_TOKEN_ADDRESS: ${{ inputs.HM_TOKEN_ADDRESS }}
   ADDRESS_TO_FUND: ${{ inputs.ADDRESS_TO_FUND }}
-  CHAIN: ${{ inputs.CHAIN }}
   TIMELOCK: ${{ inputs.TIMELOCK }}
   DESCRIPTION: ${{ inputs.DESCRIPTION }}
+  SPOKE_PARAMS: ${{ inputs.SPOKE_PARAMS }}
 
 
 jobs:
