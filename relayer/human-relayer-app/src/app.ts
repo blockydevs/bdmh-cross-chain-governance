@@ -117,4 +117,6 @@ async function main() {
     await app.listen();
 };
 
+main();
+
 export { getPrivateKeys, getProvidersConfig, main };
