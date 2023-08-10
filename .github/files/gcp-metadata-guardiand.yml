@@ -15,8 +15,6 @@ spec:
         - "--spyRPC '[::]:7073'"
         - "--network {{ env['GUARDIAN_NETWORK'] }}"
         - "--bootstrap {{ env['GUARDIAN_BOOTSTRAP'] }}"
-        ports:
-        - containerPort: 7073
         env:
         - name: REDIS_HOST
           value: "{{ env['REDIS_HOST'] }}"
