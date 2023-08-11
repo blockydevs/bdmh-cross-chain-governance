@@ -9,7 +9,6 @@ spec:
       containers:      
       - image: "{{ env['GCP_REGION'] }}-docker.pkg.dev/{{ env['GCP_PROJECT_ID'] }}/blockydevs/guardiand:latest"
         name: guardian
-        command: [ls, -la]
         ports:
         - containerPort: 7073
         env:
