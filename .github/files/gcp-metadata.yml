@@ -46,8 +46,6 @@ spec:
           value: "{{ env['REDIS_PORT'] }}"
         - name: REDIS_CURRENT_LOCATION_ID
           value: "{{ env['REDIS_CURRENT_LOCATION_ID'] }}"
-        - name: PROVIDERS_CHAIN_10002
-          value: "{{ env['PROVIDERS_CHAIN_10002'] }}"
         - name: HUB_RELAY_CHAIN_ID
           value: "{{ env['HUB_RELAY_CHAIN_ID'] }}"
         - name: HUB_RELAY_CHAIN_ADDRESS
