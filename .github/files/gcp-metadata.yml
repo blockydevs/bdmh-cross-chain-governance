@@ -35,8 +35,6 @@ spec:
 
       - image: "{{ env['GCP_REGION'] }}-docker.pkg.dev/{{ env['GCP_PROJECT_ID'] }}/blockydevs/relayer-app:latest"
         name: relayer-app
-        ports:
-        - containerPort: 8080
         env:
         - name: ENVIRONMENT
           value: "{{ env['ENVIRONMENT'] }}"

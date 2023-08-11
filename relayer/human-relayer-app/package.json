@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "",
   "scripts": {
-    "start": "NODE_OPTIONS='--max_old_space_size=100 --heapsnapshot-near-heap-limit=5' ts-node ./src/app.ts",
+    "start": "NODE_OPTIONS='--max_old_space_size=50 --heapsnapshot-near-heap-limit=5' ts-node ./src/app.ts",
     "build": "tsc",
     "watch": "tsc --watch",
     "test": "jest"
