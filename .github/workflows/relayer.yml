@@ -108,6 +108,13 @@ jobs:
           output_file: gcp-metadata-relayer.yml
           strict: true
 
+      - name: Setup metadata
+        uses: cuchi/jinja2-action@v1.2.0
+        with:
+          template: .github/files/gcp-metadata.yml
+          output_file: gcp-metadata.yml
+          strict: true
+
       - name: Google Auth
         id: auth
         uses: google-github-actions/auth@v1
@@ -139,18 +146,18 @@ jobs:
             --tag ${{ vars.GCP_REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/blockydevs/guardiand \
             ghcr.io/wormhole-foundation/guardiand:latest
 
-      - name: Deploy to Cloud Run – guardiand
-        if: inputs.deploy_guardian == true
-        id: deploy-guardiand
-        uses: google-github-actions/deploy-cloudrun@v1
-        with:
-          region: ${{ vars.GCP_REGION }}
-          metadata: gcp-metadata-guardiand.yml
+      # - name: Deploy to Cloud Run – guardiand
+      #   if: inputs.deploy_guardian == true
+      #   id: deploy-guardiand
+      #   uses: google-github-actions/deploy-cloudrun@v1
+      #   with:
+      #     region: ${{ vars.GCP_REGION }}
+      #     metadata: gcp-metadata-guardiand.yml
 
       # If required, use the Cloud Run url output in later steps
-      - name: Show Output – guardiand
-        if: inputs.deploy_guardian == true
-        run: echo ${{ steps.deploy-guardiand.outputs.url }}
+      # - name: Show Output – guardiand
+      #   if: inputs.deploy_guardian == true
+      #   run: echo ${{ steps.deploy-guardiand.outputs.url }}
 
       - name: Build the image – relayer
         id: build-image
@@ -181,13 +188,23 @@ jobs:
       #     docker build -t "${{ vars.GCP_REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/blockydevs/relayer-app:${{ github.sha }}" -f Dockerfile.human-relayer-app .
       #     docker push "${{ vars.GCP_REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/blockydevs/relayer-app:${{ github.sha }}"
 
+      # - name: Deploy to Cloud Run
+      #   id: deploy-relayer
+      #   uses: google-github-actions/deploy-cloudrun@v1
+      #   with:
+      #     region: ${{ vars.GCP_REGION }}
+      #     metadata: gcp-metadata-relayer.yml
+
+      # If required, use the Cloud Run url output in later steps
+      # - name: Show Output – relayer
+      #   run: echo ${{ steps.deploy-relayer.outputs.url }}
+
       - name: Deploy to Cloud Run
-        id: deploy-relayer
+        id: deploy
         uses: google-github-actions/deploy-cloudrun@v1
         with:
           region: ${{ vars.GCP_REGION }}
-          metadata: gcp-metadata-relayer.yml
+          metadata: gcp-metadata.yml
 
-      # If required, use the Cloud Run url output in later steps
-      - name: Show Output – relayer
-        run: echo ${{ steps.deploy-relayer.outputs.url }}
+      - name: Show Output
+        run: echo ${{ steps.deploy.outputs.url }}
