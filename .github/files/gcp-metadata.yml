@@ -15,6 +15,8 @@ spec:
       containers:
       - image: "{{ env['GCP_REGION'] }}-docker.pkg.dev/{{ env['GCP_PROJECT_ID'] }}/blockydevs/guardiand:latest"
         name: guardian
+        ports:
+        - containerPort: 7073
         args:
         - spy
         - --nodeKey
