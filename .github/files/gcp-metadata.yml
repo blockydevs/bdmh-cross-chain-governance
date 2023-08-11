@@ -2,6 +2,9 @@ apiVersion: serving.knative.dev/v1
 kind: Service
 metadata:
   name: {{ env['HUMAN_RELAYER_SERVICE'] }}
+  annotations:
+    run.googleapis.com/launch-stage: BETA
+
 spec:
   template:
     metadata:
