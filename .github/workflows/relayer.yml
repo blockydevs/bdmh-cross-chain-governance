@@ -1,20 +1,20 @@
-name: relayer
+name: Relayer service
 
 on: 
   workflow_dispatch:
     inputs:
       deploy_guardian:
-        # Friendly description to be shown in the UI instead of 'name'
-        description: "Deploy guardiand"
+        description: "Push latest guardiand image to GAR"
         # Default value if no value is explicitly provided
         default: false
-        # Input has to be provided for the workflow to run
         required: true
-        # The data type of the input
         type: boolean
+#   uncomment when ready
 #   push:
 #     branches:
 #       - main
+#     paths:
+#       - 'relayer/**'
 
 env:
   ENVIRONMENT: ${{ vars.ENVIRONMENT }}
@@ -38,51 +38,7 @@ env:
 
 
 jobs:
-  # check if files changed in relayer dir
-  # relayer-filter:
-  #   runs-on: ubuntu-latest
-  #   outputs:
-  #     relayer-filter: ${{ steps.relayer-filter.outputs.relayer }}
-  #   steps:
-  #     - uses: actions/checkout@v3
-  #     - uses: dorny/paths-filter@v2
-  #       id: relayer-filter
-  #       with:
-  #         filters:
-  #           relayer:
-  #             - './relayer/**'
-  #     # run only if 'relayer' files were changed
-  #     - name: workflow tests
-  #       if: steps.relayer-filter.outputs.relayer-filter == 'true'
-  #       run: echo "Workflow file"
-
-  #     # run only if not 'relayer' files were changed
-  #     - name: not workflow tests
-  #       if: steps.relayer-filter.outputs.relayer-filter != 'true'
-  #       run: echo "NOT relayer file"
-
-  # build-image:
-  #   # needs: [relayer-filter]
-  #   # if: needs.relayer-filter.outputs.relayer-filter == 'true'
-  #   strategy:
-  #     fail-fast: true
-
-  #   name: Build image
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #     - uses: actions/checkout@v3
-  #       with:
-  #         submodules: recursive
-  #     - name: Build and publish a Docker image for ${{ github.repository }}
-  #       uses: macbre/push-to-ghcr@v12
-  #       with:
-  #         image_name: ${{ github.repository }}
-  #         github_token: ${{ secrets.RELAYER_GITHUB_TOKEN }}
-  #         context: ./relayer/
-  #         dockerfile: ./relayer/Dockerfile.human-relayer-app
-
   deploy-image:
-    # needs: [build-image]
     strategy:
       fail-fast: true
     permissions:
@@ -145,19 +101,6 @@ jobs:
           docker buildx imagetools create \
             --tag ${{ vars.GCP_REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/blockydevs/guardiand \
             ghcr.io/wormhole-foundation/guardiand:latest
-
-      # - name: Deploy to Cloud Run – guardiand
-      #   if: inputs.deploy_guardian == true
-      #   id: deploy-guardiand
-      #   uses: google-github-actions/deploy-cloudrun@v1
-      #   with:
-      #     region: ${{ vars.GCP_REGION }}
-      #     metadata: gcp-metadata-guardiand.yml
-
-      # If required, use the Cloud Run url output in later steps
-      # - name: Show Output – guardiand
-      #   if: inputs.deploy_guardian == true
-      #   run: echo ${{ steps.deploy-guardiand.outputs.url }}
 
       - name: Build the image – relayer
         id: build-image

@@ -5,6 +5,8 @@ on:
   # push:
   #   branches:
   #     - main
+  #   paths:
+  #     - 'frontend/**'
 
 permissions:
   contents: read
@@ -12,33 +14,8 @@ permissions:
   id-token: write
 
 jobs:
-  # check if files changed in frontend dir
-  frontend-filter:
-    runs-on: ubuntu-latest
-    outputs:
-      frontend-filter: ${{ steps.frontend-filter.outputs.frontend }}
-    steps:
-    - uses: actions/checkout@v3
-    - uses: dorny/paths-filter@v2
-      id: frontend-filter
-      with:
-        filters:
-          frontend:
-            - 'frontend/**'
-    # run only if 'frontend' files were changed
-    - name: workflow tests
-      if: steps.frontend-filter.outputs.frontend-filter == 'true'
-      run: echo "Workflow file"
-
-    # run only if not 'frontend' files were changed
-    - name: not workflow tests
-      if: steps.frontend-filter.outputs.frontend-filter != 'true'
-      run: echo "NOT frontend file"
-
   build:
     runs-on: ubuntu-latest
-    needs: [frontend-filter]
-    if: needs.frontend-filter.outputs.frontend-filter == 'true'
     steps:
     - uses: actions/checkout@v3
 
