@@ -108,6 +108,11 @@ Then run the following script:
 forge script script/HubTransferOwnership.s.sol:HubTransferOwnership --rpc-url $SEPOLIA_RPC_URL --broadcast
 ```
 
+
+## Deploying with Github Actions
+
+Fill [json](sample-spoke-params.json) with desired variables for spoke contract depoloyments, copy its content into field descirbed 'Json with parameters for spoke deploy', provide `HM_TOKEN_ADDRESS` variable value and provide other parameters if needed, eg. if you want transfer governance ownership to timelock check this field.
+
 ## Interacting with Governance ecosystem
 
 After setting up the ecosystem, everything is ready for user interaction.
