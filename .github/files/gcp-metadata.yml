@@ -15,8 +15,6 @@ spec:
       containers:
       - image: "{{ env['GCP_REGION'] }}-docker.pkg.dev/{{ env['GCP_PROJECT_ID'] }}/blockydevs/guardiand:latest"
         name: guardian
-        ports:
-        - containerPort: 7073
         args:
         - spy
         - --nodeKey
@@ -37,6 +35,8 @@ spec:
 
       - image: "{{ env['GCP_REGION'] }}-docker.pkg.dev/{{ env['GCP_PROJECT_ID'] }}/blockydevs/relayer-app:latest"
         name: relayer-app
+        ports:
+        - containerPort: 8080
         resources:
           limits:
             cpu: "1"
