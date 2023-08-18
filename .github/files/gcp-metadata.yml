@@ -37,6 +37,9 @@ spec:
 
       - image: "{{ env['GCP_REGION'] }}-docker.pkg.dev/{{ env['GCP_PROJECT_ID'] }}/blockydevs/relayer-app:latest"
         name: relayer-app
+        resources:
+          limits:
+            memory: "1.5G"
         env:
         - name: ENVIRONMENT
           value: "{{ env['ENVIRONMENT'] }}"
