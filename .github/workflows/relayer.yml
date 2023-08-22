@@ -18,6 +18,7 @@ on:
 
 env:
   ENVIRONMENT: ${{ vars.ENVIRONMENT }}
+  SPY_HOST: ${{ vars.SPY_HOST }}
   REDIS_HOST: ${{ vars.REDIS_HOST }}
   REDIS_PORT: ${{ vars.REDIS_PORT }}
   REDIS_CURRENT_LOCATION_ID: ${{ vars.REDIS_CURRENT_LOCATION_ID }}

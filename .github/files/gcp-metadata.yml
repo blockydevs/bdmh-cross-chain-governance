@@ -68,4 +68,6 @@ spec:
           value: "{{ env['PRIVATE_KEYS_CHAIN_5'] }}"
         - name: PROVIDERS_CHAIN_5
           value: "{{ env['PROVIDERS_CHAIN_5'] }}"
+        - name: SPY_HOST
+          value: "{{ env['SPY_HOST'] }}"
           
