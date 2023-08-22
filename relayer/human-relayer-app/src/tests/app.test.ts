@@ -30,6 +30,8 @@ jest.mock("../controller", () => ({
 
 describe("main function", () => {
     beforeEach(() => {
+        process.env.NODE_ENV = "test";
+
         process.env.ENVIRONMENT = "VALID_ENVIRONMENT";
 
         process.env.HUB_RELAY_CHAIN_ID = "1";
@@ -40,6 +42,7 @@ describe("main function", () => {
 
     afterEach(() => {
         jest.clearAllMocks();
+        delete process.env.NODE_ENV;
     });
 
     it("should set environment variables correctly", async () => {
@@ -69,45 +72,103 @@ describe("main function", () => {
 
     it("should properly configure hub and spoke relay", async () => {
         await main();
-        expect(mockApp.chain).toHaveBeenCalledWith(2);
-        expect(mockApp.address).toHaveBeenCalledTimes(2);
+
+        const hubChainId = Number(process.env.HUB_RELAY_CHAIN_ID) as ChainId;
+        expect(mockApp.chain).toHaveBeenCalledWith(hubChainId);
+        expect(mockApp.address).toHaveBeenCalledWith(process.env.HUB_RELAY_CHAIN_ADDRESS, expect.any(Function));
+
+        const spokeKeys = Object.keys(process.env)
+            .filter(key => key.startsWith("SPOKE_RELAY_CHAIN_"));
+
+        spokeKeys.forEach(key => {
+            const chainId = Number(key.replace("SPOKE_RELAY_CHAIN_", "")) as ChainId;
+            expect(mockApp.chain).toHaveBeenCalledWith(chainId);
+            expect(mockApp.address).toHaveBeenCalledWith(process.env[key] as string, expect.any(Function));
+        });
+
+        expect(mockApp.address).toHaveBeenCalledTimes(1 + spokeKeys.length);  //1 for hub
+    });
+
+    it("should use default values when REDIS_HOST environment variable is missing", async () => {
+        delete process.env.REDIS_HOST;
+        await main();
+        expect(StandardRelayerApp).toHaveBeenCalledWith(
+            "VALID_ENVIRONMENT",
+            expect.objectContaining({
+                redis: { host: "redis-docker", port: 6379 },
+            })
+        );
+    });
+    it("should use default values when SPY_HOST environment variable is missing", async () => {
+        delete process.env.SPY_HOST;
+        await main();
+        expect(StandardRelayerApp).toHaveBeenCalledWith(
+            "VALID_ENVIRONMENT",
+            expect.objectContaining({
+                spyEndpoint: "spy-docker:7073",
+            })
+        );
     });
 });
 
 describe('getPrivateKeys function', () => {
+    let expectedKeys: Partial<Record<ChainId, any[]>>;
+
     beforeEach(() => {
-        process.env = Object.assign(process.env, {
-            PRIVATE_KEYS_CHAIN_1: 'key1',
-            PRIVATE_KEYS_CHAIN_2: 'key2',
-        });
+        process.env.NODE_ENV = "test";
+
+        process.env.PRIVATE_KEYS_CHAIN_1 = 'key1';
+        process.env.PRIVATE_KEYS_CHAIN_2 = 'key2';
+
+        expectedKeys = {};
+        for (const key of Object.keys(process.env)) {
+            if (key.startsWith("PRIVATE_KEYS_CHAIN_")) {
+                const chainId = Number(key.replace("PRIVATE_KEYS_CHAIN_", "")) as ChainId;
+                expectedKeys[chainId] = [process.env[key] as string];
+            }
+        }
+    });
+
+    afterEach(() => {
+        delete process.env.PRIVATE_KEYS_CHAIN_1;
+        delete process.env.PRIVATE_KEYS_CHAIN_2;
+        delete process.env.NODE_ENV;
     });
 
     it('should return private keys for all chains', () => {
         const privateKeys = getPrivateKeys();
-        const expectedKeys: Partial<Record<ChainId, any[]>> = {
-            1: ['key1'],
-            2: ['key2'],
-        };
-
         expect(privateKeys).toEqual(expectedKeys);
     });
 });
 
 describe('getProvidersConfig function', () => {
+    let expectedConfig: Partial<Record<ChainId, { endpoints: string[] }>>;
+
     beforeEach(() => {
-        process.env = Object.assign(process.env, {
-            PROVIDERS_CHAIN_1: 'provider1',
-            PROVIDERS_CHAIN_2: 'provider2',
-        });
+        process.env.NODE_ENV = "test";
+
+        process.env.PROVIDERS_CHAIN_1 = 'provider1';
+        process.env.PROVIDERS_CHAIN_2 = 'provider2';
+
+        expectedConfig = {};
+        for (const key of Object.keys(process.env)) {
+            if (key.startsWith("PROVIDERS_CHAIN_")) {
+                const chainId = Number(key.replace("PROVIDERS_CHAIN_", "")) as ChainId;
+                expectedConfig[chainId] = {
+                    endpoints: [process.env[key] as string]
+                };
+            }
+        }
+    });
+
+    afterEach(() => {
+        delete process.env.PROVIDERS_CHAIN_1;
+        delete process.env.PROVIDERS_CHAIN_2;
+        delete process.env.NODE_ENV;
     });
 
     it('should return providers configuration for all chains', () => {
         const providersConfig = getProvidersConfig();
-        const expectedConfig = {
-            1: { endpoints: ['provider1'] },
-            2: { endpoints: ['provider2'] },
-        };
-
         expect(providersConfig).toEqual(expectedConfig);
     });
 });
