@@ -52,7 +52,7 @@ async function main() {
     }
 
     const redisOpts = {
-        host: "redis-docker",
+        host: process.env.REDIS_HOST || "redis-docker",
         port: 6379
     };
 
@@ -60,7 +60,7 @@ async function main() {
         process.env.ENVIRONMENT as Environment,
         {
             name: "HumanRelayerApp",
-            spyEndpoint: "spy-docker:7073",
+            spyEndpoint: `${process.env.SPY_HOST || "spy-docker"}:7073`,
             redis: redisOpts
         },
     );
@@ -71,7 +71,7 @@ async function main() {
 
     app.logger(rootLogger);
     app.use(logging(rootLogger)); // <-- logging middleware
-    app.use(missedVaas(app, { namespace: "simple", logger: rootLogger, redis: redisOpts }));
+    app.use(missedVaas(app, {namespace: "simple", logger: rootLogger, redis: redisOpts}));
 
     app.use(providers({
         chains: providersConfig
@@ -91,7 +91,7 @@ async function main() {
     app.chain(chainName).address(
         process.env.HUB_RELAY_CHAIN_ADDRESS,
         // callback function to invoke on new message
-        async(ctx, next) => {
+        async (ctx, next) => {
             try {
                 await relayBusiness.relayMessage(ctx, next, spokeAbi);
             } catch (error) {
@@ -117,6 +117,12 @@ async function main() {
     await app.listen();
 };
 
-main();
+if (process.env.NODE_ENV != "test") {
+    main().then(() => {
+        console.log("Main function executed successfully.");
+    }).catch((error) => {
+        console.error("Error executing the main function:", error);
+    });
+}
 
-export { getPrivateKeys, getProvidersConfig, main };
+export {getPrivateKeys, getProvidersConfig, main};
