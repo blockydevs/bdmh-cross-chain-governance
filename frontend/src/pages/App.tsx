@@ -151,7 +151,7 @@ export default function App() {
                     </Suspense>
                   }
                 />
-                <Route path=":governorIndex/:id" element={<VotePage />} />
+                <Route path={`${process.env.REACT_APP_BASE_URL}/:governorIndex/:id`} element={<VotePage />} />
                 <Route path="/not-found" element={<NotFound />} />
                 <Route path="*" element={<Navigate to={process.env.REACT_APP_BASE_URL as string} replace />} />
               </Routes>

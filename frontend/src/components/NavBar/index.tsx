@@ -31,7 +31,10 @@ const Navbar = () => {
         <Box display="flex" height="full" flexWrap="nowrap">
           <Box className={styles.leftSideContainer}>
             <Box className={styles.logoContainer}>
-              <HumanProtocolIcon fill={darkMode ? 'white' : '#6309FF'} onClick={() => navigate('/')} />
+              <HumanProtocolIcon
+                fill={darkMode ? 'white' : '#6309FF'}
+                onClick={() => navigate(process.env.REACT_APP_BASE_URL as string)}
+              />
             </Box>
             {!isNftPage && (
               <Box display={{ sm: 'flex', lg: 'none' }}>
