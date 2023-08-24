@@ -19,9 +19,13 @@ for ((i=0; i < $COUNT; i++)); do
   SPOKE_CHAIN_ID=$(echo "$SPOKE_PARAMS" | jq -r -s --argjson i "$i" '.[$i].SPOKE_CHAIN_ID')
   SPOKE_RPC_URL=$(echo "$SPOKE_PARAMS" | jq -r -s --argjson i "$i" '.[$i].SPOKE_RPC_URL')
   SPOKE_ETHERSCAN_API_KEY=$(echo "$SPOKE_PARAMS" | jq -r -s --argjson i "$i" '.[$i].SPOKE_ETHERSCAN_API_KEY')
+  SPOKE_HM_TOKEN_ADDRESS=$(echo "$SPOKE_PARAMS" | jq -r -s --argjson i "$i" '.[$i].SPOKE_HM_TOKEN_ADDRESS')
 
+  HM_TOKEN_ADDRESS=$HUB_HM_TOKEN_ADDRESS
   forge script script/VHMTDeployment.s.sol:VHMTDeployment --rpc-url $SPOKE_RPC_URL --broadcast --verify
   VOTE_TOKEN_ADDRESS="$(cat "broadcast/VHMTDeployment.s.sol/$SPOKE_CHAIN_ID/run-latest.json" | jq -r '.transactions[0].contractAddress')"
+  HUB_VOTE_TOKEN_ADDRESS=$VOTE_TOKEN_ADDRESS
+  SPOKE_VOTE_TOKEN_ADDRESS=$VOTE_TOKEN_ADDRESS
 
   forge script script/SpokeDeployment.s.sol:SpokeDeployment --rpc-url $SPOKE_RPC_URL --etherscan-api-key $SPOKE_ETHERSCAN_API_KEY --broadcast --legacy --verify
 
