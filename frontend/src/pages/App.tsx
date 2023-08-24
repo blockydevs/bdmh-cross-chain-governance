@@ -138,7 +138,7 @@ export default function App() {
             {isLoaded ? (
               <Routes>
                 <Route
-                  path="/"
+                  path={process.env.REACT_APP_BASE_URL as string}
                   element={
                     <Suspense
                       fallback={
@@ -152,8 +152,8 @@ export default function App() {
                   }
                 />
                 <Route path=":governorIndex/:id" element={<VotePage />} />
-                <Route path="*" element={<Navigate to="/not-found" replace />} />
                 <Route path="/not-found" element={<NotFound />} />
+                <Route path="*" element={<Navigate to={process.env.REACT_APP_BASE_URL as string} replace />} />
               </Routes>
             ) : (
               <Loader />
