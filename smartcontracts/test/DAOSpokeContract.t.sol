@@ -35,6 +35,25 @@ contract DAOSpokeContractTest is TestUtil {
         );
     }
 
+    function testHasVotedWhenVoted() public {
+        uint256 proposalId = _createProposalOnSpoke();
+        address someUser = _createMockUserWithVotingPower(1, voteToken);
+        vm.roll(block.number + 3);
+        vm.startPrank(someUser);
+        daoSpokeContract.castVote(proposalId, 0);
+        vm.stopPrank();
+        bool hasVoted = daoSpokeContract.hasVoted(proposalId, someUser);
+        assertTrue(hasVoted);
+    }
+
+    function testHasVotedWhenNotVoted() public {
+        uint256 proposalId = _createProposalOnSpoke();
+        address someUser = _createMockUserWithVotingPower(1, voteToken);
+        vm.roll(block.number + 3);
+        bool hasVoted = daoSpokeContract.hasVoted(proposalId, someUser);
+        assertFalse(hasVoted);
+    }
+
     function testIsProposalWhenNoProposalsCreated() public {
         bool isProposal = daoSpokeContract.isProposal(1);
         assertFalse(isProposal);
