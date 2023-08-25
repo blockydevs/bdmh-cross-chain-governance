@@ -65,6 +65,10 @@ contract DAOSpokeContract {
         hubContractChainId = _hubContractChainId;
     }
 
+    function hasVoted(uint256 proposalId, address account) public view virtual returns (bool) {
+        return proposalVotes[proposalId].hasVoted[account];
+    }
+
     /**
      @dev Checks if a proposal exists.
      @param proposalId The ID of the proposal.
