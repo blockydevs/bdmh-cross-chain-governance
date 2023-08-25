@@ -25,10 +25,10 @@ contract MetaHumanGovernor is Governor, GovernorSettings, CrossChainGovernorCoun
 
     //https://book.wormhole.com/wormhole/3_coreLayerContracts.html#consistency-levels
     //TODO:prod please change the consistency level to value of choice. Right now it's set up to `1` which is `finalized` value
-    uint8 public consistencyLevel = 200;
+    uint8 public consistencyLevel = 1;
     IWormholeRelayer immutable public wormholeRelayer;
     uint16 public nonce = 0;
-    uint256 constant internal GAS_LIMIT = 50_000;
+    uint256 constant internal GAS_LIMIT = 500_000;
     uint16 immutable public chainId;
 
     mapping(bytes32 => bool) public processedMessages;
@@ -201,15 +201,14 @@ contract MetaHumanGovernor is Governor, GovernorSettings, CrossChainGovernorCoun
             );
 
             // Send a message to other contracts
-            // Cost of requesting a message to be sent to
-            // chain 'targetChain' with a gasLimit of 'GAS_LIMIT'
-            uint256 cost = quoteCrossChainMessage(spokeContracts[i-1].chainId);
+            uint256 sendMessageToHubCost = quoteCrossChainMessage(chainId, 0);
+            uint256 cost = quoteCrossChainMessage(spokeContracts[i-1].chainId, sendMessageToHubCost);
 
             wormholeRelayer.sendPayloadToEvm{value: cost}(
                 spokeContracts[i-1].chainId,
                 address(uint160(uint256(spokeContracts[i-1].contractAddress))),
                 payload,
-                0, // no receiver value needed
+                sendMessageToHubCost, // send value to enable the spoke to send back vote result
                 GAS_LIMIT
             );
         }
@@ -251,7 +250,7 @@ contract MetaHumanGovernor is Governor, GovernorSettings, CrossChainGovernorCoun
                 // Send a message to other contracts
                 // Cost of requesting a message to be sent to
                 // chain 'targetChain' with a gasLimit of 'GAS_LIMIT'
-                uint256 cost = quoteCrossChainMessage(spokeContracts[i-1].chainId);
+                uint256 cost = quoteCrossChainMessage(spokeContracts[i-1].chainId, 0);
 
                 wormholeRelayer.sendPayloadToEvm{value: cost}(
                     spokeContracts[i-1].chainId,
@@ -265,8 +264,8 @@ contract MetaHumanGovernor is Governor, GovernorSettings, CrossChainGovernorCoun
         return proposalId;
     }
 
-    function quoteCrossChainMessage(uint16 targetChain) internal view returns (uint256 cost) {
-        (cost,) = wormholeRelayer.quoteEVMDeliveryPrice(targetChain, 0, GAS_LIMIT);
+    function quoteCrossChainMessage(uint16 targetChain, uint256 valueToSend) internal view returns (uint256 cost) {
+        (cost,) = wormholeRelayer.quoteEVMDeliveryPrice(targetChain, valueToSend, GAS_LIMIT);
     }
 
     // The following functions are overrides required by Solidity.

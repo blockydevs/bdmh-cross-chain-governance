@@ -22,7 +22,7 @@ contract PrepareSpokeTesting is Script, DeploymentUtils {
         hmToken.transfer(secondAddress, 100 ether);
         hmToken.transfer(thirdAddress, 100 ether);
         VHMToken voteToken = new VHMToken(IERC20(address(hmToken)));
-        new DAOSpokeContract(bytes32(uint256(uint160(governorAddress))), hubChainId, voteToken, targetSecondsPerBlock, mumbaiChainId, mumbaiCoreBridgeAddress);
+        new DAOSpokeContract(bytes32(uint256(uint160(governorAddress))), hubChainId, voteToken, targetSecondsPerBlock, mumbaiChainId, avalancheAutomaticRelayerAddress);
 
         vm.stopBroadcast();
 

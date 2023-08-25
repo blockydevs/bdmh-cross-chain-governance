@@ -10,12 +10,12 @@ contract SpokeDeployment is Script, DeploymentUtils {
     function run() external {
         uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY");
         address governorAddress = vm.envAddress("GOVERNOR_ADDRESS");
-        address coreBridgeAddress = vm.envAddress("SPOKE_CORE_BRIDGE_ADDRESS");
+        address automaticRelayerAddress = vm.envAddress("SPOKE_AUTOMATIC_RELAYER_ADDRESS");
         uint16 chainId = uint16(vm.envUint("SPOKE_CHAIN_ID"));
         address vHMTokenAddress = vm.envAddress("SPOKE_VOTE_TOKEN_ADDRESS");
         VHMToken voteToken = VHMToken(vHMTokenAddress);
         vm.startBroadcast(deployerPrivateKey);
 
-        new DAOSpokeContract(bytes32(uint256(uint160(governorAddress))), hubChainId, voteToken, targetSecondsPerBlock, chainId, coreBridgeAddress);
+        new DAOSpokeContract(bytes32(uint256(uint160(governorAddress))), hubChainId, voteToken, targetSecondsPerBlock, chainId, automaticRelayerAddress);
     }
 }

@@ -17,7 +17,7 @@ contract CreateProposal is Script, DeploymentUtils {
 
         (address[] memory targets, uint256[] memory values, bytes[] memory calldatas, string memory description) = getProposalExecutionData();
 
-        governanceContract.crossChainPropose(targets, values, calldatas, description);
+        governanceContract.crossChainPropose{value: 0.1 ether}(targets, values, calldatas, description);
 
         vm.stopBroadcast();
     }

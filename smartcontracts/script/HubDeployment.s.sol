@@ -11,7 +11,7 @@ import "./DeploymentUtils.sol";
 contract HubDeployment is Script, DeploymentUtils {
     function run() external {
         vm.startBroadcast(deployerPrivateKey);
-        address coreBridgeAddress = vm.envAddress("HUB_CORE_BRIDGE_ADDRESS");
+        address automaticRelayerAddress = vm.envAddress("HUB_AUTOMATIC_RELAYER_ADDRESS");
         uint16 chainId = uint16(vm.envUint("HUB_CHAIN_ID"));
         address vHMTAddress = vm.envAddress("HUB_VOTE_TOKEN_ADDRESS");
         VHMToken voteToken = VHMToken(vHMTAddress);
@@ -21,7 +21,7 @@ contract HubDeployment is Script, DeploymentUtils {
         proposers[0] = deployerAddress;
         executors[0] = address(0);
         TimelockController timelockController = new TimelockController(1, proposers, executors, deployerAddress);
-        MetaHumanGovernor governanceContract = new MetaHumanGovernor(voteToken, timelockController, spokeContracts, chainId, coreBridgeAddress, deployerAddress);
+        MetaHumanGovernor governanceContract = new MetaHumanGovernor(voteToken, timelockController, spokeContracts, chainId, automaticRelayerAddress, deployerAddress);
         timelockController.grantRole(keccak256("PROPOSER_ROLE"), address(governanceContract));
         timelockController.revokeRole(keccak256("TIMELOCK_ADMIN_ROLE"), deployerAddress);
 
