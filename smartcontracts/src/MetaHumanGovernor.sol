@@ -8,7 +8,8 @@ import "@openzeppelin/contracts/governance/extensions/GovernorVotesQuorumFractio
 import "@openzeppelin/contracts/governance/extensions/GovernorTimelockControl.sol";
 import "./CrossChainGovernorCountingSimple.sol";
 import "./DAOSpokeContract.sol";
-import "./wormhole/IWormhole.sol";
+import "./wormhole/IWormholeRelayer.sol";
+import "./wormhole/IWormholeReceiver.sol";
 import "./magistrate/Magistrate.sol";
 
 /**
@@ -20,13 +21,14 @@ import "./magistrate/Magistrate.sol";
   For more details check out [OpenZeppelin's documentation](https://docs.openzeppelin.com/contracts/4.x/api/governance#governor).
 */
 contract MetaHumanGovernor is Governor, GovernorSettings, CrossChainGovernorCountingSimple,
-    GovernorVotes, GovernorVotesQuorumFraction, GovernorTimelockControl, Magistrate {
+    GovernorVotes, GovernorVotesQuorumFraction, GovernorTimelockControl, Magistrate, IWormholeReceiver {
 
     //https://book.wormhole.com/wormhole/3_coreLayerContracts.html#consistency-levels
     //TODO:prod please change the consistency level to value of choice. Right now it's set up to `1` which is `finalized` value
-    uint8 public consistencyLevel = 1;
-    IWormhole immutable public coreBridge;
+    uint8 public consistencyLevel = 200;
+    IWormholeRelayer immutable public wormholeRelayer;
     uint16 public nonce = 0;
+    uint256 constant internal GAS_LIMIT = 50_000;
     uint16 immutable public chainId;
 
     mapping(bytes32 => bool) public processedMessages;
@@ -39,9 +41,9 @@ contract MetaHumanGovernor is Governor, GovernorSettings, CrossChainGovernorCoun
      @param _timelock The address of the timelock contract used for delayed execution.
      @param _spokeContracts An array of CrossChainAddress structs representing the spoke contracts.
      @param _chainId The chain ID of the current contract.
-     @param _wormholeCoreBridgeAddress The address of the core bridge contract used for cross-chain communication.
+     @param _wormholeRelayerAddress The address of the wormhole automatic relayer contract used for cross-chain communication.
     */
-    constructor(IVotes _token, TimelockController _timelock, CrossChainAddress[] memory _spokeContracts, uint16 _chainId, address _wormholeCoreBridgeAddress, address _magistrateAddress)
+    constructor(IVotes _token, TimelockController _timelock, CrossChainAddress[] memory _spokeContracts, uint16 _chainId, address _wormholeRelayerAddress, address _magistrateAddress)
     Governor("MetaHumanGovernor")
     GovernorSettings(1 /* 1 block */, 5 /* 1 minute */, 0) //TODO:prod in production voting delay, voting period, proposal threshold needs to be changed to value of choice
     GovernorVotes(_token)
@@ -51,32 +53,42 @@ contract MetaHumanGovernor is Governor, GovernorSettings, CrossChainGovernorCoun
     Magistrate(_magistrateAddress)
     {
         chainId = _chainId;
-        coreBridge = IWormhole(_wormholeCoreBridgeAddress);
+        wormholeRelayer = IWormholeRelayer(_wormholeRelayerAddress);
     }
 
     /**
-      @dev Receives a message from the relayer.
-      @param VAA The Verified Action Approval (VAA) message. [Read more](https://book.wormhole.com/wormhole/4_vaa.html)
+     @dev Receives messages from the Wormhole protocol's relay mechanism and processes them accordingly.
+     This function is intended to be called only by the designated Wormhole relayer.
+     @param payload The payload of the received message.
+     @param additionalVaas An array of additional data (not used in this function).
+     @param sourceAddress The address that initiated the message transmission (HelloWormhole contract address).
+     @param sourceChain The chain ID of the source contract.
+     @param deliveryHash A unique hash representing the delivery of the message to prevent duplicate processing.
     */
-    function receiveMessage(bytes memory VAA) public {
-        (IWormhole.VM memory vm, bool valid, string memory reason) = coreBridge.parseAndVerifyVM(VAA);
-        require(valid, reason);
+    function receiveWormholeMessages(
+        bytes memory payload,
+        bytes[] memory additionalVaas, // additionalVaas
+        bytes32 sourceAddress, // address that called 'sendPayloadToEvm' (HelloWormhole contract address)
+        uint16 sourceChain,
+        bytes32 deliveryHash // this can be stored in a mapping deliveryHash => bool to prevent duplicate deliveries
+    ) public payable override {
+        require(msg.sender == address(wormholeRelayer), "Only relayer allowed");
 
-        require(spokeContractsMapping[vm.emitterAddress][vm.emitterChainId],
+        require(spokeContractsMapping[sourceAddress][sourceChain],
             "Only messages from the spoke contracts can be received!");
 
-        require(!processedMessages[vm.hash], "Message already processed");
+        require(!processedMessages[deliveryHash], "Message already processed");
 
         (
         address intendedRecipient,
         ,//chainId
         ,//sender
         bytes memory decodedMessage
-        ) = abi.decode(vm.payload, (address, uint16, address, bytes));
+        ) = abi.decode(payload, (address, uint16, address, bytes));
 
         require(intendedRecipient == address(this));
 
-        processedMessages[vm.hash] = true;
+        processedMessages[deliveryHash] = true;
         // Gets a function selector option
         uint16 option;
         assembly {
@@ -84,7 +96,7 @@ contract MetaHumanGovernor is Governor, GovernorSettings, CrossChainGovernorCoun
         }
 
         if (option == 0) {
-            onReceiveSpokeVotingData(vm.emitterChainId, vm.emitterAddress, decodedMessage);
+            onReceiveSpokeVotingData(sourceChain, sourceAddress, decodedMessage);
         }
     }
 
@@ -187,8 +199,19 @@ contract MetaHumanGovernor is Governor, GovernorSettings, CrossChainGovernorCoun
                 msg.sender,
                 message
             );
-            coreBridge.publishMessage(nonce, payload, consistencyLevel);
-            nonce++;
+
+            // Send a message to other contracts
+            // Cost of requesting a message to be sent to
+            // chain 'targetChain' with a gasLimit of 'GAS_LIMIT'
+            uint256 cost = quoteCrossChainMessage(spokeContracts[i-1].chainId);
+
+            wormholeRelayer.sendPayloadToEvm{value: cost}(
+                spokeContracts[i-1].chainId,
+                address(uint160(uint256(spokeContracts[i-1].contractAddress))),
+                payload,
+                0, // no receiver value needed
+                GAS_LIMIT
+            );
         }
     }
 
@@ -226,13 +249,25 @@ contract MetaHumanGovernor is Governor, GovernorSettings, CrossChainGovernorCoun
                 );
 
                 // Send a message to other contracts
-                coreBridge.publishMessage(nonce, payload, consistencyLevel);
-                nonce++;
+                // Cost of requesting a message to be sent to
+                // chain 'targetChain' with a gasLimit of 'GAS_LIMIT'
+                uint256 cost = quoteCrossChainMessage(spokeContracts[i-1].chainId);
+
+                wormholeRelayer.sendPayloadToEvm{value: cost}(
+                    spokeContracts[i-1].chainId,
+                    address(uint160(uint256(spokeContracts[i-1].contractAddress))),
+                    payload,
+                    0, // no receiver value needed
+                    GAS_LIMIT
+                );
             }
         }
         return proposalId;
     }
 
+    function quoteCrossChainMessage(uint16 targetChain) internal view returns (uint256 cost) {
+        (cost,) = wormholeRelayer.quoteEVMDeliveryPrice(targetChain, 0, GAS_LIMIT);
+    }
 
     // The following functions are overrides required by Solidity.
 

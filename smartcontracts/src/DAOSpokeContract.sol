@@ -5,25 +5,27 @@ import "@openzeppelin/contracts/utils/Timers.sol";
 import "@openzeppelin/contracts/utils/Checkpoints.sol";
 import "@openzeppelin/contracts/governance/utils/IVotes.sol";
 import "./MetaHumanGovernor.sol";
-import "./wormhole/IWormhole.sol";
+import "./wormhole/IWormholeRelayer.sol";
+import "./wormhole/IWormholeReceiver.sol";
 
 /**
   @title DAOSpokeContract
   @dev DAOSpokeContract is a contract that handles voting and proposal functionality for a DAO spoke chain.
   It integrates with the MetaHumanGovernor contract for governance operations.
  */
-contract DAOSpokeContract {
+contract DAOSpokeContract is IWormholeReceiver {
 
     bytes32 public hubContractAddress;
     uint16 public hubContractChainId;
     IVotes public immutable token;
     uint256 public immutable targetSecondsPerBlock;
-    IWormhole immutable public coreBridge;
+    IWormholeRelayer immutable public wormholeRelayer;
     uint16 immutable public chainId;
 
     uint16 public nonce = 0;
     //TODO:prod please change the consistency level to value of choice. Right now it's set up to `1` which is `finalized` value
     uint8 public consistencyLevel = 1;
+    uint256 constant internal GAS_LIMIT = 50_000;
     mapping(uint256 => RemoteProposal) public proposals;
     mapping(uint256 => ProposalVote) public proposalVotes;
     mapping(bytes32 => bool) public processedMessages;
@@ -54,13 +56,13 @@ contract DAOSpokeContract {
       @param _token The address of the token contract used for voting.
       @param _targetSecondsPerBlock The target number of seconds per block for block estimation.
       @param _chainId The chain ID of the current contract.
-      @param _wormholeCoreBridgeAddress The address of the core bridge contract used for cross-chain communication.
+      @param _wormholeRelayerAddress The address of the wormhole automatic relayer contract used for cross-chain communication.
     */
-    constructor(bytes32 _hubContractAddress, uint16 _hubContractChainId, IVotes _token, uint _targetSecondsPerBlock, uint16 _chainId, address _wormholeCoreBridgeAddress) {
+    constructor(bytes32 _hubContractAddress, uint16 _hubContractChainId, IVotes _token, uint _targetSecondsPerBlock, uint16 _chainId, address _wormholeRelayerAddress) {
         token = _token;
         targetSecondsPerBlock = _targetSecondsPerBlock;
         chainId = _chainId;
-        coreBridge = IWormhole(_wormholeCoreBridgeAddress);
+        wormholeRelayer = IWormholeRelayer(_wormholeRelayerAddress);
         hubContractAddress = _hubContractAddress;
         hubContractChainId = _hubContractChainId;
     }
@@ -128,28 +130,38 @@ contract DAOSpokeContract {
     }
 
     /**
-     @dev Receives a message from the relayer.
-     @param VAA The Verified Action Approval (VAA) message. (read more: https://book.wormhole.com/wormhole/4_vaa.html)
+     @dev Receives messages from the Wormhole protocol's relay mechanism and processes them accordingly.
+     This function is intended to be called only by the designated Wormhole relayer.
+     @param payload The payload of the received message.
+     @param additionalVaas An array of additional data (not used in this function).
+     @param sourceAddress The address that initiated the message transmission (HelloWormhole contract address).
+     @param sourceChain The chain ID of the source contract.
+     @param deliveryHash A unique hash representing the delivery of the message to prevent duplicate processing.
     */
-    function receiveMessage(bytes memory VAA) public {
-        (IWormhole.VM memory vm, bool valid, string memory reason) = coreBridge.parseAndVerifyVM(VAA);
-        require(valid, reason);
+    function receiveWormholeMessages(
+        bytes memory payload,
+        bytes[] memory additionalVaas, // additionalVaas
+        bytes32 sourceAddress, // address that called 'sendPayloadToEvm' (HelloWormhole contract address)
+        uint16 sourceChain,
+        bytes32 deliveryHash // this can be stored in a mapping deliveryHash => bool to prevent duplicate deliveries
+    ) public payable override {
+        require(msg.sender == address(wormholeRelayer), "Only relayer allowed");
 
-        require(hubContractAddress == vm.emitterAddress && hubContractChainId == vm.emitterChainId,
+        require(hubContractAddress == sourceAddress && hubContractChainId == sourceChain,
             "Only messages from the hub contract can be received!");
 
-        require(!processedMessages[vm.hash], "Message already processed");
+        require(!processedMessages[deliveryHash], "Message already processed");
 
         (
             address intendedRecipient,
             ,//chainId
             ,//sender
             bytes memory decodedMessage
-        ) = abi.decode(vm.payload, (address, uint16, address, bytes));
+        ) = abi.decode(payload, (address, uint16, address, bytes));
 
         require(intendedRecipient == address(this));
 
-        processedMessages[vm.hash] = true;
+        processedMessages[deliveryHash] = true;
 
         uint16 option;
         assembly {
@@ -188,16 +200,31 @@ contract DAOSpokeContract {
                 votes.againstVotes,
                 votes.abstainVotes
             );
-            bytes memory payload = abi.encode(
+            bytes memory payloadToSend = abi.encode(
                 hubContractAddress,
                 hubContractChainId,
                 msg.sender,
                 messageToSend
             );
-            coreBridge.publishMessage(nonce, payload, consistencyLevel);
-            nonce++;
+
+            // Send a message to other contracts
+            // Cost of requesting a message to be sent to
+            // chain 'targetChain' with a gasLimit of 'GAS_LIMIT'
+            uint256 cost = quoteCrossChainMessage(hubContractChainId);
+
+            wormholeRelayer.sendPayloadToEvm{value: cost}(
+                hubContractChainId,
+                address(uint160(uint256(hubContractAddress))),
+                payloadToSend,
+                0, // no receiver value needed
+                GAS_LIMIT
+            );
 
             proposals[proposalId].voteFinished = true;
         }
+    }
+
+    function quoteCrossChainMessage(uint16 targetChain) internal view returns (uint256 cost) {
+        (cost,) = wormholeRelayer.quoteEVMDeliveryPrice(targetChain, 0, GAS_LIMIT);
     }
 }
