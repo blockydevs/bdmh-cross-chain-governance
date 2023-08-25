@@ -44,6 +44,7 @@ import {
   ProposalData,
   ProposalState,
   useCollectionStatus,
+  useHasVoted,
   useProposalData,
   useQuorum,
   useUserDelegatee,
@@ -179,14 +180,20 @@ const ProposerAddressLink = styled(ExternalLink)`
 `
 
 export default function VotePage() {
-  const { governorIndex, id } = useParams() as { governorIndex: string; id: string }
+  const { governorIndex, id } = useParams() as {
+    governorIndex: string
+    id: string
+  }
   const parsedGovernorIndex = Number.parseInt(governorIndex)
   const { chainId, account } = useWeb3React()
+
   const isHubChainActive = useAppSelector((state) => state.application.isHubChainActive)
   const hubBlock = useHubBlockNumber()
 
   const quorumAmount = useQuorum()
   const quorumNumber = Number(quorumAmount?.toExact())
+
+  const hasVoted = useHasVoted(id)
 
   // get data for this specific proposal
   const proposalData: ProposalData | undefined = useProposalData(parsedGovernorIndex, id)
@@ -275,7 +282,9 @@ export default function VotePage() {
     availableVotes &&
     JSBI.greaterThan(availableVotes.quotient, JSBI.BigInt(0)) &&
     proposalData &&
-    proposalData.status === ProposalState.ACTIVE
+    proposalData.status === ProposalState.ACTIVE &&
+    !!account &&
+    !hasVoted
 
   const {
     collectionStartedResponse,
@@ -389,15 +398,34 @@ export default function VotePage() {
                   ))}
               </ThemedText.DeprecatedMain>
             </RowBetween>
-            {proposalData && proposalData.status === ProposalState.ACTIVE && showVotingButtons === false && (
+            {proposalData &&
+              proposalData.status === ProposalState.ACTIVE &&
+              showVotingButtons === false &&
+              !hasVoted && (
+                <GrayCard>
+                  <Box>
+                    <WarningCircleIcon />
+                  </Box>
+                  <Trans>
+                    Only vHMT votes that were self delegated before block {proposalData.startBlock} are eligible for
+                    voting.
+                  </Trans>
+                  {showLinkForUnlock && (
+                    <span>
+                      <Trans>
+                        <StyledInternalLink to="/vote">Unlock voting</StyledInternalLink> to prepare for the next
+                        proposal.
+                      </Trans>
+                    </span>
+                  )}
+                </GrayCard>
+              )}
+            {proposalData && hasVoted && (
               <GrayCard>
                 <Box>
                   <WarningCircleIcon />
                 </Box>
-                <Trans>
-                  Only vHMT votes that were self delegated before block {proposalData.startBlock} are eligible for
-                  voting.
-                </Trans>{' '}
+                <Trans>You have already voted for this proposal.</Trans>
                 {showLinkForUnlock && (
                   <span>
                     <Trans>

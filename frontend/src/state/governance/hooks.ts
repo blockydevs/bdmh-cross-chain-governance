@@ -695,3 +695,28 @@ export function useExecuteCallback(): (
     [addTransaction, contract]
   )
 }
+
+export function useHasVoted(proposalId: string | undefined): boolean {
+  const { account, chainId } = useWeb3React()
+  const addTransaction = useTransactionAdder()
+
+  const isHubChainActive = useAppSelector((state) => state.application.isHubChainActive)
+  const transactions = useAppSelector((state) => state.transactions)
+
+  const contract = useContract(
+    isHubChainActive ? GOVERNANCE_HUB_ADDRESS : GOVERNANCE_SPOKE_ADRESSES,
+    isHubChainActive ? GOVERNOR_HUB_ABI : GOVERNOR_SPOKE_ABI
+  )
+
+  const [hasVoted, setHasVoted] = useState<boolean>(false)
+
+  useEffect(() => {
+    if (!account || !contract || !proposalId || !chainId) return
+
+    contract.hasVoted(proposalId, account).then((response: boolean) => {
+      setHasVoted(response)
+    })
+  }, [account, contract, proposalId, chainId, transactions, addTransaction])
+
+  return hasVoted
+}
