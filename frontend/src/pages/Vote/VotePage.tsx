@@ -43,6 +43,7 @@ import { ApplicationModal } from '../../state/application/reducer'
 import {
   ProposalData,
   ProposalState,
+  useAllVotes,
   useCollectionStatus,
   useHasVoted,
   useProposalData,
@@ -184,6 +185,13 @@ export default function VotePage() {
     governorIndex: string
     id: string
   }
+
+  const { votes, loading } = useAllVotes(id)
+
+  const forVotes = votes['for']
+  const againstVotes = votes['against']
+  const abstainVotes = votes['abstain']
+
   const parsedGovernorIndex = Number.parseInt(governorIndex)
   const { chainId, account } = useWeb3React()
 
@@ -250,26 +258,10 @@ export default function VotePage() {
   }
 
   // get total votes and format percentages for UI
-  const totalVotes = proposalData?.hubForCount?.add(proposalData.hubAgainstCount).add(proposalData.hubAbstainCount)
-
-  const forVotes = isHubChainActive
-    ? Number(proposalData?.hubForCount.toExact())
-    : Number(proposalData?.spokeForCount.toExact())
-
-  const againstVotes =
-    proposalData && isHubChainActive
-      ? Number(proposalData?.hubAgainstCount.toExact())
-      : Number(proposalData?.spokeAgainstCount.toExact())
-
-  const abstainVotes =
-    proposalData && isHubChainActive
-      ? Number(proposalData?.hubAbstainCount.toExact())
-      : Number(proposalData?.spokeAbstainCount.toExact())
+  const totalVotes = forVotes + againstVotes
 
   const quorumPercentage =
-    Number(totalVotes?.toExact()) > 0 && quorumNumber > 0
-      ? (((forVotes + againstVotes + abstainVotes) / quorumNumber) * 100).toFixed()
-      : 0
+    totalVotes > 0 && quorumNumber > 0 ? (((forVotes + againstVotes + abstainVotes) / quorumNumber) * 100).toFixed() : 0
 
   // only count available votes as of the proposal start block
   const availableVotes: CurrencyAmount<Token> | undefined = useUserVotesAsOfBlock(
@@ -401,7 +393,8 @@ export default function VotePage() {
             {proposalData &&
               proposalData.status === ProposalState.ACTIVE &&
               showVotingButtons === false &&
-              !hasVoted && (
+              !hasVoted &&
+              account && (
                 <GrayCard>
                   <Box>
                     <WarningCircleIcon />
@@ -420,20 +413,20 @@ export default function VotePage() {
                   )}
                 </GrayCard>
               )}
-            {proposalData && hasVoted && (
+            {proposalData && hasVoted && account && (
               <GrayCard>
                 <Box>
                   <WarningCircleIcon />
                 </Box>
                 <Trans>You have already voted for this proposal.</Trans>
-                {showLinkForUnlock && (
-                  <span>
-                    <Trans>
-                      <StyledInternalLink to="/vote">Unlock voting</StyledInternalLink> to prepare for the next
-                      proposal.
-                    </Trans>
-                  </span>
-                )}
+              </GrayCard>
+            )}
+            {proposalData && !account && (
+              <GrayCard>
+                <Box>
+                  <WarningCircleIcon />
+                </Box>
+                <Trans>Please connect a wallet with delegated voting power.</Trans>
               </GrayCard>
             )}
           </StyledAutoColumn>
@@ -445,6 +438,7 @@ export default function VotePage() {
             setVoteOption={setVoteOption}
             showVotingButtons={showVotingButtons}
             proposalStatus={proposalData?.status}
+            loading={loading}
           />
 
           {showRequestCollectionsButton && !collectionStatusLoading && (
@@ -492,7 +486,7 @@ export default function VotePage() {
                     </ThemedText.BodyPrimary>
                     {proposalData && (
                       <ThemedText.BodyPrimary>
-                        {totalVotes && totalVotes.toFixed(0, { groupSeparator: ',' })}
+                        {totalVotes}
                         {quorumAmount && (
                           <span>
                             {` / ${quorumAmount.toExact({

@@ -81,6 +81,7 @@ interface VotingButtonsProps {
   setVoteOption: React.Dispatch<React.SetStateAction<VoteOption | undefined>>
   showVotingButtons: boolean | undefined
   proposalStatus: ProposalState | undefined
+  loading: boolean
 }
 
 export default function VotingButtons({
@@ -90,6 +91,7 @@ export default function VotingButtons({
   setVoteOption,
   showVotingButtons,
   proposalStatus,
+  loading,
 }: VotingButtonsProps) {
   const toggleVoteModal = useToggleVoteModal()
   const theme = useTheme()
@@ -127,7 +129,7 @@ export default function VotingButtons({
             {showNumberLabel ? <ThemedText.BodyPrimary fontSize={14}>{numberLabel}</ThemedText.BodyPrimary> : undefined}
             <VotesNumberContainer>
               <ThemedText.BodyPrimary fontSize={isScreenSize.xs ? 20 : 16} fontWeight={500}>
-                {chooseValue(voteOption)}
+                {loading ? '-' : chooseValue(voteOption)}
               </ThemedText.BodyPrimary>
             </VotesNumberContainer>
           </InnerButtonTextContainer>
