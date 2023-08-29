@@ -224,6 +224,10 @@ contract DAOSpokeContract is IWormholeReceiver {
         }
     }
 
+    /**
+     @dev Retrieves the quote for cross chain message delivery.
+     @return cost Price, in units of current chain currency, that the delivery provider charges to perform the relay
+    */
     function quoteCrossChainMessage(uint16 targetChain) internal view returns (uint256 cost) {
         (cost,) = wormholeRelayer.quoteEVMDeliveryPrice(targetChain, 0, GAS_LIMIT);
     }

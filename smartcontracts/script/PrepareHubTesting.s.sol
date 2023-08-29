@@ -11,7 +11,7 @@ import "./DeploymentUtils.sol";
 contract PrepareHubTesting is Script, DeploymentUtils {
     function run() external {
         vm.startBroadcast(deployerPrivateKey);
-        address automaticRelayerAddress = vm.envAddress("HUB_AUTOMATIC_REALYER_ADDRESS");
+        address automaticRelayerAddress = vm.envAddress("HUB_AUTOMATIC_RELAYER_ADDRESS");
         uint16 chainId = uint16(vm.envUint("HUB_CHAIN_ID"));
         HMToken hmToken = new HMToken(1000 ether, "HMToken", 18, "HMT");
         hmToken.transfer(secondAddress, 100 ether);
@@ -23,7 +23,7 @@ contract PrepareHubTesting is Script, DeploymentUtils {
         proposers[0] = deployerAddress;
         executors[0] = address(0);
         TimelockController timelockController = new TimelockController(1, proposers, executors, deployerAddress);
-        MetaHumanGovernor governanceContract = new MetaHumanGovernor(voteToken, timelockController, spokeContracts, chainId, automaticRelayerAddress, deployerAddress);
+        MetaHumanGovernor governanceContract = new MetaHumanGovernor(voteToken, timelockController, spokeContracts, chainId, hubAutomaticRelayerAddress, deployerAddress);
         timelockController.grantRole(keccak256("PROPOSER_ROLE"), address(governanceContract));
         timelockController.revokeRole(keccak256("TIMELOCK_ADMIN_ROLE"), deployerAddress);
 

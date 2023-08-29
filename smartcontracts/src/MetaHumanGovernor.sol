@@ -187,9 +187,13 @@ contract MetaHumanGovernor is Governor, GovernorSettings, CrossChainGovernorCoun
 
         collectionStarted[proposalId] = true;
 
-        // Sends an empty message to each of the aggregators. If they receive a
-        // message at all, it is their cue to send data back
+
         uint spokeContractsLength = spokeContracts.length;
+        // Get a price of sending the message back to hub
+        uint256 sendMessageToHubCost = quoteCrossChainMessage(chainId, 0);
+
+        // Sends an empty message to each of the aggregators.
+        // If they receive a message, it is their cue to send data back
         for (uint16 i = 1; i <= spokeContractsLength; ++i) {
             // Using "1" as the function selector
             bytes memory message = abi.encode(1, proposalId);
@@ -200,8 +204,6 @@ contract MetaHumanGovernor is Governor, GovernorSettings, CrossChainGovernorCoun
                 message
             );
 
-            // Send a message to other contracts
-            uint256 sendMessageToHubCost = quoteCrossChainMessage(chainId, 0);
             uint256 cost = quoteCrossChainMessage(spokeContracts[i-1].chainId, sendMessageToHubCost);
 
             wormholeRelayer.sendPayloadToEvm{value: cost}(
@@ -231,7 +233,7 @@ contract MetaHumanGovernor is Governor, GovernorSettings, CrossChainGovernorCoun
         // Sends the proposal to all of the other spoke contracts
         if (spokeContracts.length > 0) {
 
-            // Iterate over every spoke contract
+            // Iterate over every spoke contract and send a message
             uint spokeContractsLength = spokeContracts.length;
             for (uint16 i = 1; i <= spokeContractsLength; ++i) {
                 bytes memory message = abi.encode(
@@ -247,9 +249,6 @@ contract MetaHumanGovernor is Governor, GovernorSettings, CrossChainGovernorCoun
                     message
                 );
 
-                // Send a message to other contracts
-                // Cost of requesting a message to be sent to
-                // chain 'targetChain' with a gasLimit of 'GAS_LIMIT'
                 uint256 cost = quoteCrossChainMessage(spokeContracts[i-1].chainId, 0);
 
                 wormholeRelayer.sendPayloadToEvm{value: cost}(
@@ -264,6 +263,10 @@ contract MetaHumanGovernor is Governor, GovernorSettings, CrossChainGovernorCoun
         return proposalId;
     }
 
+    /**
+     @dev Retrieves the quote for cross chain message delivery.
+     @return cost Price, in units of current chain currency, that the delivery provider charges to perform the relay
+    */
     function quoteCrossChainMessage(uint16 targetChain, uint256 valueToSend) internal view returns (uint256 cost) {
         (cost,) = wormholeRelayer.quoteEVMDeliveryPrice(targetChain, valueToSend, GAS_LIMIT);
     }

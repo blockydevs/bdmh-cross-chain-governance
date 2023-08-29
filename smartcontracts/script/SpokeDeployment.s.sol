@@ -16,6 +16,6 @@ contract SpokeDeployment is Script, DeploymentUtils {
         VHMToken voteToken = VHMToken(vHMTokenAddress);
         vm.startBroadcast(deployerPrivateKey);
 
-        new DAOSpokeContract(bytes32(uint256(uint160(governorAddress))), hubChainId, voteToken, targetSecondsPerBlock, chainId, automaticRelayerAddress);
+        new DAOSpokeContract(bytes32(uint256(uint160(governorAddress))), hubChainId, voteToken, targetSecondsPerBlock, chainId, spokeAutomaticRelayerAddress);
     }
 }

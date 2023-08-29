@@ -14,6 +14,7 @@ contract PrepareSpokeTesting is Script, DeploymentUtils {
         uint256 secondPrivateKey = vm.envUint("SECOND_PRIVATE_KEY");
         uint256 thirdPrivateKey = vm.envUint("THIRD_PRIVATE_KEY");
         address governorAddress = vm.envAddress("GOVERNOR_ADDRESS");
+        uint16 spokeChainId = uint16(vm.envUint("SPOKE_CHAIN_ID"));
         vm.startBroadcast(deployerPrivateKey);
         address secondAddress = vm.addr(secondPrivateKey);
         address thirdAddress = vm.addr(thirdPrivateKey);
@@ -22,7 +23,7 @@ contract PrepareSpokeTesting is Script, DeploymentUtils {
         hmToken.transfer(secondAddress, 100 ether);
         hmToken.transfer(thirdAddress, 100 ether);
         VHMToken voteToken = new VHMToken(IERC20(address(hmToken)));
-        new DAOSpokeContract(bytes32(uint256(uint160(governorAddress))), hubChainId, voteToken, targetSecondsPerBlock, mumbaiChainId, avalancheAutomaticRelayerAddress);
+        new DAOSpokeContract(bytes32(uint256(uint160(governorAddress))), hubChainId, voteToken, targetSecondsPerBlock, spokeChainId, spokeAutomaticRelayerAddress);
 
         vm.stopBroadcast();
 
