@@ -183,7 +183,7 @@ export default function DepositHMTModal({ isOpen, onDismiss, title, hmtBalance }
             </RowBetween>
             <RowBetween>
               <ThemedText.BodySecondary>
-                <Trans>HMT balance: {userHmtBalanceAmount}</Trans>
+                <Trans>HMT balance</Trans>: {userHmtBalanceAmount}
               </ThemedText.BodySecondary>
             </RowBetween>
             <ExchangeHmtInput
