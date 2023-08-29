@@ -38,7 +38,7 @@ Before deploying the vote token please set the environment variable `HM_TOKEN_AD
 To deploy the vote token contract please run following command:
 
 ```
-forge script script/VHMTDeployment.s.sol:VHMTDeployment --rpc-url $SEPOLIA_RPC_URL --broadcast --verify
+forge script script/VHMTDeployment.s.sol:VHMTDeployment --rpc-url $<HUB/SPOKE>_RPC_URL --broadcast --verify
 ```
 
 After successfully running the script please fill `.env` with address of deployed vote token. Depending on if it will be
@@ -49,7 +49,7 @@ used to deploy Hub or Spoke please fill `HUB_VOTE_TOKEN_ADDRESS` or `SPOKE_VOTE_
 To deploy the Hub contract please run following command:
 
 ```
-forge script script/HubDeployment.s.sol:HubDeployment --rpc-url $SEPOLIA_RPC_URL --broadcast --verify
+forge script script/HubDeployment.s.sol:HubDeployment --rpc-url $HUB_RPC_URL --broadcast --verify
 ```
 
 This will
@@ -72,7 +72,7 @@ deploy [DAOSpokeContract.sol](src%2FDAOSpokeContract.sol)
 on chain provided by the `--rpc-url` variable. In testing, the contract was deployed on Polygon Mumbai.
 
 ```
-forge script script/SpokeDeployment.s.sol:SpokeDeployment --rpc-url $POLYGON_MUMBAI_RPC_URL --etherscan-api-key $MUMBAI_ETHERSCAN_API_KEY --broadcast --legacy --verify
+forge script script/SpokeDeployment.s.sol:SpokeDeployment --rpc-url $SPOKE_RPC_URL --etherscan-api-key $SPOKE_ETHERSCAN_API_KEY --broadcast --legacy --verify
 ```
 
 After successfully running the script please fill add the deployed contract chain id and address to these lists (comma
@@ -84,7 +84,7 @@ separated addresses):
 The addresses can be found in console output of the script and in
 the `/broadcast/SpokeDeployment.s.sol/<chain_id>/run-latest.json`.
 
-Chain id can be found in the [Wormhole documentation](https://book.wormhole.com/reference/contracts.html). The value should be copied from `Wormhole Chain ID` column.
+Chain id can be found in the [Wormhole documentation](https://docs.wormhole.com/wormhole/blockchain-environments/contracts). The value should be copied from `Wormhole Chain I` column.
 
 ### Setting spoke contracts in the hub
 
@@ -93,7 +93,7 @@ and `SPOKE_CHAIN_IDS` please run
 following script:
 
 ```
-forge script script/HubUpdateSpokeContracts.s.sol:HubUpdateSpokeContracts --rpc-url $SEPOLIA_RPC_URL --broadcast
+forge script script/HubUpdateSpokeContracts.s.sol:HubUpdateSpokeContracts --rpc-url $HUB_RPC_URL --broadcast
 ```
 
 ### Transfer governance ownership to timelock
@@ -105,13 +105,13 @@ To transfer the ownership please make sure that all the initial setup is finishe
 Then run the following script:
 
 ```
-forge script script/HubTransferOwnership.s.sol:HubTransferOwnership --rpc-url $SEPOLIA_RPC_URL --broadcast
+forge script script/HubTransferOwnership.s.sol:HubTransferOwnership --rpc-url $HUB_RPC_URL --broadcast
 ```
 
 
 ## Deploying with Github Actions
 
-Fill [json](sample-spoke-params.json) with desired variables for spoke contract depoloyments, copy its content into field descirbed 'Json with parameters for spoke deploy', provide `HM_TOKEN_ADDRESS` variable value and provide other parameters if needed, eg. if you want transfer governance ownership to timelock check this field.
+Fill [json](sample-spoke-params.json) with desired variables for spoke contract deployments, copy its content into field described 'Json with parameters for spoke deploy', provide `HM_TOKEN_ADDRESS` variable value and provide other parameters if needed, e.g. if you want transfer governance ownership to timelock check this field.
 
 ## Interacting with Governance ecosystem
 
@@ -125,11 +125,11 @@ held by given account.
 The voting tokens are different on each chain, for now there are two scripts created to delegate on Hub or Spoke chain.
 
 ```
-forge script script/HubSelfDelegateVote.s.sol:HubSelfDelegateVote --rpc-url $SEPOLIA_RPC_URL --broadcast
+forge script script/HubSelfDelegateVote.s.sol:HubSelfDelegateVote --rpc-url $HUB_RPC_URL --broadcast
 ```
 
 ```
-forge script script/SpokeSelfDelegateVote.s.sol:SpokeSelfDelegateVote --rpc-url $POLYGON_MUMBAI_RPC_URL --broadcast --legacy
+forge script script/SpokeSelfDelegateVote.s.sol:SpokeSelfDelegateVote --rpc-url $SPOKE_RPC_URL --broadcast --legacy
 ```
 
 ### Creating proposal
@@ -142,7 +142,7 @@ To create a different proposal just change the `targets`, `values`, `calldatas` 
 the [DeploymentUtils.sol](script%2FDeploymentUtils.sol) file in function `getProposalExecutionData()`.
 
 ```
-forge script script/CreateProposal.s.sol:CreateProposal --rpc-url $SEPOLIA_RPC_URL --broadcast
+forge script script/CreateProposal.s.sol:CreateProposal --rpc-url $HUB_RPC_URL --broadcast
 ```
 
 ### Cast vote
@@ -153,13 +153,13 @@ the [DeploymentUtils.sol](script%2FDeploymentUtils.sol) file in function `getPro
 `CastVote` using the Hub contract:
 
 ```
-forge script script/CastVote.s.sol:CastVote --rpc-url $SEPOLIA_RPC_URL --broadcast
+forge script script/CastVote.s.sol:CastVote --rpc-url $HUB_RPC_URL --broadcast
 ```
 
 `CastVoteThroughSpokeContract` using the Spoke contract:
 
 ```
-forge script script/CastVoteThroughSpokeContract.s.sol:CastVoteThroughSpokeContract --rpc-url $POLYGON_MUMBAI_RPC_URL --broadcast --legacy
+forge script script/CastVoteThroughSpokeContract.s.sol:CastVoteThroughSpokeContract --rpc-url $SPOKE_RPC_URL --broadcast --legacy
 ```
 
 ### Request collections
@@ -168,7 +168,7 @@ After the voting period ends, Hub contract needs to `RequestCollections` from Sp
 please execute:
 
 ```
-forge script script/RequestCollections.s.sol:RequestCollections --rpc-url $SEPOLIA_RPC_URL --broadcast
+forge script script/RequestCollections.s.sol:RequestCollections --rpc-url $HUB_RPC_URL --broadcast
 ```
 
 ### Queue
@@ -177,7 +177,7 @@ After collection phase has ended anyone can `Queue` the proposal for execution b
 contract. This can be done using:
 
 ```
-forge script script/QueueProposal.s.sol:QueueProposal --rpc-url $SEPOLIA_RPC_URL --broadcast
+forge script script/QueueProposal.s.sol:QueueProposal --rpc-url $HUB_RPC_URL --broadcast
 ```
 
 ### Execute
@@ -186,7 +186,7 @@ After timelock period has passed anyone can `Execute` the proposal for execution
 contract. This can be done using:
 
 ```
-forge script script/ExecuteProposal.s.sol:ExecuteProposal --rpc-url $SEPOLIA_RPC_URL --broadcast
+forge script script/ExecuteProposal.s.sol:ExecuteProposal --rpc-url $HUB_RPC_URL --broadcast
 ```
 
 ## Helper scripts
@@ -197,13 +197,13 @@ There are also two helper scripts that help with the development and testing.
   with [HMToken.sol](src%2Fhm-token%2FHMToken.sol). Account address is taken from .env variable `ADDRESS_TO_FUND`.
 
 ```
-forge script script/FundAccounts.s.sol:FundAccounts --rpc-url $SEPOLIA_RPC_URL --broadcast
+forge script script/FundAccounts.s.sol:FundAccounts --rpc-url $HUB_RPC_URL --broadcast
 ```
 
 - [TransferTokensToTimelock.s.sol](script%2FTransferTokensToTimelock.s.sol) can be used to transfer tokens to timelock
   when trying to execute a grant proposal.
 
 ```
-forge script script/TransferTokensToTimelock.s.sol:TransferTokensToTimelock --rpc-url $SEPOLIA_RPC_URL --broadcast
+forge script script/TransferTokensToTimelock.s.sol:TransferTokensToTimelock --rpc-url $HUB_RPC_URL --broadcast
 ```
 

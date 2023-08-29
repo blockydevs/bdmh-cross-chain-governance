@@ -11,7 +11,6 @@ import "./DeploymentUtils.sol";
 contract PrepareHubTesting is Script, DeploymentUtils {
     function run() external {
         vm.startBroadcast(deployerPrivateKey);
-        address automaticRelayerAddress = vm.envAddress("HUB_AUTOMATIC_RELAYER_ADDRESS");
         uint16 chainId = uint16(vm.envUint("HUB_CHAIN_ID"));
         HMToken hmToken = new HMToken(1000 ether, "HMToken", 18, "HMT");
         hmToken.transfer(secondAddress, 100 ether);

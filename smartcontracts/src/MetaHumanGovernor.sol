@@ -45,7 +45,7 @@ contract MetaHumanGovernor is Governor, GovernorSettings, CrossChainGovernorCoun
     */
     constructor(IVotes _token, TimelockController _timelock, CrossChainAddress[] memory _spokeContracts, uint16 _chainId, address _wormholeRelayerAddress, address _magistrateAddress)
     Governor("MetaHumanGovernor")
-    GovernorSettings(1 /* 1 block */, 5 /* 1 minute */, 0) //TODO:prod in production voting delay, voting period, proposal threshold needs to be changed to value of choice
+    GovernorSettings(1 /* 1 block */, 5 /* 5 blocks */, 0) //TODO:prod in production voting delay, voting period, proposal threshold needs to be changed to value of choice. Depending on block time on selected hub chain and desired period
     GovernorVotes(_token)
     GovernorVotesQuorumFraction(4)//TODO:prod change quorum fraction to value of choice
     GovernorTimelockControl(_timelock)
