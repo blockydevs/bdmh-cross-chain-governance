@@ -17,14 +17,6 @@ on:
         required: true
         type: boolean
         default: false
-      ADDRESS_TO_FUND:
-        required: false
-        type: string
-      DESCRIPTION:
-        required: true
-        type: string
-        default: "# Test proposal 4"
-        description: "Proposal description"
 
 defaults:
   run:
