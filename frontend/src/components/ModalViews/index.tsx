@@ -63,9 +63,7 @@ export function LoadingView({
   return (
     <ConfirmOrLoadingWrapper gap>
       <StyledRowBetween>
-        <ThemedText.HeadlineLarge>
-          <Trans>{label}</Trans>
-        </ThemedText.HeadlineLarge>
+        <ThemedText.HeadlineLarge>{label}</ThemedText.HeadlineLarge>
         <CloseIconWrapper>
           <CloseIcon onClick={onDismiss} />
         </CloseIconWrapper>
