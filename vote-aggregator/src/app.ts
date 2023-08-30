@@ -3,7 +3,7 @@ import express from 'express';
 import proposalRoutes from './routes/proposalRoutes';
 
 const app = express();
-const port = process.env.NODE_PORT || 3000;
+const port = process.env.NODE_PORT || 8080;
 
 app.use(proposalRoutes);
 

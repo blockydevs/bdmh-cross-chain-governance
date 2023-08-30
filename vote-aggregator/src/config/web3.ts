@@ -1,17 +1,6 @@
-export const networks = {
-    AVALANCHE: {
-        address: process.env.AVALANCHE_SPOKE_ADDRESS,
-        rpcUrl: process.env.AVALANCHE_RPC_URL,
-        chainId: 6,
-        name: "avalanche"
-    },
-    MOONBASE: {
-        address: process.env.MOONBASE_SPOKE_ADDRESS,
-        rpcUrl: process.env.MOONBASE_RPC_URL,
-        chainId: 16,
-        name: "moonbase"
-    }
-};
+import {buildNetworksFromEnv} from "../utils/networkBuilder";
+
+export const networks = buildNetworksFromEnv();
 
 export const hub = {
     address: process.env.HUB_ADDRESS,
