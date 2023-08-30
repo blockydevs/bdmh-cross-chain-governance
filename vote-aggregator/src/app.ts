@@ -4,11 +4,11 @@ import Web3 from 'web3';
 import ABI_JSON from './contract_abi.json';
 
 const app = express();
-const port = process.env.NODE_PORT;
+const port = process.env.NODE_PORT || 3000;
 
 const client = createClient({
     socket: {
-        port: process.env.REDIS_PORT as unknown as number,
+        port: Number(process.env.REDIS_PORT),
         host: process.env.REDIS_HOST,
     }
 });
@@ -16,67 +16,79 @@ const client = createClient({
 client.on('error', err => console.log('Redis Client Error', err));
 
 const contractABI = ABI_JSON;
-const proposalId = '25449999689643571276388587071524507364357037160987438732248865568045989309858';
 
 const networks = {
     MUMBAI: {
-        address: '0x95b49867E28F0F7553cAeb1365644a1861FEbFf3',
+        addresses: process.env.MUMBAI_SPOKE_CHAIN.split(','),
         rpcUrl: process.env.MUMBAI_RPC_URL,
         name: "mumbai"
     },
     AVALANCHE: {
-        address: '0x75e9990D2b4CE167282BA2071f771f3248D3B9F9',
+        addresses: process.env.AVALANCHE_SPOKE_CHAIN.split(','),
         rpcUrl: process.env.AVALANCHE_RPC_URL,
         name: "avalanche"
     },
     MOONBASE: {
-        address: '0xF42e5eeFd8E2Fb3382732bF1e6a7A377FD2523CB',
+        addresses: process.env.MOONBASE_SPOKE_CHAIN.split(','),
         rpcUrl: process.env.MOONBASE_RPC_URL,
         name: "moonbase"
     }
 };
 
-(async () => {
-    await client.connect();
+app.get('/proposal', async (req, res) => {
+    const proposalId = req.query.id;
 
-    for (const net in networks) {
-        const { address, rpcUrl, name } = networks[net];
-
-        const web3 = new Web3(new Web3.providers.HttpProvider(rpcUrl));
-        const contract = new web3.eth.Contract(contractABI, address);
-
-        interface ProposalVoteResult {
-            forVotes: string;
-            againstVotes: string;
-            abstainVotes: string;
-        }
-
-        // eslint-disable-next-line
-        // @ts-ignore
-        const result = await contract.methods.proposalVotes(proposalId).call() as ProposalVoteResult;
-
-        const voteResults = {
-            chain_name: name,
-            for: result.forVotes,
-            against: result.againstVotes,
-            abstain: result.abstainVotes
-        };
-
-        await client.set(name, JSON.stringify(voteResults, replacer));
+    if (!proposalId) {
+        return res.status(400).send('proposalId is required.');
     }
-})();
 
-app.get('/', async (req, res) => {
     const results = [];
 
     for (const net in networks) {
-        const data = await client.get(networks[net].name);
-        if (data) {
-            results.push(JSON.parse(data));
+        const { addresses, rpcUrl, name } = networks[net];
+        const redisKey = `${name}_${proposalId}`;
+
+        const exists = await client.exists(redisKey);
+
+        if (exists) {
+            const data = await client.get(redisKey);
+            if (data) {
+                results.push(JSON.parse(data));
+            }
+        } else {
+            let totalFor = BigInt(0);
+            let totalAgainst = BigInt(0);
+            let totalAbstain = BigInt(0);
+
+            const web3 = new Web3(new Web3.providers.HttpProvider(rpcUrl));
+
+            for (const address of addresses) {
+                const contract = new web3.eth.Contract(contractABI, address);
+
+                // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                // @ts-ignore
+                const result = await contract.methods.proposalVotes(proposalId).call() as ProposalVoteResult;
+
+                totalFor += BigInt(result.forVotes);
+                totalAgainst += BigInt(result.againstVotes);
+                totalAbstain += BigInt(result.abstainVotes);
+            }
+
+            const voteResults = {
+                chain_name: name,
+                for: totalFor.toString(),
+                against: totalAgainst.toString(),
+                abstain: totalAbstain.toString()
+            };
+
+            await client.set(redisKey, JSON.stringify(voteResults, replacer));
+            await client.expire(redisKey, Number(process.env.REDIS_EXPIRATION_TIME_IN_SEC));
+
+            results.push(voteResults);
         }
     }
 
-    res.json(results);
+    res.send(JSON.stringify(results, replacer));
 });
 
 function replacer(key, value) {
@@ -87,5 +99,9 @@ function replacer(key, value) {
 }
 
 app.listen(port, () => {
-    return console.log(`Express is listening on port ${port}`);
+    console.log(`Express is listening on port ${port}`);
 });
+
+(async () => {
+    await client.connect();
+})();
