@@ -133,9 +133,7 @@ export default function ExchangeHmtInput({
           </InputContainer>
         </ContainerRow>
         <ErrorLabel>
-          <ThemedText.DeprecatedError error={!!error}>
-            <Trans>{error}</Trans>
-          </ThemedText.DeprecatedError>
+          <ThemedText.DeprecatedError error={!!error}>{error}</ThemedText.DeprecatedError>
         </ErrorLabel>
       </>
     </InputPanel>

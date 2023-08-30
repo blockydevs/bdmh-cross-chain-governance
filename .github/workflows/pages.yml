@@ -2,11 +2,11 @@ name: Frontend
 
 on: 
   workflow_dispatch:
-  # push:
-  #   branches:
-  #     - main
-  #   paths:
-  #     - 'frontend/**'
+  push:
+    branches:
+      - main
+    paths:
+      - 'frontend/**'
 
 permissions:
   contents: read
@@ -26,6 +26,7 @@ env:
   REACT_APP_GOVERNANCE_SPOKE_CHAIN_421613: ${{ vars.REACT_APP_GOVERNANCE_SPOKE_CHAIN_421613 }}
   REACT_APP_GOVERNANCE_SPOKE_VOTE_TOKEN_421613: ${{ vars.REACT_APP_GOVERNANCE_SPOKE_VOTE_TOKEN_421613 }}
   REACT_APP_RPC_URL_421613: ${{ vars.REACT_APP_RPC_URL_421613 }}
+  PUBLIC_URL: ${{ vars.PUBLIC_URL }}
 
 jobs:
   build:
@@ -37,62 +38,10 @@ jobs:
       with:
         node-version: 14
         registry-url: https://registry.npmjs.org
-        # cache is intentionally omitted, as it is faster with yarn v1 to cache node_modules.
-
-    # - uses: actions/cache@v3
-    #   id: install-cache
-    #   with:
-    #     # node_modules/.cache is intentionally omitted, as this is used for build tool caches.
-    #     path: |
-    #       frontend/node_modules
-    #       !frontend/node_modules/.cache
-    #     key: ${{ runner.os }}-install-${{ hashFiles('yarn.lock') }}
-    # - if: steps.install-cache.outputs.cache-hit != 'true'
-    #   run: yarn install --frozen-lockfile --ignore-scripts
-    #   working-directory: frontend
-    #   shell: bash
-
-    # Validators compile quickly, so caching can be omitted.
+        
     - run: yarn install
       working-directory: frontend
       shell: bash
-
-    # Contracts are compiled from source. If source hasn't changed, the contracts do not need to be re-compiled.
-    # - uses: actions/cache@v3
-    #   id: contracts-cache
-    #   with:
-    #     path: |
-    #       frontend/src/abis/types
-    #       frontend/src/types/v3
-    #     key: ${{ runner.os }}-contracts-${{ hashFiles('src/abis/**/*.json', 'node_modules/@uniswap/**/artifacts/contracts/**/*.json') }}
-    # - if: steps.contracts-cache.outputs.cache-hit != 'true'
-    #   run: yarn contracts
-    #   working-directory: frontend
-    #   shell: bash
-
-    # - run: yarn graphql
-    #   working-directory: frontend
-    #   shell: bash
-
-    # - uses: ./.github/actions/cache-on-main
-    #   with:
-    #     path: frontend/node_modules/.cache
-    #     key: ${{ runner.os }}-i18n-extract-${{ github.run_id }}
-    #     restore-keys: ${{ runner.os }}-i18n-extract-
-    # - run: yarn i18n:extract
-    #   working-directory: frontend
-    #   shell: bash
-
-    # # Translations are compiled from messages. If messages haven't changed, the translations do not need to be re-compiled.
-    # - uses: actions/cache@v3
-    #   id: i18n-compile-cache
-    #   with:
-    #     path: frontend/src/locales/*.js
-    #     key: ${{ runner.os }}-i18n-compile-${{ hashFiles('src/locales/*.po') }}
-    # - if: steps.i18n-compile-cache.outputs.cache-hit !='true'
-    #   run: yarn i18n:compile
-    #   working-directory: frontend
-    #   shell: bash
 
     - run: yarn build
       working-directory: frontend

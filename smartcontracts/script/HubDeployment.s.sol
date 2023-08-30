@@ -20,7 +20,7 @@ contract HubDeployment is Script, DeploymentUtils {
         proposers[0] = address(0);
         executors[0] = address(0);
         TimelockController timelockController = new TimelockController(1, proposers, executors, deployerAddress);
-        MetaHumanGovernor governanceContract = new MetaHumanGovernor(voteToken, timelockController, spokeContracts, chainId, hubAutomaticRelayerAddress, deployerAddress);
+        MetaHumanGovernor governanceContract = new MetaHumanGovernor(voteToken, timelockController, spokeContracts, chainId, hubAutomaticRelayerAddress, magistrateAddress);
         timelockController.grantRole(keccak256("PROPOSER_ROLE"), address(governanceContract));
         timelockController.revokeRole(keccak256("TIMELOCK_ADMIN_ROLE"), deployerAddress);
 

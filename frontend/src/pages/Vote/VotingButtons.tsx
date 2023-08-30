@@ -1,4 +1,3 @@
-import { Trans } from '@lingui/macro'
 import { useScreenSize } from 'hooks/useScreenSize'
 import { ProposalState } from 'state/governance/hooks'
 import { VoteOption } from 'state/governance/types'
@@ -120,17 +119,12 @@ export default function VotingButtons({
               fontSize={15}
               color={proposalStatus === ProposalState.PENDING || !showVotingButtons ? theme.accentGray : theme.white}
             >
-              <Trans>{buttonLabel}</Trans>
+              {buttonLabel}
             </ThemedText.BodyPrimary>
           </ButtonPrimary>
 
           <InnerButtonTextContainer>
-            {showNumberLabel ? (
-              <ThemedText.BodyPrimary fontSize={14}>
-                <Trans>{numberLabel}</Trans>
-              </ThemedText.BodyPrimary>
-            ) : undefined}
-
+            {showNumberLabel ? <ThemedText.BodyPrimary fontSize={14}>{numberLabel}</ThemedText.BodyPrimary> : undefined}
             <VotesNumberContainer>
               <ThemedText.BodyPrimary fontSize={isScreenSize.xs ? 20 : 16} fontWeight={500}>
                 {chooseValue(voteOption)}
