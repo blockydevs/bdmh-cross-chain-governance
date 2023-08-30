@@ -3,7 +3,6 @@ import { CurrencyAmount, Token } from '@uniswap/sdk-core'
 import { useWeb3React } from '@web3-react/core'
 import { ButtonPrimary } from 'components/Button'
 import { AutoColumn } from 'components/Column'
-import FormattedCurrencyAmount from 'components/FormattedCurrencyAmount'
 import { AutoRow, RowBetween, RowFixed } from 'components/Row'
 import DelegateModal from 'components/vote/DelegateModal'
 import DepositHMTModal from 'components/vote/DepositHMTModal'
@@ -327,9 +326,7 @@ export default function Landing() {
                   {availableVotes && JSBI.notEqual(JSBI.BigInt(0), availableVotes?.quotient) ? (
                     <RowFixed>
                       <ThemedText.SubHeaderLarge mr="6px">
-                        <Trans>
-                          <FormattedCurrencyAmount currencyAmount={availableVotes} /> Votes
-                        </Trans>
+                        {uniBalance?.toExact()} <Trans>Votes</Trans>
                       </ThemedText.SubHeaderLarge>
                     </RowFixed>
                   ) : uniBalance &&
@@ -338,9 +335,7 @@ export default function Landing() {
                     JSBI.notEqual(JSBI.BigInt(0), uniBalance?.quotient) ? (
                     <RowFixed>
                       <ThemedText.DeprecatedBody fontWeight={500} mr="6px">
-                        <Trans>
-                          <FormattedCurrencyAmount currencyAmount={uniBalance} /> Votes
-                        </Trans>
+                        {uniBalance?.toExact()} <Trans>Votes</Trans>
                       </ThemedText.DeprecatedBody>
                     </RowFixed>
                   ) : (
