@@ -81,6 +81,11 @@ const TextButton = styled(ThemedText.DeprecatedMain)`
   }
 `
 
+const StyledAutoColumn = styled(AutoColumn)`
+  width: 85%;
+  padding-right: 6px;
+`
+
 export default function ExchangeHmtInput({
   className = 'recipient-address-input',
   placeholder = 'Enter amount',
@@ -112,7 +117,7 @@ export default function ExchangeHmtInput({
       <>
         <ContainerRow error={!!error}>
           <InputContainer>
-            <AutoColumn gap="md">
+            <StyledAutoColumn gap="md">
               <Input
                 className={className}
                 type="number"
@@ -126,7 +131,7 @@ export default function ExchangeHmtInput({
                 onChange={handleInput}
                 value={value}
               />
-            </AutoColumn>
+            </StyledAutoColumn>
             <TextButton onClick={() => onMaxChange(maxValue)}>
               <Trans>Max</Trans>
             </TextButton>
