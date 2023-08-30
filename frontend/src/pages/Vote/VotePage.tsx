@@ -199,7 +199,12 @@ export default function VotePage() {
   const hubBlock = useHubBlockNumber()
 
   const quorumAmount = useQuorum()
-  const quorumNumber = Number(quorumAmount?.toExact())
+  // const quorumNumber = Number(quorumAmount?.toExact())
+  const quorumNumber = Number(
+    quorumAmount?.toExact({
+      groupSeparator: ',',
+    })
+  )
 
   const hasVoted = useHasVoted(id)
 
@@ -257,8 +262,7 @@ export default function VotePage() {
     timeZoneName: 'short',
   }
 
-  // get total votes and format percentages for UI
-  const totalVotes = forVotes + againstVotes
+  const totalVotes = forVotes + abstainVotes
 
   const quorumPercentage =
     totalVotes > 0 && quorumNumber > 0 ? (((forVotes + againstVotes + abstainVotes) / quorumNumber) * 100).toFixed() : 0
@@ -484,17 +488,13 @@ export default function VotePage() {
                     <ThemedText.BodyPrimary>
                       <Trans>Quorum</Trans>
                     </ThemedText.BodyPrimary>
-                    {proposalData && (
+                    {proposalData && totalVotes ? (
                       <ThemedText.BodyPrimary>
                         {totalVotes}
-                        {quorumAmount && (
-                          <span>
-                            {` / ${quorumAmount.toExact({
-                              groupSeparator: ',',
-                            })}`}
-                          </span>
-                        )}
+                        <span>{` / ${quorumNumber}`}</span>
                       </ThemedText.BodyPrimary>
+                    ) : (
+                      '-'
                     )}
                   </WrapSmall>
                 </AutoColumn>
