@@ -1,19 +1,20 @@
-const networks = {
-    MUMBAI: {
-        addresses: process.env.MUMBAI_SPOKE_CHAIN.split(','),
-        rpcUrl: process.env.MUMBAI_RPC_URL,
-        name: "mumbai"
-    },
+export const networks = {
     AVALANCHE: {
-        addresses: process.env.AVALANCHE_SPOKE_CHAIN.split(','),
+        address: process.env.AVALANCHE_SPOKE_ADDRESS,
         rpcUrl: process.env.AVALANCHE_RPC_URL,
+        chainId: 6,
         name: "avalanche"
     },
     MOONBASE: {
-        addresses: process.env.MOONBASE_SPOKE_CHAIN.split(','),
+        address: process.env.MOONBASE_SPOKE_ADDRESS,
         rpcUrl: process.env.MOONBASE_RPC_URL,
+        chainId: 16,
         name: "moonbase"
     }
 };
 
-export default networks;
+export const hub = {
+    address: process.env.HUB_ADDRESS,
+    rpcUrl: process.env.HUB_RPC_URL,
+    name: process.env.HUB_CHAIN_NAME
+}

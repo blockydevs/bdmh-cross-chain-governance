@@ -25,6 +25,7 @@ Contract classes are generated from ABIs, and all configurations (like the hub, 
 
 Your .env file should contain:
 
+```
 NODE_PORT=3000
 
 REDIS_PORT=6379     
@@ -39,6 +40,7 @@ AVALANCHE_SPOKE_CHAIN=0x75e9990D2b4CE167282BA2071f771f3248D3B9F9
 MOONBASE_SPOKE_CHAIN=0xF42e5eeFd8E2Fb3382732bF1e6a7A377FD2523CB 
 
 REDIS_EXPIRATION_TIME_IN_SEC=180
+```
 
 Replace with other configurations as necessary.
 
