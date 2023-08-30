@@ -31,6 +31,16 @@ The deployment process consist of deploying:
   chains) -
   The spoke contract that enables to vote on proposal on other chains.
 
+### Base(HMT) token deployment
+
+To deploy the base token contract please run following command:
+
+```
+forge script script/HMTDeployment.s.sol:HMTDeployment --rpc-url $<HUB/SPOKE>_RPC_URL --broadcast --verify
+```
+
+After successfully running the script please fill `.env` with address of deployed base token to variable `HM_TOKEN_ADDRESS`.
+
 ### Vote token deployment
 
 Before deploying the vote token please set the environment variable `HM_TOKEN_ADDRESS` to correct value for given chain.
