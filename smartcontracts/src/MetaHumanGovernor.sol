@@ -23,9 +23,6 @@ import "./magistrate/Magistrate.sol";
 contract MetaHumanGovernor is Governor, GovernorSettings, CrossChainGovernorCountingSimple,
     GovernorVotes, GovernorVotesQuorumFraction, GovernorTimelockControl, Magistrate, IWormholeReceiver {
 
-    //https://book.wormhole.com/wormhole/3_coreLayerContracts.html#consistency-levels
-    //TODO:prod please change the consistency level to value of choice. Right now it's set up to `1` which is `finalized` value
-    uint8 public consistencyLevel = 1;
     IWormholeRelayer immutable public wormholeRelayer;
     uint16 public nonce = 0;
     uint256 constant internal GAS_LIMIT = 500_000;

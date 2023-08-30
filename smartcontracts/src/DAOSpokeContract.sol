@@ -23,8 +23,6 @@ contract DAOSpokeContract is IWormholeReceiver {
     uint16 immutable public chainId;
 
     uint16 public nonce = 0;
-    //TODO:prod please change the consistency level to value of choice. Right now it's set up to `1` which is `finalized` value
-    uint8 public consistencyLevel = 1;
     uint256 constant internal GAS_LIMIT = 500_000;
     mapping(uint256 => RemoteProposal) public proposals;
     mapping(uint256 => ProposalVote) public proposalVotes;
