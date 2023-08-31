@@ -363,11 +363,7 @@ export default function Landing() {
               ?.reverse()
               ?.map((p: ProposalData) => {
                 return isMobile ? (
-                  <Proposal
-                    as={Link}
-                    to={`${process.env.REACT_APP_BASE_URL}/${p.governorIndex}/${p.id}`}
-                    key={`${p.governorIndex}${p.id}`}
-                  >
+                  <Proposal as={Link} to={`/${p.governorIndex}/${p.id}`} key={`${p.governorIndex}${p.id}`}>
                     <RowBetween>
                       <ProposalNumber>{shortenString(p.id)}</ProposalNumber>
                       <ProposalStatus status={checkProposalState(p.status, hubBlock, p.endBlock)} />
@@ -375,11 +371,7 @@ export default function Landing() {
                     <ProposalTitle>{shortenTitle(p.title)}</ProposalTitle>
                   </Proposal>
                 ) : (
-                  <Proposal
-                    as={Link}
-                    to={`${process.env.REACT_APP_BASE_URL}/${p.governorIndex}/${p.id}`}
-                    key={`${p.governorIndex}${p.id}`}
-                  >
+                  <Proposal as={Link} to={`/${p.governorIndex}/${p.id}`} key={`${p.governorIndex}${p.id}`}>
                     <ProposalNumber>{shortenString(p.id)}</ProposalNumber>
                     <ProposalTitle>{shortenTitle(p.title)}</ProposalTitle>
                     <ProposalStatus status={checkProposalState(p.status, hubBlock, p.endBlock)} />
