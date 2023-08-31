@@ -17,14 +17,6 @@ on:
         required: true
         type: boolean
         default: false
-      ADDRESS_TO_FUND:
-        required: false
-        type: string
-      DESCRIPTION:
-        required: true
-        type: string
-        default: "# Test proposal 4"
-        description: "Proposal description"
 
 defaults:
   run:
@@ -34,24 +26,17 @@ env:
   FOUNDRY_PROFILE: ci
   # user data
   PRIVATE_KEY: ${{ secrets.PRIVATE_KEY }}
-  SECOND_PRIVATE_KEY: ${{ secrets.SECOND_PRIVATE_KEY }}
-  THIRD_PRIVATE_KEY: ${{ secrets.THIRD_PRIVATE_KEY }}
   HUB_RPC_URL: ${{ vars.HUB_RPC_URL }}
   # HUB_VOTE_TOKEN_ADDRESS: ${{ vars.HUB_VOTE_TOKEN_ADDRESS }}
-  ETHERSCAN_API_KEY: ${{ secrets.ETHERSCAN_API_KEY }}
-  MAGISTRATE_ADDRESS: ${{ secrets.MAGISTRATE_ADDRESS }}
+  HUB_ETHERSCAN_API_KEY: ${{ secrets.HUB_ETHERSCAN_API_KEY }}
+  MAGISTRATE_ADDRESS: ${{ vars.MAGISTRATE_ADDRESS }}
   # hub 
-  HUB_CORE_BRIDGE_ADDRESS: ${{ vars.HUB_CORE_BRIDGE_ADDRESS }}
+  HUB_AUTOMATIC_RELAYER_ADDRESS: ${{ vars.HUB_CORE_BRIDGE_ADDRESS }}
   HUB_CHAIN_ID: ${{ vars.HUB_CHAIN_ID }}
   VOTE_TOKEN_ADDRESS: ${{ vars.VOTE_TOKEN_ADDRESS }}
   HUB_HM_TOKEN_ADDRESS: ${{ vars.HUB_HM_TOKEN_ADDRESS }}
-  # spoke deployment
-  # SPOKE_VOTE_TOKEN_ADDRESS: ${{ vars.SPOKE_VOTE_TOKEN_ADDRESS }}
-  # from inputs
-  # HM_TOKEN_ADDRESS: ${{ inputs.HM_TOKEN_ADDRESS }}
-  ADDRESS_TO_FUND: ${{ inputs.ADDRESS_TO_FUND }}
   TIMELOCK: ${{ inputs.TIMELOCK }}
-  DESCRIPTION: ${{ inputs.DESCRIPTION }}
+  # spoke deployment
   SPOKE_PARAMS: ${{ inputs.SPOKE_PARAMS }}
 
 

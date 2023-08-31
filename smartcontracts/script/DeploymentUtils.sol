@@ -12,11 +12,7 @@ abstract contract DeploymentUtils is Script {
     address public spokeAutomaticRelayerAddress = vm.envAddress("SPOKE_AUTOMATIC_RELAYER_ADDRESS");
 
     uint256 public deployerPrivateKey = vm.envUint("PRIVATE_KEY");
-    uint256 public secondPrivateKey = vm.envUint("SECOND_PRIVATE_KEY");
-    uint256 public thirdPrivateKey = vm.envUint("THIRD_PRIVATE_KEY");
     address public deployerAddress = vm.addr(deployerPrivateKey);
-    address public secondAddress = vm.addr(secondPrivateKey);
-    address public thirdAddress = vm.addr(thirdPrivateKey);
 
 
     function getProposalExecutionData() public view returns(address[] memory targets, uint256[] memory values, bytes[] memory calldatas, string memory description) {

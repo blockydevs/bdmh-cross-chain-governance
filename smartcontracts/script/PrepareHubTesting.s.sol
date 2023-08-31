@@ -10,9 +10,15 @@ import "./DeploymentUtils.sol";
 
 contract PrepareHubTesting is Script, DeploymentUtils {
     function run() external {
+        uint256 secondPrivateKey = vm.envUint("SECOND_PRIVATE_KEY");
+        uint256 thirdPrivateKey = vm.envUint("THIRD_PRIVATE_KEY");
+        address secondAddress = vm.addr(secondPrivateKey);
+        address thirdAddress = vm.addr(thirdPrivateKey);
+
         vm.startBroadcast(deployerPrivateKey);
         uint16 chainId = uint16(vm.envUint("HUB_CHAIN_ID"));
         HMToken hmToken = new HMToken(1000 ether, "HMToken", 18, "HMT");
+
         hmToken.transfer(secondAddress, 100 ether);
         hmToken.transfer(thirdAddress, 100 ether);
         VHMToken voteToken = new VHMToken(IERC20(address(hmToken)));
