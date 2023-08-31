@@ -35,20 +35,49 @@ HUB_RPC_URL=
 HUB_ADDRESS=
 HUB_CHAIN_NAME=
 
-NETWORK_MOONBASE_SPOKE_ADDRESS=
-NETWORK_MOONBASE_CHAIN_ID=
-NETWORK_MOONBASE_RPC_URL=
-NETWORK_MOONBASE_DISPLAY_NAME=
-
-NETWORK_AVALANCHE_SPOKE_ADDRESS=
-NETWORK_AVALANCHE_CHAIN_ID=
-NETWORK_AVALANCHE_RPC_URL=
-NETWORK_AVALANCHE_DISPLAY_NAME=
+NETWORK_<network_name>_SPOKE_ADDRESS=
+NETWORK_<network_name>_CHAIN_ID=
+NETWORK_<network_name>_RPC_URL=
+NETWORK_<network_name>_DISPLAY_NAME=
 
 REDIS_EXPIRATION_TIME_IN_SEC=180
 ```
 
-Replace with other configurations as necessary.
+## Setting up a SPOKE
+
+The Human Protocol utilizes a hub-and-spoke model, where the central contract (the "hub") interacts with multiple individual contracts on different networks (known as "spokes"). This design allows the protocol to operate across various Ethereum-compatible chains, maximizing its reach and efficiency.
+
+### How to Define a SPOKE?
+
+A "SPOKE" represents an individual network's interface to the Human Protocol. Each SPOKE corresponds to a particular Ethereum-compatible chain and has its specific configuration. Here's how to define a SPOKE:
+
+1. **Configuration in the .env file**: Every SPOKE must be defined within your `.env` file using the format:
+
+    ```
+    NETWORK_<network_name>_SPOKE_ADDRESS=<contract_address_on_the_network>
+    NETWORK_<network_name>_CHAIN_ID=<network_chain_id>
+    NETWORK_<network_name>_RPC_URL=<network_rpc_url>
+    NETWORK_<network_name>_DISPLAY_NAME=<display_name_for_frontend>
+    ```
+
+   For instance, to define a SPOKE for the Mumbai network:
+
+    ```
+    NETWORK_MUMBAI_SPOKE_ADDRESS=0xabcdef1234567890abcdef
+    NETWORK_MUMBAI_CHAIN_ID=8001
+    NETWORK_MUMBAI_RPC_URL=https://rpc-mumbai.matic.today
+    NETWORK_MUMBAI_DISPLAY_NAME=Mumbai Testnet
+    ```
+
+2. **Understanding the SPOKE Parameters**:
+    - `NETWORK_<network_name>_SPOKE_ADDRESS`: Contract address of the SPOKE on the network.
+    - `NETWORK_<network_name>_CHAIN_ID`: Unique Chain ID used to identify the network.
+    - `NETWORK_<network_name>_RPC_URL`: RPC URL for communication with the network.
+    - `NETWORK_<network_name>_DISPLAY_NAME`: User-friendly name for the frontend display.
+   
+    
+3. **Loading the Configuration**: Restart the application after updating the `.env` file. The new SPOKE configurations will be automatically loaded and integrated into the voting aggregation system.
+
 
 ## API Endpoints
 Example endpoint:
