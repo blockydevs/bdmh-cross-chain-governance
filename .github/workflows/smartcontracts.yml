@@ -35,6 +35,7 @@ env:
   HUB_CHAIN_ID: ${{ vars.HUB_CHAIN_ID }}
   VOTE_TOKEN_ADDRESS: ${{ vars.VOTE_TOKEN_ADDRESS }}
   HUB_HM_TOKEN_ADDRESS: ${{ vars.HUB_HM_TOKEN_ADDRESS }}
+  HUB_SECONDS_PER_BLOCK: ${{ vars.HUB_SECONDS_PER_BLOCK }}
   TIMELOCK: ${{ inputs.TIMELOCK }}
   # spoke deployment
   SPOKE_PARAMS: ${{ inputs.SPOKE_PARAMS }}
