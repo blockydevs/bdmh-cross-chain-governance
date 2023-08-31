@@ -12,6 +12,7 @@ contract SpokeDeployment is Script, DeploymentUtils {
         address governorAddress = vm.envAddress("GOVERNOR_ADDRESS");
         uint16 chainId = uint16(vm.envUint("SPOKE_CHAIN_ID"));
         address vHMTokenAddress = vm.envAddress("SPOKE_VOTE_TOKEN_ADDRESS");
+        address spokeAutomaticRelayerAddress = vm.envAddress("SPOKE_AUTOMATIC_RELAYER_ADDRESS");
         VHMToken voteToken = VHMToken(vHMTokenAddress);
         vm.startBroadcast(deployerPrivateKey);
 

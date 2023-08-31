@@ -14,6 +14,7 @@ contract PrepareSpokeTesting is Script, DeploymentUtils {
         uint256 secondPrivateKey = vm.envUint("SECOND_PRIVATE_KEY");
         uint256 thirdPrivateKey = vm.envUint("THIRD_PRIVATE_KEY");
         address governorAddress = vm.envAddress("GOVERNOR_ADDRESS");
+        address spokeAutomaticRelayerAddress = vm.envAddress("SPOKE_AUTOMATIC_RELAYER_ADDRESS");
         uint16 spokeChainId = uint16(vm.envUint("SPOKE_CHAIN_ID"));
         vm.startBroadcast(deployerPrivateKey);
         address secondAddress = vm.addr(secondPrivateKey);
