@@ -6,7 +6,7 @@ import "../src/wormhole/IWormholeRelayer.sol";
 
 abstract contract DeploymentUtils is Script {
     address public magistrateAddress = vm.envAddress("MAGISTRATE_ADDRESS");
-    uint16 public hubChainId = uint16(vm.envUint("HUB_CHAIN_ID"));
+    uint16 public hubChainId = uint16(vm.envUint("HUB_WORMHOLE_CHAIN_ID"));
     uint16 public targetSecondsPerBlock = uint16(vm.envUint("HUB_SECONDS_PER_BLOCK"));
     address public hubAutomaticRelayerAddress = vm.envAddress("HUB_AUTOMATIC_RELAYER_ADDRESS");
 

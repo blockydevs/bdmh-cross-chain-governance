@@ -17,7 +17,7 @@ COUNT=$(echo "$SPOKE_PARAMS" | jq -s '. | length')
 for ((i=0; i < $COUNT; i++)); do
   # set vars
   export SPOKE_AUTOMATIC_RELAYER_ADDRESS=$(echo "$SPOKE_PARAMS" | jq -r --argjson i "$i" '.[$i].SPOKE_AUTOMATIC_RELAYER_ADDRESS')
-  export SPOKE_CHAIN_ID=$(echo "$SPOKE_PARAMS" | jq -r --argjson i "$i" '.[$i].SPOKE_CHAIN_ID')
+  export SPOKE_WORMHOLE_CHAIN_ID=$(echo "$SPOKE_PARAMS" | jq -r --argjson i "$i" '.[$i].SPOKE_WORMHOLE_CHAIN_ID')
   export SPOKE_RPC_URL=$(echo "$SPOKE_PARAMS" | jq -r --argjson i "$i" '.[$i].SPOKE_RPC_URL')
   export SPOKE_ETHERSCAN_API_KEY=$(echo "$SPOKE_PARAMS" | jq -r --argjson i "$i" '.[$i].SPOKE_ETHERSCAN_API_KEY')
   export SPOKE_HM_TOKEN_ADDRESS=$(echo "$SPOKE_PARAMS" | jq -r --argjson i "$i" '.[$i].SPOKE_HM_TOKEN_ADDRESS')
@@ -28,11 +28,11 @@ for ((i=0; i < $COUNT; i++)); do
 
   forge script script/SpokeDeployment.s.sol:SpokeDeployment --rpc-url $SPOKE_RPC_URL --etherscan-api-key $SPOKE_ETHERSCAN_API_KEY --broadcast --legacy --verify
   export SPOKE_ADDRESS="$(cat "broadcast/SpokeDeployment.s.sol/$SPOKE_CHAIN_ID/run-latest.json" | jq -r '.transactions[0].contractAddress')"
-  export SPOKE_CHAIN_IDS="${SPOKE_CHAIN_IDS},${SPOKE_CHAIN_ID}"
+  export SPOKE_WORMHOLE_CHAIN_IDS="${SPOKE_WORMHOLE_CHAIN_IDS},${SPOKE_WORMHOLE_CHAIN_ID}"
   export SPOKE_ADDRESSES="${SPOKE_ADDRESSES},${SPOKE_ADDRESS}"
 done
 # remove first character
-export SPOKE_CHAIN_IDS=${SPOKE_CHAIN_IDS:1}
+export SPOKE_WORMHOLE_CHAIN_IDS=${SPOKE_WORMHOLE_CHAIN_IDS:1}
 export SPOKE_ADDRESSES=${SPOKE_ADDRESSES:1}
 
 echo "Setting spoke contracts in the hub"
