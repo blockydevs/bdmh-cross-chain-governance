@@ -18,6 +18,7 @@ for ((i=0; i < $COUNT; i++)); do
   # set vars
   export SPOKE_AUTOMATIC_RELAYER_ADDRESS=$(echo "$SPOKE_PARAMS" | jq -r --argjson i "$i" '.[$i].SPOKE_AUTOMATIC_RELAYER_ADDRESS')
   export SPOKE_WORMHOLE_CHAIN_ID=$(echo "$SPOKE_PARAMS" | jq -r --argjson i "$i" '.[$i].SPOKE_WORMHOLE_CHAIN_ID')
+  export SPOKE_CHAIN_ID=$(echo "$SPOKE_PARAMS" | jq -r --argjson i "$i" '.[$i].SPOKE_CHAIN_ID')
   export SPOKE_RPC_URL=$(echo "$SPOKE_PARAMS" | jq -r --argjson i "$i" '.[$i].SPOKE_RPC_URL')
   export SPOKE_ETHERSCAN_API_KEY=$(echo "$SPOKE_PARAMS" | jq -r --argjson i "$i" '.[$i].SPOKE_ETHERSCAN_API_KEY')
   export SPOKE_HM_TOKEN_ADDRESS=$(echo "$SPOKE_PARAMS" | jq -r --argjson i "$i" '.[$i].SPOKE_HM_TOKEN_ADDRESS')
