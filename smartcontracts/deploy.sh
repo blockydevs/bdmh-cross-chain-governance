@@ -32,7 +32,7 @@ for ((i=0; i <= $COUNT; i++)); do
   export SPOKE_ADDRESS="$(cat "broadcast/SpokeDeployment.s.sol/$SPOKE_CHAIN_ID/run-latest.json" | jq -r '.transactions[0].contractAddress')"
   export SPOKE_WORMHOLE_CHAIN_IDS="${SPOKE_WORMHOLE_CHAIN_IDS},${SPOKE_WORMHOLE_CHAIN_ID}"
   export SPOKE_ADDRESSES="${SPOKE_ADDRESSES},${SPOKE_ADDRESS}"
-  DEPLOYED_SPOKES="${DEPLOYED_SPOKES} Spoke $i address: $SPOKE_ADDRESS\nSpoke $i wormholeChainId: $SPOKE_WORMHOLE_CHAIN_ID\n"
+  DEPLOYED_SPOKES="${DEPLOYED_SPOKES} Spoke $(i+1) address: $SPOKE_ADDRESS\nSpoke $(i+1) wormholeChainId: $SPOKE_WORMHOLE_CHAIN_ID\n\n"
 done
 # remove first character
 export SPOKE_WORMHOLE_CHAIN_IDS=${SPOKE_WORMHOLE_CHAIN_IDS:1}
@@ -41,7 +41,6 @@ export SPOKE_ADDRESSES=${SPOKE_ADDRESSES:1}
 echo "Setting spoke contracts in the hub"
 forge script script/HubUpdateSpokeContracts.s.sol:HubUpdateSpokeContracts --rpc-url $HUB_RPC_URL --broadcast
 
-echo $TIMELOCK
 if [[ $TIMELOCK = "true" ]]; then
   echo "Transfer governance ownership to timelock"
   forge script script/HubTransferOwnership.s.sol:HubTransferOwnership --rpc-url $HUB_RPC_URL --broadcast
@@ -49,4 +48,4 @@ fi
 
 echo "Hub contract address: $GOVERNOR_ADDRESS"
 echo "Hub contract chain id: $HUB_CHAIN_ID"
-echo $DEPLOYED_SPOKES
+echo $DEPLOYED_SPOKES@E
