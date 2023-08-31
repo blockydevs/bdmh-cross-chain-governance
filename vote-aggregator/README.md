@@ -60,15 +60,9 @@ A "SPOKE" represents an individual network's interface to the Human Protocol. Ea
     NETWORK_<network_name>_DISPLAY_NAME=<display_name_for_frontend>
     ```
 
-   For instance, to define a SPOKE for the Mumbai network:
-   https://docs.wormhole.com/wormhole/blockchain-environments/contracts#automatic-relayer
+   `chain id` should be taken from wormhole documentation describing automatic relayers. Here https://docs.wormhole.com/wormhole/blockchain-environments/contracts#automatic-relayer you can find supported chains and their respective ids.
 
-    ```
-    NETWORK_MUMBAI_SPOKE_ADDRESS=0x0591C25ebd0580E0d4F27A82Fc2e24E7489CB5e0
-    NETWORK_MUMBAI_CHAIN_ID=5
-    NETWORK_MUMBAI_RPC_URL=https://rpc-mumbai.matic.today
-    NETWORK_MUMBAI_DISPLAY_NAME=polygon
-    ```
+
 
 2. **Understanding the SPOKE Parameters**:
     - `NETWORK_<network_name>_SPOKE_ADDRESS`: Contract address of the SPOKE on the network.
