@@ -16,7 +16,7 @@ env:
   GCP_PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
   GCP_REGION: ${{ vars.GCP_REGION }}
 
-  #! stworzyć environment dla vote aggregator
+  # GH environment
   NODE_PORT: ${{ vars.NODE_PORT }}
   HUB_RPC_URL: ${{ vars.HUB_RPC_URL }}
   HUB_ADDRESS: ${{ vars.HUB_ADDRESS }}
