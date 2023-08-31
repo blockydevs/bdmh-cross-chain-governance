@@ -9,6 +9,7 @@ spec:
       containers:      
       - image: "{{ env['GCP_REGION'] }}-docker.pkg.dev/{{ env['GCP_PROJECT_ID'] }}/blockydevs/vote-aggregator:latest"
         name: vote-aggregator
+        ports:
         - containerPort: 8080
         env:
         - name: REDIS_HOST
@@ -26,7 +27,7 @@ spec:
         - name: HUB_CHAIN_NAME
           value: "{{ env['HUB_CHAIN_NAME'] }}"
         - name: NETWORK_MOONBASE_SPOKE_ADDRESS
-          value: "{{ env['NETWORK_MOONBASE_SPOKE_ADDRESS'] }}"\
+          value: "{{ env['NETWORK_MOONBASE_SPOKE_ADDRESS'] }}"
         - name: NETWORK_MOONBASE_CHAIN_ID
           value: "{{ env['NETWORK_MOONBASE_CHAIN_ID'] }}"
         - name: NETWORK_MOONBASE_RPC_URL
