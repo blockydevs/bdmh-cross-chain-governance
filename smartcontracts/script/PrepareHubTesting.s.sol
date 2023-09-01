@@ -16,7 +16,7 @@ contract PrepareHubTesting is Script, DeploymentUtils {
         address thirdAddress = vm.addr(thirdPrivateKey);
 
         vm.startBroadcast(deployerPrivateKey);
-        uint16 chainId = uint16(vm.envUint("HUB_CHAIN_ID"));
+        uint16 chainId = uint16(vm.envUint("HUB_WORMHOLE_CHAIN_ID"));
         HMToken hmToken = new HMToken(1000 ether, "HMToken", 18, "HMT");
 
         hmToken.transfer(secondAddress, 100 ether);

@@ -11,7 +11,7 @@ import "./DeploymentUtils.sol";
 contract HubDeployment is Script, DeploymentUtils {
     function run() external {
         vm.startBroadcast(deployerPrivateKey);
-        uint16 chainId = uint16(vm.envUint("HUB_CHAIN_ID"));
+        uint16 chainId = uint16(vm.envUint("HUB_WORMHOLE_CHAIN_ID"));
         address vHMTAddress = vm.envAddress("HUB_VOTE_TOKEN_ADDRESS");
         VHMToken voteToken = VHMToken(vHMTAddress);
         address[] memory proposers = new address[](1);
