@@ -181,7 +181,7 @@ export default function DepositHMTModal({ isOpen, onDismiss, title, hmtBalance }
             </RowBetween>
             <RowBetween>
               <ThemedText.BodySecondary>
-                <Trans>HMT balance: {userHmtBalanceAmount}</Trans>
+                <Trans>HMT balance</Trans>: {userHmtBalanceAmount}
               </ThemedText.BodySecondary>
             </RowBetween>
             <ExchangeHmtInput
@@ -206,11 +206,11 @@ export default function DepositHMTModal({ isOpen, onDismiss, title, hmtBalance }
           <LoadingView onDismiss={wrappedOnDismiss} label="Depositing tokens">
             <AutoColumn gap="md" justify="center">
               <ThemedText.HeadlineSmall fontWeight={500} textAlign="center">
-                <Trans>
-                  {approveHash && !isTransactionApproved
-                    ? 'Wait for the approve transaction to be confirmed'
-                    : 'Confirm this transaction in your wallet'}
-                </Trans>
+                {approveHash && !isTransactionApproved ? (
+                  <Trans>Wait for the approve transaction to be confirmed</Trans>
+                ) : (
+                  <Trans>Confirm this transaction in your wallet</Trans>
+                )}
               </ThemedText.HeadlineSmall>
               {isApproveWaitResponse && Boolean(!error) && (
                 <ThemedText.BodyPrimary textAlign="center" fontSize={32} marginBottom={36} marginTop={36}>

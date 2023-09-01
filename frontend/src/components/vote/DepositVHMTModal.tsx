@@ -146,7 +146,7 @@ export default function DepositVHMTModal({ isOpen, onDismiss, title, uniBalance 
             </RowBetween>
             <RowBetween>
               <ThemedText.BodySecondary>
-                <Trans>vHMT balance: {userVHMTBalanceAmount}</Trans>
+                <Trans>vHMT balance</Trans>: {userVHMTBalanceAmount}
               </ThemedText.BodySecondary>
             </RowBetween>
             <ExchangeHmtInput

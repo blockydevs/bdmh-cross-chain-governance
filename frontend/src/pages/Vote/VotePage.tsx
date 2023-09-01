@@ -450,7 +450,11 @@ export default function VotePage() {
               onClick={() => toggleRequestCollectionsModal()}
               disabled={collectionPhaseInProgress || collectionStatusLoading}
             >
-              <Trans>{collectionPhaseInProgress ? 'Collection phase in progress' : 'Request Collection'}</Trans>
+              {collectionPhaseInProgress ? (
+                <Trans>Collection phase in progress</Trans>
+              ) : (
+                <Trans>Request Collection</Trans>
+              )}
             </ButtonPrimary>
           )}
 

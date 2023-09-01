@@ -1,0 +1,46 @@
+apiVersion: serving.knative.dev/v1
+kind: Service
+metadata:
+  name: vote-aggregator
+  namespace: "{{ env['GCP_PROJECT_ID'] }}"
+spec:
+  template:
+    spec:
+      containers:      
+      - image: "{{ env['GCP_REGION'] }}-docker.pkg.dev/{{ env['GCP_PROJECT_ID'] }}/blockydevs/vote-aggregator:latest"
+        name: vote-aggregator
+        ports:
+        - containerPort: 8080
+        env:
+        - name: REDIS_HOST
+          value: "{{ env['REDIS_HOST'] }}"
+        - name: REDIS_PORT
+          value: "{{ env['REDIS_PORT'] }}"
+        - name: REDIS_CURRENT_LOCATION_ID
+          value: "{{ env['REDIS_CURRENT_LOCATION_ID'] }}"
+        - name: NODE_PORT
+          value: "{{ env['NODE_PORT'] }}"
+        - name: HUB_RPC_URL
+          value: "{{ env['HUB_RPC_URL'] }}"
+        - name: HUB_ADDRESS
+          value: "{{ env['HUB_ADDRESS'] }}"
+        - name: HUB_CHAIN_NAME
+          value: "{{ env['HUB_CHAIN_NAME'] }}"
+        - name: NETWORK_MOONBASE_SPOKE_ADDRESS
+          value: "{{ env['NETWORK_MOONBASE_SPOKE_ADDRESS'] }}"
+        - name: NETWORK_MOONBASE_CHAIN_ID
+          value: "{{ env['NETWORK_MOONBASE_CHAIN_ID'] }}"
+        - name: NETWORK_MOONBASE_RPC_URL
+          value: "{{ env['NETWORK_MOONBASE_RPC_URL'] }}"
+        - name: NETWORK_MOONBASE_DISPLAY_NAME
+          value: "{{ env['NETWORK_MOONBASE_DISPLAY_NAME'] }}"
+        - name: NETWORK_AVALANCHE_SPOKE_ADDRESS
+          value: "{{ env['NETWORK_AVALANCHE_SPOKE_ADDRESS'] }}"
+        - name: NETWORK_AVALANCHE_CHAIN_ID
+          value: "{{ env['NETWORK_AVALANCHE_CHAIN_ID'] }}"
+        - name: NETWORK_AVALANCHE_RPC_URL
+          value: "{{ env['NETWORK_AVALANCHE_RPC_URL'] }}"
+        - name: NETWORK_AVALANCHE_DISPLAY_NAME
+          value: "{{ env['NETWORK_AVALANCHE_DISPLAY_NAME'] }}"
+        - name: REDIS_EXPIRATION_TIME_IN_SEC
+          value: "{{ env['REDIS_EXPIRATION_TIME_IN_SEC'] }}"

@@ -26,10 +26,6 @@ Before you proceed, ensure that you have the following installed:
 
 Please copy or rename `.env.example` to `.env` and fill in all environment variables.
 
-To set up a base path for your application please specify this variable:
-
-- `REACT_APP_BASE_URL`
-
 There can be only one hub chain, defined by four specific environment variables:
 
 - `REACT_APP_GOVERNANCE_HUB_ADDRESS` corresponds to its address,
