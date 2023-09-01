@@ -3,11 +3,11 @@ name: Vote Aggregator service
 on: 
   workflow_dispatch:
 #   uncomment when ready
-#   push:
-#     branches:
-#       - main
-#     paths:
-#       - 'vote-aggregator/**'
+  push:
+    branches:
+      - main
+    paths:
+      - 'vote-aggregator/**'
 
 env:
   REDIS_HOST: ${{ vars.REDIS_HOST }}
