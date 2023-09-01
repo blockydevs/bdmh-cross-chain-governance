@@ -1,5 +1,4 @@
 import Web3Status from 'components/Web3Status'
-import { useIsNftPage } from 'hooks/useIsNftPage'
 import { Box } from 'nft/components/Box'
 import { Row } from 'nft/components/Flex'
 import { HumanProtocolIcon } from 'nft/components/icons'
@@ -22,7 +21,6 @@ const Nav = styled.nav`
 
 const Navbar = () => {
   const navigate = useNavigate()
-  const isNftPage = useIsNftPage()
   const { darkMode } = useTheme()
 
   return (
@@ -31,24 +29,17 @@ const Navbar = () => {
         <Box display="flex" height="full" flexWrap="nowrap">
           <Box className={styles.leftSideContainer}>
             <Box className={styles.logoContainer}>
-              <HumanProtocolIcon
-                fill={darkMode ? 'white' : '#6309FF'}
-                onClick={() => navigate(process.env.REACT_APP_BASE_URL as string)}
-              />
+              <HumanProtocolIcon fill={darkMode ? 'white' : '#6309FF'} onClick={() => navigate('/')} />
             </Box>
-            {!isNftPage && (
-              <Box display={{ sm: 'flex', lg: 'none' }}>
-                <ChainSelector leftAlign={true} />
-              </Box>
-            )}
+            <Box display={{ sm: 'flex', lg: 'none' }}>
+              <ChainSelector leftAlign={true} />
+            </Box>
           </Box>
           <Box className={styles.rightSideContainer}>
             <Row gap="12">
-              {!isNftPage && (
-                <Box display={{ sm: 'none', lg: 'flex' }}>
-                  <ChainSelector />
-                </Box>
-              )}
+              <Box display={{ sm: 'none', lg: 'flex' }}>
+                <ChainSelector />
+              </Box>
               <Web3Status />
             </Row>
           </Box>

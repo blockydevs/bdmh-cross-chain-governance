@@ -366,7 +366,7 @@ export default function VotePage() {
         />
         <ProposalInfo gap="lg" justify="start">
           <RowBetween style={{ width: '100%' }}>
-            <ArrowWrapper to={process.env.REACT_APP_BASE_URL as string}>
+            <ArrowWrapper to={process.env.REACT_APP_BASE_URL ? (process.env.REACT_APP_BASE_URL as string) : '/'}>
               <Trans>
                 <ArrowLeft size={20} /> Proposals
               </Trans>
