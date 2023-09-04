@@ -54,7 +54,7 @@ export default function NotFound() {
         </Container>
         <Image src={isDarkMode ? darkImage : lightImage} alt="Liluni" />
       </Header>
-      <SmallButtonPrimary as={Link} to={process.env.REACT_APP_BASE_URL as string}>
+      <SmallButtonPrimary as={Link} to="/">
         <Trans>Oops, take me back to Governance</Trans>
       </SmallButtonPrimary>
     </PageWrapper>
