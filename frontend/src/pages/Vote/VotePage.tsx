@@ -492,10 +492,10 @@ export default function VotePage() {
                     <ThemedText.BodyPrimary>
                       <Trans>Quorum</Trans>
                     </ThemedText.BodyPrimary>
-                    {proposalData && totalVotes ? (
+                    {proposalData ? (
                       <ThemedText.BodyPrimary>
                         {totalVotes}
-                        <span>{` / ${quorumNumber}`}</span>
+                        <span>{` / ${quorumNumber ? quorumNumber : '-'}`}</span>
                       </ThemedText.BodyPrimary>
                     ) : (
                       '-'
