@@ -1,28 +1,19 @@
-import { ALL_CHAIN_VOTES_MOCKED_DATA } from 'constants/AllChainVotesMocked'
-console.log('ALL_CHAIN_VOTES_MOCKED_DATA:', ALL_CHAIN_VOTES_MOCKED_DATA)
-
-// const API_URL = ''
+const API_URL = 'https://vote-aggregator-scsonez34a-ew.a.run.app/proposal?id='
 
 export interface ChainVoteData {
   chain_name: string
-  for: number
-  against: number
-  abstain: number
+  for: string | number
+  against: string | number
+  abstain: string | number
 }
 
 export async function fetchVotes(proposalId: string): Promise<ChainVoteData[]> {
-  console.log('proposalId:', proposalId)
-  // const response = await fetch(API_URL)
+  const response = await fetch(API_URL + proposalId)
 
-  // if (!response.ok) {
-  //   throw new Error(`Failed to fetch votes for proposal: ${proposalId}`)
-  // }
+  if (!response.ok) {
+    throw new Error(`Failed to fetch votes for proposal: ${proposalId}`)
+  }
 
-  // const data = await response.json()
-  // return data
-
-  // delay simulation for mocked data
-  await new Promise((resolve) => setTimeout(resolve, 1000))
-
-  return ALL_CHAIN_VOTES_MOCKED_DATA
+  const data = await response.json()
+  return data
 }
