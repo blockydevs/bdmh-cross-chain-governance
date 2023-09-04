@@ -47,5 +47,5 @@ if [[ $TIMELOCK = "true" ]]; then
 fi
 
 echo "Hub contract address: $GOVERNOR_ADDRESS"
-echo "Hub contract chain id: $HUB_CHAIN_ID"
+echo "Hub contract wormholeChainId: $HUB_WORMHOLE_CHAIN_ID"
 echo -e "$DEPLOYED_SPOKES"
