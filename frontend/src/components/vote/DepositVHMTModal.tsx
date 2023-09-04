@@ -1,4 +1,5 @@
 import { TransactionResponse } from '@ethersproject/abstract-provider'
+import { BigNumber } from '@ethersproject/bignumber'
 import { Trans } from '@lingui/macro'
 import { CurrencyAmount, Token } from '@uniswap/sdk-core'
 import { useWeb3React } from '@web3-react/core'
@@ -53,10 +54,8 @@ interface DepositVHMTProps {
 export default function DepositVHMTModal({ isOpen, onDismiss, title, uniBalance }: DepositVHMTProps) {
   const { account } = useWeb3React()
   const uniContract = useUniContract()
-  const userVHMTBalanceAmount =
-    uniBalance && Number(uniBalance.toExact()) < 1
-      ? Number(uniBalance.toExact()).toFixed(18)
-      : uniBalance && Number(uniBalance.toExact())
+
+  const userVHMTBalanceAmount = uniBalance && uniBalance?.toExact()
 
   const addTransaction = useTransactionAdder()
 
@@ -106,7 +105,7 @@ export default function DepositVHMTModal({ isOpen, onDismiss, title, uniBalance 
       setAttempting(false)
       return
     }
-    if (userVHMTBalanceAmount && userVHMTBalanceAmount < currencyToExchange) {
+    if (userVHMTBalanceAmount && BigNumber.from(userVHMTBalanceAmount) < BigNumber.from(currencyToExchange)) {
       setValidationInputError(ExchangeInputErrors.EXCEEDS_BALANCE)
       setAttempting(false)
       return

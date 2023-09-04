@@ -23,7 +23,7 @@ const onDemandURLs = onDemandEntries.map((entry) => (typeof entry === 'string' ?
 const onDemandCacheName = `${cacheNames.prefix}-on-demand-${cacheNames.suffix}`
 registerRoute(
   new Route(
-    ({ url }) => onDemandURLs.includes('.' + url.pathname),
+    ({ url }) => onDemandURLs.includes('.' + url?.pathname),
     new CacheFirst({
       cacheName: onDemandCacheName,
       plugins: [new ExpirationPlugin({ maxEntries: 64 })],

@@ -13,6 +13,7 @@ import GOVERNOR_HUB_ABI from 'abis/governance-hub.json'
 import GOVERNOR_SPOKE_ABI from 'abis/governance-spoke.json'
 import HmtUniJSON from 'abis/HMToken.json'
 import UniJSON from 'abis/VHMToken.json'
+import { fetchVotes } from 'api/votes'
 import { GOVERNANCE_HUB_ADDRESS, GOVERNANCE_SPOKE_ADRESSES } from 'constants/addresses'
 import { HUB_CHAIN_ID } from 'constants/addresses'
 import { SupportedChainId } from 'constants/chains'
@@ -21,6 +22,7 @@ import { useContract, useContractWithCustomProvider } from 'hooks/useContract'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { useAppSelector } from 'state/hooks'
+import { aggregateVotes } from 'utils/aggregateVotes'
 import { calculateGasMargin } from 'utils/calculateGasMargin'
 
 import { BRAVO_START_BLOCK, MOONBEAN_START_BLOCK, ONE_BIP_START_BLOCK } from '../../constants/proposals'
@@ -694,4 +696,59 @@ export function useExecuteCallback(): (
     },
     [addTransaction, contract]
   )
+}
+
+export function useHasVoted(proposalId: string | undefined): boolean {
+  const { account, chainId } = useWeb3React()
+  const addTransaction = useTransactionAdder()
+
+  const isHubChainActive = useAppSelector((state) => state.application.isHubChainActive)
+  const transactions = useAppSelector((state) => state.transactions)
+
+  const contract = useContract(
+    isHubChainActive ? GOVERNANCE_HUB_ADDRESS : GOVERNANCE_SPOKE_ADRESSES,
+    isHubChainActive ? GOVERNOR_HUB_ABI : GOVERNOR_SPOKE_ABI
+  )
+
+  const [hasVoted, setHasVoted] = useState<boolean>(false)
+
+  useEffect(() => {
+    if (!account || !contract || !proposalId || !chainId) return
+
+    contract.hasVoted(proposalId, account).then((response: boolean) => {
+      setHasVoted(response)
+    })
+  }, [account, contract, proposalId, chainId, transactions, addTransaction])
+
+  return hasVoted
+}
+
+export function useAllVotes(proposalId: string | undefined) {
+  const [votes, setVotes] = useState<{ for: number; against: number; abstain: number }>({
+    for: 0,
+    against: 0,
+    abstain: 0,
+  })
+  const [loading, setLoading] = useState<boolean>(false)
+  const [error, setError] = useState<Error | null>(null)
+
+  useEffect(() => {
+    if (!proposalId) return
+
+    setLoading(true)
+    setError(null)
+
+    fetchVotes(proposalId)
+      .then((data) => {
+        setVotes(aggregateVotes(data))
+      })
+      .catch((err) => {
+        setError(err)
+      })
+      .finally(() => {
+        setLoading(false)
+      })
+  }, [proposalId])
+
+  return { votes, loading, error }
 }

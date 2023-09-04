@@ -1,12 +1,12 @@
-import { sendAnalyticsEvent, Trace, user } from '@uniswap/analytics'
-import { CustomUserProperties, getBrowser, InterfacePageName, SharedEventName } from '@uniswap/analytics-events'
+import { sendAnalyticsEvent, user } from '@uniswap/analytics'
+import { CustomUserProperties, getBrowser, SharedEventName } from '@uniswap/analytics-events'
 import Footer from 'components/Footer/Footer'
 import Loader from 'components/Icons/LoadingSpinner'
 import { useFeatureFlagsIsLoaded } from 'featureFlags'
 import ApeModeQueryParamReader from 'hooks/useApeModeQueryParamReader'
 import VotePage from 'pages/Vote/VotePage'
 import { lazy, Suspense, useEffect } from 'react'
-import { Navigate, Route, Routes, useLocation } from 'react-router-dom'
+import { Navigate, Route, Routes } from 'react-router-dom'
 import styled from 'styled-components/macro'
 import { SpinnerSVG } from 'theme/components'
 import { useIsDarkMode } from 'theme/components/ThemeToggle'
@@ -63,16 +63,6 @@ const LoaderContainer = styled.div`
   height: 80vh;
 `
 
-function getCurrentPageFromLocation(locationPathname: string): InterfacePageName | undefined {
-  switch (true) {
-    case locationPathname.startsWith('/vote'):
-      return InterfacePageName.VOTE_PAGE
-
-    default:
-      return undefined
-  }
-}
-
 // this is the same svg defined in assets/images/blue-loader.svg
 // it is defined here because the remote asset may not have had time to load when this file is executing
 const LazyLoadSpinner = () => (
@@ -90,8 +80,6 @@ const LazyLoadSpinner = () => (
 export default function App() {
   const isLoaded = useFeatureFlagsIsLoaded()
 
-  const { pathname } = useLocation()
-  const currentPage = getCurrentPageFromLocation(pathname)
   const isDarkMode = useIsDarkMode()
   const isExpertMode = useIsExpertMode()
 
@@ -129,41 +117,39 @@ export default function App() {
     <>
       <DarkModeQueryParamReader />
       <ApeModeQueryParamReader />
-      <Trace page={currentPage}>
-        <HeaderWrapper>
-          <NavBar />
-        </HeaderWrapper>
-        <BodyWrapper>
-          <Suspense fallback={<Loader />}>
-            {isLoaded ? (
-              <Routes>
-                <Route
-                  path="/"
-                  element={
-                    <Suspense
-                      fallback={
-                        <LoaderContainer>
-                          <LazyLoadSpinner />
-                        </LoaderContainer>
-                      }
-                    >
-                      <Vote />
-                    </Suspense>
-                  }
-                />
-                <Route path="/:governorIndex/:id" element={<VotePage />} />
-                <Route path="/not-found" element={<NotFound />} />
-                <Route path="*" element={<Navigate to="/" replace />} />
-              </Routes>
-            ) : (
-              <Loader />
-            )}
-          </Suspense>
-          <FooterWrapper>
-            <Footer />
-          </FooterWrapper>
-        </BodyWrapper>
-      </Trace>
+      <HeaderWrapper>
+        <NavBar />
+      </HeaderWrapper>
+      <BodyWrapper>
+        <Suspense fallback={<Loader />}>
+          {isLoaded ? (
+            <Routes>
+              <Route
+                path={process.env.REACT_APP_BASE_URL as string}
+                element={
+                  <Suspense
+                    fallback={
+                      <LoaderContainer>
+                        <LazyLoadSpinner />
+                      </LoaderContainer>
+                    }
+                  >
+                    <Vote />
+                  </Suspense>
+                }
+              />
+              <Route path={`${process.env.REACT_APP_BASE_URL}/:governorIndex/:id`} element={<VotePage />} />
+              <Route path="/not-found" element={<NotFound />} />
+              <Route path="*" element={<Navigate to={process.env.REACT_APP_BASE_URL as string} replace />} />
+            </Routes>
+          ) : (
+            <Loader />
+          )}
+        </Suspense>
+        <FooterWrapper>
+          <Footer />
+        </FooterWrapper>
+      </BodyWrapper>
     </>
   )
 }

@@ -43,7 +43,9 @@ import { ApplicationModal } from '../../state/application/reducer'
 import {
   ProposalData,
   ProposalState,
+  useAllVotes,
   useCollectionStatus,
+  useHasVoted,
   useProposalData,
   useQuorum,
   useUserDelegatee,
@@ -179,14 +181,32 @@ const ProposerAddressLink = styled(ExternalLink)`
 `
 
 export default function VotePage() {
-  const { governorIndex, id } = useParams() as { governorIndex: string; id: string }
+  const { governorIndex, id } = useParams() as {
+    governorIndex: string
+    id: string
+  }
+
+  const { votes, loading } = useAllVotes(id)
+
+  const forVotes = votes['for']
+  const againstVotes = votes['against']
+  const abstainVotes = votes['abstain']
+
   const parsedGovernorIndex = Number.parseInt(governorIndex)
   const { chainId, account } = useWeb3React()
+
   const isHubChainActive = useAppSelector((state) => state.application.isHubChainActive)
   const hubBlock = useHubBlockNumber()
 
   const quorumAmount = useQuorum()
-  const quorumNumber = Number(quorumAmount?.toExact())
+  // const quorumNumber = Number(quorumAmount?.toExact())
+  const quorumNumber = Number(
+    quorumAmount?.toExact({
+      groupSeparator: ',',
+    })
+  )
+
+  const hasVoted = useHasVoted(id)
 
   // get data for this specific proposal
   const proposalData: ProposalData | undefined = useProposalData(parsedGovernorIndex, id)
@@ -242,27 +262,10 @@ export default function VotePage() {
     timeZoneName: 'short',
   }
 
-  // get total votes and format percentages for UI
-  const totalVotes = proposalData?.hubForCount?.add(proposalData.hubAgainstCount).add(proposalData.hubAbstainCount)
-
-  const forVotes = isHubChainActive
-    ? Number(proposalData?.hubForCount.toExact())
-    : Number(proposalData?.spokeForCount.toExact())
-
-  const againstVotes =
-    proposalData && isHubChainActive
-      ? Number(proposalData?.hubAgainstCount.toExact())
-      : Number(proposalData?.spokeAgainstCount.toExact())
-
-  const abstainVotes =
-    proposalData && isHubChainActive
-      ? Number(proposalData?.hubAbstainCount.toExact())
-      : Number(proposalData?.spokeAbstainCount.toExact())
+  const totalVotes = forVotes + abstainVotes
 
   const quorumPercentage =
-    Number(totalVotes?.toExact()) > 0 && quorumNumber > 0
-      ? (((forVotes + againstVotes + abstainVotes) / quorumNumber) * 100).toFixed()
-      : 0
+    totalVotes > 0 && quorumNumber > 0 ? (((forVotes + againstVotes + abstainVotes) / quorumNumber) * 100).toFixed() : 0
 
   // only count available votes as of the proposal start block
   const availableVotes: CurrencyAmount<Token> | undefined = useUserVotesAsOfBlock(
@@ -275,7 +278,9 @@ export default function VotePage() {
     availableVotes &&
     JSBI.greaterThan(availableVotes.quotient, JSBI.BigInt(0)) &&
     proposalData &&
-    proposalData.status === ProposalState.ACTIVE
+    proposalData.status === ProposalState.ACTIVE &&
+    !!account &&
+    !hasVoted
 
   const {
     collectionStartedResponse,
@@ -361,7 +366,7 @@ export default function VotePage() {
         />
         <ProposalInfo gap="lg" justify="start">
           <RowBetween style={{ width: '100%' }}>
-            <ArrowWrapper to={process.env.REACT_APP_BASE_URL as string}>
+            <ArrowWrapper to={process.env.REACT_APP_BASE_URL ? (process.env.REACT_APP_BASE_URL as string) : '/'}>
               <Trans>
                 <ArrowLeft size={20} /> Proposals
               </Trans>
@@ -389,23 +394,43 @@ export default function VotePage() {
                   ))}
               </ThemedText.DeprecatedMain>
             </RowBetween>
-            {proposalData && proposalData.status === ProposalState.ACTIVE && showVotingButtons === false && (
+            {proposalData &&
+              proposalData.status === ProposalState.ACTIVE &&
+              showVotingButtons === false &&
+              !hasVoted &&
+              account && (
+                <GrayCard>
+                  <Box>
+                    <WarningCircleIcon />
+                  </Box>
+                  <Trans>
+                    Only vHMT votes that were self delegated before block {proposalData.startBlock} are eligible for
+                    voting.
+                  </Trans>
+                  {showLinkForUnlock && (
+                    <span>
+                      <Trans>
+                        <StyledInternalLink to="/vote">Unlock voting</StyledInternalLink> to prepare for the next
+                        proposal.
+                      </Trans>
+                    </span>
+                  )}
+                </GrayCard>
+              )}
+            {proposalData && hasVoted && account && (
               <GrayCard>
                 <Box>
                   <WarningCircleIcon />
                 </Box>
-                <Trans>
-                  Only vHMT votes that were self delegated before block {proposalData.startBlock} are eligible for
-                  voting.
-                </Trans>{' '}
-                {showLinkForUnlock && (
-                  <span>
-                    <Trans>
-                      <StyledInternalLink to="/vote">Unlock voting</StyledInternalLink> to prepare for the next
-                      proposal.
-                    </Trans>
-                  </span>
-                )}
+                <Trans>You have already voted for this proposal.</Trans>
+              </GrayCard>
+            )}
+            {proposalData && !account && (
+              <GrayCard>
+                <Box>
+                  <WarningCircleIcon />
+                </Box>
+                <Trans>Please connect a wallet with delegated voting power.</Trans>
               </GrayCard>
             )}
           </StyledAutoColumn>
@@ -417,6 +442,7 @@ export default function VotePage() {
             setVoteOption={setVoteOption}
             showVotingButtons={showVotingButtons}
             proposalStatus={proposalData?.status}
+            loading={loading}
           />
 
           {showRequestCollectionsButton && !collectionStatusLoading && (
@@ -466,17 +492,13 @@ export default function VotePage() {
                     <ThemedText.BodyPrimary>
                       <Trans>Quorum</Trans>
                     </ThemedText.BodyPrimary>
-                    {proposalData && (
+                    {proposalData ? (
                       <ThemedText.BodyPrimary>
-                        {totalVotes && totalVotes.toFixed(0, { groupSeparator: ',' })}
-                        {quorumAmount && (
-                          <span>
-                            {` / ${quorumAmount.toExact({
-                              groupSeparator: ',',
-                            })}`}
-                          </span>
-                        )}
+                        {totalVotes}
+                        <span>{` / ${quorumNumber ? quorumNumber : '-'}`}</span>
                       </ThemedText.BodyPrimary>
+                    ) : (
+                      '-'
                     )}
                   </WrapSmall>
                 </AutoColumn>

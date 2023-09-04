@@ -1,4 +1,5 @@
 import { TransactionResponse } from '@ethersproject/abstract-provider'
+import { BigNumber } from '@ethersproject/bignumber'
 import { parseUnits } from '@ethersproject/units'
 import { Trans } from '@lingui/macro'
 import { CurrencyAmount, Token } from '@uniswap/sdk-core'
@@ -61,10 +62,7 @@ export default function DepositHMTModal({ isOpen, onDismiss, title, hmtBalance }
   const addTransaction = useTransactionAdder()
   const isMobile = useIsMobile()
 
-  const userHmtBalanceAmount =
-    hmtBalance && Number(hmtBalance.toExact()) < 1
-      ? Number(hmtBalance.toExact()).toFixed(18)
-      : hmtBalance && Number(hmtBalance.toExact())
+  const userHmtBalanceAmount = hmtBalance && hmtBalance?.toExact()
 
   const [attempting, setAttempting] = useState(false)
   const [currencyToExchange, setCurrencyToExchange] = useState<string>('')
@@ -116,7 +114,7 @@ export default function DepositHMTModal({ isOpen, onDismiss, title, hmtBalance }
       setValidationInputError(ExchangeInputErrors.EMPTY_INPUT)
       return
     }
-    if (userHmtBalanceAmount && userHmtBalanceAmount < currencyToExchange) {
+    if (userHmtBalanceAmount && BigNumber.from(userHmtBalanceAmount) < BigNumber.from(currencyToExchange)) {
       setValidationInputError(ExchangeInputErrors.EXCEEDS_BALANCE)
       return
     }
