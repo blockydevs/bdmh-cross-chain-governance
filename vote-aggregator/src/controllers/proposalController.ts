@@ -8,7 +8,7 @@ export const getProposal = async (req: Request, res: Response) => {
     }
 
     res.header("Access-Control-Allow-Origin", "*");
-    res.header("Access-Control-Allow-Methods", "GET,HEAD,PUT,PATCH,DELETE");
+    res.header("Access-Control-Allow-Methods", "GET");
     res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
 
     const results = await fetchProposalData(proposalId);
