@@ -1,4 +1,4 @@
-const API_URL = 'https://vote-aggregator-scsonez34a-ew.a.run.app/proposal?id='
+const API_URL = process.env.REACT_APP_VOTE_AGGREGATOR_ADDRESS as string
 
 export interface ChainVoteData {
   chain_name: string
