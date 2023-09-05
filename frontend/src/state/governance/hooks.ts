@@ -167,7 +167,8 @@ function useFormattedProposalCreatedLogs(
       fromBlock,
       toBlock,
     }
-  }, [contract, fromBlock, toBlock])
+    // eslint-disable-next-line
+  }, [contract])
 
   const useLogsResult = useLogs(filter)
 
