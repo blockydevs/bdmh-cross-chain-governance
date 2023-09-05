@@ -7,6 +7,10 @@ export const getProposal = async (req: Request, res: Response) => {
         return res.status(400).send('The proposal Id is mandatory. Please provide a valid value.');
     }
 
+    res.header("Access-Control-Allow-Origin", "*");
+    res.header("Access-Control-Allow-Methods", "GET,HEAD,PUT,PATCH,DELETE");
+    res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+
     const results = await fetchProposalData(proposalId);
     res.send(results);
 };
