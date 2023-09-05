@@ -9,7 +9,7 @@ export interface ChainVoteData {
 
 export async function fetchVotes(proposalId: string): Promise<ChainVoteData[]> {
   const response = await fetch(API_URL + proposalId, {
-    method: 'POST',
+    method: 'GET',
     mode: 'no-cors',
   })
 
