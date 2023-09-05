@@ -7,7 +7,6 @@ describe("Interacting with governance ecosystem", function () {
     let hmtoken;
     let vhmtoken;
     let governanceContract;
-    let spokeContract;
     let proposalId;
 
     async function deployHMTokenFixture() {
@@ -16,11 +15,21 @@ describe("Interacting with governance ecosystem", function () {
             100, "HMToken", 18, "HMT"
         );
         await hmtoken.waitForDeployment();
+
+        return {
+            contractAddress: hmtoken.target,
+            from: hmtoken.runner.address
+        }
     }
     async function deployVHMTokenFixture() {
         const VHMToken = await ethers.getContractFactory("VHMToken");
         vhmtoken = await VHMToken.deploy(hmtoken);
         await vhmtoken.waitForDeployment();
+
+        return {
+            contractAddress: vhmtoken.target,
+            from: vhmtoken.runner.address
+        }
     }
 
     async function deployMetaHumanGovernorFixture() {
@@ -28,7 +37,7 @@ describe("Interacting with governance ecosystem", function () {
 
         const GovernanceContract = await ethers.getContractFactory("MetaHumanGovernor");
         governanceContract = await GovernanceContract.deploy(
-            process.env.HUB_VOTE_TOKEN_ADDRESS,
+            vhmtoken.target,
             process.env.TIMELOCK_ADDRESS,
             [], //spokeContracts
             parseInt(process.env.HUB_CHAIN_ID),
@@ -36,89 +45,60 @@ describe("Interacting with governance ecosystem", function () {
             deployerAddress
         );
         await governanceContract.waitForDeployment();
-    }
 
-    async function deploySpokeContractFixture() {
-        const SpokeContract = await ethers.getContractFactory("DAOSpokeContract");
-        spokeContract = await SpokeContract.deploy(
-            governanceContract,
-            parseInt(process.env.HUB_CHAIN_ID),
-            process.env.HUB_VOTE_TOKEN_ADDRESS,
-            12,
-            0,//_chainId The chain ID of the current contract.
-            process.env.HUB_CORE_BRIDGE_ADDRESS
-        );
-        await spokeContract.waitForDeployment();
+        return {
+            contractAddress: governanceContract.target,
+            from: governanceContract.runner.address
+        }
     }
 
     before(async function() {
         [deployer, addr1, addr2] = await ethers.getSigners();
-        await loadFixture(deployHMTokenFixture);
-        await loadFixture(deployVHMTokenFixture);
-        await loadFixture(deployMetaHumanGovernorFixture);
-        //await loadFixture(deploySpokeContractFixture);
-    })
-
-    it("Should deploy fixture parts exists", async function () {
-        expect(hmtoken).to.exist;
-        expect(vhmtoken).to.exist;
-        // expect(governanceContract).to.exist;
-        // expect(spokeContract).to.exist;
     });
 
-    it("Create proposal: Should create proposal on the hub", async function () {
+    it("Should deploy HM token", async function () {
+        const { contractAddress, from } = await loadFixture(deployHMTokenFixture);
+        expect(contractAddress).to.exist;
+        expect(from).equal(deployer.address)
+    });
 
-        //expect(description).to.equal("DESCRIPTION");
+    it("Should deploy VHM token", async function () {
+        const { contractAddress, from } = await loadFixture(deployVHMTokenFixture);
+        expect(contractAddress).to.exist;
+        expect(from).equal(deployer.address)
+    });
+
+    it("Should deploy MetaHuman Governor", async function () {
+        const { contractAddress, from } = await loadFixture(deployMetaHumanGovernorFixture);
+        expect(contractAddress).to.exist;
+        expect(from).equal(deployer.address)
     });
 
     it("Create proposal: Should broadcast the message to all the spokes", async function () {
-        // const deployerAddress = await deployer.getAddress();
-        // const targets = [process.env.HM_TOKEN_ADDRESS];
-        // const values = [0];
-        // const encodedCall = defaultAbiCoder.encode(
-        //     ["address", "uint256"],
-        //     [deployerAddress, 50]
-        // );
-        // const callDatas = [encodedCall];
-        // const desc = "DESCRIPTION";
-        // try {
-        //     proposalId = await governanceContract.crossChainPropose(
-        //         targets,
-        //         values,
-        //         callDatas,
-        //         desc
-        //     );
-        // }
-        // catch (e) {
-        //     console.error(e)
-        // }
-        // expect(proposalId).to.exist;
-    });
+        const deployerAddress = await deployer.getAddress();
+        const targets = [vhmtoken.target];
+        const values = [0];
+        const encodedCall = defaultAbiCoder.encode(
+            ["address", "uint256"],
+            [deployerAddress, 50]
+        );
+        const callDatas = [encodedCall];
+        const desc = "DESCRIPTION";
+        try {
+            proposalId = await governanceContract.crossChainPropose(
+                targets,
+                values,
+                callDatas,
+                desc
+            );
+        }
+        catch (e) {
+            console.error(e)
+        }
 
-    return;
-    it("Vote on proposal: Should vote on the Hub", async function () {
-        // const result = await governanceContract.castVote(proposalId, 1);
-    });
-
-    it("Vote on proposal: Should vote on each Spoke", async function () {
-
-    });
-
-    it("Request Collections: Should trigger the collection phase after voting period ends", async function () {
-        const result = await governanceContract.requestCollections(proposalId);
-    });
-
-    it("Request Collections: Should check if the messages are relayed as expected - Hub->Spokes, Spoke->Hub", async function () {
-
-    });
-
-    it("Successful Proposal Queue and Execution", async function () {
-        // const deployerAddress = await deployer.getAddress();
-        // const encodedCall = defaultAbiCoder.encode(
-        //     ["address", "uint256"],
-        //     [deployerAddress, 1]
-        // );
-        // const queueResult = await governanceContract.queue([process.env.HM_TOKEN_ADDRESS], [], [encodedCall], "desc");
-        // const executeResult = await governanceContract.execute([process.env.HM_TOKEN_ADDRESS], [], [encodedCall], "desc");
+        expect(proposalId).to.exist;
+        expect(proposalId.blockHash).to.exist;
+        expect(proposalId.from).equal(deployer.address)
+        expect(proposalId.data).is.not.null;
     });
 });
