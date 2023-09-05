@@ -271,7 +271,8 @@ export function useAllProposalData(): { data: ProposalData[]; loading: boolean }
   const transactions = useAppSelector((state) => state.transactions)
 
   // get metadata from past events
-  const formattedLogsV2 = useFormattedProposalCreatedLogs(govHubContract)
+  const toBlock = RPC_PROVIDERS[HUB_CHAIN_ID as SupportedChainId].blockNumber
+  const formattedLogsV2 = useFormattedProposalCreatedLogs(govHubContract, 0, toBlock)
 
   const govHubProposalIndexes = (formattedLogsV2 || []).map((item) => item.id)
 
