@@ -8,10 +8,7 @@ export interface ChainVoteData {
 }
 
 export async function fetchVotes(proposalId: string): Promise<ChainVoteData[]> {
-  const response = await fetch(API_URL + proposalId, {
-    method: 'GET',
-    mode: 'no-cors',
-  })
+  const response = await fetch(API_URL + proposalId)
 
   if (!response.ok) {
     throw new Error(`Failed to fetch votes for proposal: ${proposalId}`)
