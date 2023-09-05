@@ -22,14 +22,15 @@ mechanism. Additionally, it supports cross-chain communication using the `IWormh
 ### DAOSpokeContract
 
 The `DAOSpokeContract` contract serves as a spoke contract in a cross-chain governance setup. It allows token holders to
-cast votes on proposals and participate in the governance process. The contract interacts with the `IWormhole` contract
+cast votes on proposals and participate in the governance process. The contract interacts with the `IWormholeReceiver` and `IWormholeRelayer` contracts
 for cross-chain communication.
 
 ### CrossChainGovernorCountingSimple
 
 The `CrossChainGovernorCountingSimple` contract provides counting functionality for cross-chain governance. It extends
 the `Governor` and `Ownable` contracts and implements cross-chain voting counts. It maintains mappings and structures to
-track proposal votes from different spoke contracts.
+track proposal votes from different spoke contracts. The contract interacts with the `IWormholeReceiver` and `IWormholeRelayer` contracts
+for cross-chain communication.
 
 ## Dependencies
 
@@ -51,6 +52,12 @@ To set up and deploy the contracts, follow these steps:
 
 Once deployed, the contracts can be interacted with using Ethereum addresses and appropriate function calls. Refer to
 the contract documentation for detailed information on each contract's functionality and available methods.
+
+## Generate documentation
+
+Code documentation can be generated using the `forge doc` command.
+
+For details please refer to the [official documentation](https://book.getfoundry.sh/reference/forge/forge-doc)
 
 ## Contributing
 ...

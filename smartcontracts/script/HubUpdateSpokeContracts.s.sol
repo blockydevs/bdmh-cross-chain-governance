@@ -13,9 +13,9 @@ contract HubUpdateSpokeContracts is Script {
         address[] memory emptyAddressArray = new address[](0);
         uint256[] memory emptyUintArray = new uint256[](0);
         address[] memory spokeAddresses = vm.envOr("SPOKE_ADDRESSES", ",", emptyAddressArray);
-        uint256[] memory spokeChainIds = vm.envOr("SPOKE_CHAIN_IDS", ",", emptyUintArray);
+        uint256[] memory spokeChainIds = vm.envOr("SPOKE_WORMHOLE_CHAIN_IDS", ",", emptyUintArray);
 
-        require(spokeAddresses.length == spokeChainIds.length, "Please provide same amount od addresses as chain ids");
+        require(spokeAddresses.length == spokeChainIds.length, "Please provide same amount of addresses as chain ids");
 
         CrossChainGovernorCountingSimple.CrossChainAddress[] memory spokeContracts = new CrossChainGovernorCountingSimple.CrossChainAddress[](spokeAddresses.length);
         for (uint i = 0; i < spokeAddresses.length; i++) {

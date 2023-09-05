@@ -10,10 +10,15 @@ import "./DeploymentUtils.sol";
 
 contract PrepareHubTesting is Script, DeploymentUtils {
     function run() external {
+        uint256 secondPrivateKey = vm.envUint("SECOND_PRIVATE_KEY");
+        uint256 thirdPrivateKey = vm.envUint("THIRD_PRIVATE_KEY");
+        address secondAddress = vm.addr(secondPrivateKey);
+        address thirdAddress = vm.addr(thirdPrivateKey);
+
         vm.startBroadcast(deployerPrivateKey);
-        address coreBridgeAddress = vm.envAddress("HUB_CORE_BRIDGE_ADDRESS");
-        uint16 chainId = uint16(vm.envUint("HUB_CHAIN_ID"));
+        uint16 chainId = uint16(vm.envUint("HUB_WORMHOLE_CHAIN_ID"));
         HMToken hmToken = new HMToken(1000 ether, "HMToken", 18, "HMT");
+
         hmToken.transfer(secondAddress, 100 ether);
         hmToken.transfer(thirdAddress, 100 ether);
         VHMToken voteToken = new VHMToken(IERC20(address(hmToken)));
@@ -23,7 +28,7 @@ contract PrepareHubTesting is Script, DeploymentUtils {
         proposers[0] = deployerAddress;
         executors[0] = address(0);
         TimelockController timelockController = new TimelockController(1, proposers, executors, deployerAddress);
-        MetaHumanGovernor governanceContract = new MetaHumanGovernor(voteToken, timelockController, spokeContracts, chainId, coreBridgeAddress, deployerAddress);
+        MetaHumanGovernor governanceContract = new MetaHumanGovernor(voteToken, timelockController, spokeContracts, chainId, hubAutomaticRelayerAddress, deployerAddress);
         timelockController.grantRole(keccak256("PROPOSER_ROLE"), address(governanceContract));
         timelockController.revokeRole(keccak256("TIMELOCK_ADMIN_ROLE"), deployerAddress);
 

@@ -2,6 +2,7 @@ import "forge-std/Test.sol";
 import "../src/vhm-token/VHMToken.sol";
 import "../src/hm-token/HMToken.sol";
 import "../src/MetaHumanGovernor.sol";
+import "../src/wormhole/IWormhole.sol";
 
 pragma solidity ^0.8.20;
 
@@ -71,16 +72,17 @@ abstract contract TestUtil is Test {
             abi.encodeWithSelector(IWormhole.parseAndVerifyVM.selector),
             abi.encode(result, true, "test")
         );
-        daoSpokeContract.receiveMessage("mockVAA");
+        bytes[] memory vaas = new bytes[](0);
+        vm.startPrank(wormholeMockAddress);
+        daoSpokeContract.receiveWormholeMessages(result.payload, vaas, result.emitterAddress, result.emitterChainId, result.hash);
+        vm.stopPrank();
     }
 
     function _callReceiveMessageOnHubWithMock(IWormhole.VM memory result) internal {
-        vm.mockCall(
-            wormholeMockAddress,
-            abi.encodeWithSelector(IWormhole.parseAndVerifyVM.selector),
-            abi.encode(result, true, "test")
-        );
-        governanceContract.receiveMessage("mockVAA");
+        bytes[] memory vaas = new bytes[](0);
+        vm.startPrank(wormholeMockAddress);
+        governanceContract.receiveWormholeMessages(result.payload, vaas, result.emitterAddress, result.emitterChainId, result.hash);
+        vm.stopPrank();
     }
 
     function _createMessageWithPayload(bytes memory payload, uint16 emitterChainId, address emitterAddress) internal pure returns (IWormhole.VM memory) {

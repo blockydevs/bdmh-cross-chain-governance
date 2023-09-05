@@ -4,6 +4,7 @@ import "@openzeppelin/contracts/governance/TimelockController.sol";
 import "@openzeppelin/contracts/utils/cryptography/EIP712.sol";
 import "../src/vhm-token/VHMToken.sol";
 import "../src/hm-token/HMToken.sol";
+import "../src/wormhole/IWormholeRelayer.sol";
 import "./TestUtil.sol";
 
 pragma solidity ^0.8.20;
@@ -35,11 +36,18 @@ contract MetaHumanGovernorTest is TestUtil, EIP712 {
         timelockController.grantRole(keccak256("PROPOSER_ROLE"), address(governanceContract));
         timelockController.revokeRole(keccak256("TIMELOCK_ADMIN_ROLE"), address(this));
         bytes memory code = address(daoSpokeContract).code;
+        vm.deal(address(governanceContract), 1 ether);
         vm.etch(wormholeMockAddress, code);
+        uint256 test = 100;
         vm.mockCall(
             wormholeMockAddress,
-            abi.encodeWithSelector(IWormhole.publishMessage.selector),
-            abi.encode(0)
+            abi.encodeWithSelector(bytes4(keccak256("quoteEVMDeliveryPrice(uint16,uint256,uint256)"))),
+            abi.encode(test, test)
+        );
+        vm.mockCall(
+            wormholeMockAddress,
+            abi.encodeWithSelector(bytes4(keccak256("sendPayloadToEvm(uint16,address,bytes,uint256,uint256)"))),
+            abi.encode(test, test)
         );
     }
 
@@ -497,30 +505,6 @@ contract MetaHumanGovernorTest is TestUtil, EIP712 {
         );
         vm.expectRevert("Only messages from the spoke contracts can be received!");
         _callReceiveMessageOnHubWithMock(_createMessageWithPayload(payload));
-    }
-
-    function testReceiveMessageWhenMessageInvalid() public {
-        bytes memory message = abi.encode(
-            0,
-            1, //proposalId
-            1 ether, //forVotes
-            2 ether, //againstVotes
-            3 ether //abstainVotes
-        );
-        bytes memory payload = abi.encode(
-            address(daoSpokeContract),
-            spokeChainId,
-            address(governanceContract),
-            message
-        );
-        bytes memory reason = "test reason";
-        vm.mockCall(
-            wormholeMockAddress,
-            abi.encodeWithSelector(IWormhole.parseAndVerifyVM.selector),
-            abi.encode(_createMessageWithPayload(payload), false, reason)
-        );
-        vm.expectRevert(reason);
-        governanceContract.receiveMessage("mockVAA");
     }
 
     function testReceiveMessageWhenVotesAlreadyCount() public {
