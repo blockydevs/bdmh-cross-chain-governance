@@ -27,11 +27,18 @@ contract DAOSpokeContractTest is TestUtil {
         spokeContracts[0] = CrossChainGovernorCountingSimple.CrossChainAddress(bytes32(uint256(uint160(address(daoSpokeContract)))), 5);
         governanceContract.updateSpokeContracts(spokeContracts);
         bytes memory code = address(governanceContract).code;
+        vm.deal(address(daoSpokeContract), 1 ether);
         vm.etch(wormholeMockAddress, code);
+        uint256 test = 100;
         vm.mockCall(
             wormholeMockAddress,
-            abi.encodeWithSelector(IWormhole.publishMessage.selector),
-            abi.encode(0)
+            abi.encodeWithSelector(bytes4(keccak256("quoteEVMDeliveryPrice(uint16,uint256,uint256)"))),
+            abi.encode(test, test)
+        );
+        vm.mockCall(
+            wormholeMockAddress,
+            abi.encodeWithSelector(bytes4(keccak256("sendPayloadToEvm(uint16,address,bytes,uint256,uint256)"))),
+            abi.encode(test, test)
         );
     }
 
@@ -125,9 +132,7 @@ contract DAOSpokeContractTest is TestUtil {
         );
         IWormhole.VM memory mockResult = _createMessageWithPayload(payload);
         //make proposal finished
-        vm.startPrank(address(governanceContract));
         _callReceiveMessageOnSpokeWithMock(mockResult);
-        vm.stopPrank();
         //cast vote
         address someUser = _createMockUserWithVotingPower(1, voteToken);
         vm.expectRevert("DAOSpokeContract: vote not currently active");
