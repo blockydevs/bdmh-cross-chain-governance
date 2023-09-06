@@ -71,6 +71,7 @@ jobs:
 
       - name: Vote token deployment
         run: |
+          echo "HM_TOKEN_ADDRESS=$HUB_HM_TOKEN_ADDRESS" >> "$GITHUB_ENV"
           forge script script/VHMTDeployment.s.sol:VHMTDeployment --rpc-url $HUB_RPC_URL --etherscan-api-key $HUB_ETHERSCAN_API_KEY --broadcast --verify
           HUB_VOTE_TOKEN_ADDRESS="$(cat "broadcast/VHMTDeployment.s.sol/$HUB_CHAIN_ID/run-latest.json" | jq -r '.transactions[0].contractAddress')"
           echo "HUB_VOTE_TOKEN_ADDRESS=$HUB_VOTE_TOKEN_ADDRESS" >> "$GITHUB_ENV"
