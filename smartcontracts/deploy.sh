@@ -25,10 +25,10 @@ for ((i=0; i <= $COUNT; i++)); do
   export SPOKE_HM_TOKEN_ADDRESS=$(echo "$SPOKE_PARAMS" | jq -r --argjson i "$i" '.[$i].SPOKE_HM_TOKEN_ADDRESS')
 
   export HM_TOKEN_ADDRESS=$SPOKE_HM_TOKEN_ADDRESS
-  forge script script/VHMTDeployment.s.sol:VHMTDeployment --rpc-url $SPOKE_RPC_URL --etherscan-api-key $SPOKE_ETHERSCAN_API_KEY --broadcast --verify --legacy
+  forge script script/VHMTDeployment.s.sol:VHMTDeployment --rpc-url $SPOKE_RPC_URL --etherscan-api-key $SPOKE_ETHERSCAN_API_KEY --broadcast --verify --gas-estimate-multiplier 200
   export SPOKE_VOTE_TOKEN_ADDRESS="$(cat "broadcast/VHMTDeployment.s.sol/$SPOKE_CHAIN_ID/run-latest.json" | jq -r '.transactions[0].contractAddress')"
 
-  forge script script/SpokeDeployment.s.sol:SpokeDeployment --rpc-url $SPOKE_RPC_URL --etherscan-api-key $SPOKE_ETHERSCAN_API_KEY --broadcast --verify --legacy
+  forge script script/SpokeDeployment.s.sol:SpokeDeployment --rpc-url $SPOKE_RPC_URL --etherscan-api-key $SPOKE_ETHERSCAN_API_KEY --broadcast --verify --gas-estimate-multiplier 200
   export SPOKE_ADDRESS="$(cat "broadcast/SpokeDeployment.s.sol/$SPOKE_CHAIN_ID/run-latest.json" | jq -r '.transactions[0].contractAddress')"
   export SPOKE_WORMHOLE_CHAIN_IDS="${SPOKE_WORMHOLE_CHAIN_IDS},${SPOKE_WORMHOLE_CHAIN_ID}"
   export SPOKE_ADDRESSES="${SPOKE_ADDRESSES},${SPOKE_ADDRESS}"
