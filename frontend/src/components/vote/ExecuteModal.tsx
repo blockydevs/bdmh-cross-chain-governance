@@ -51,7 +51,7 @@ export default function ExecuteModal({ isOpen, onDismiss, proposalId, proposalEx
 
   // monitor call to help UI loading state
   const [hash, setHash] = useState<string | undefined>()
-  const [attempting, setAttempting] = useState<boolean>(true)
+  const [attempting, setAttempting] = useState<boolean>(false)
 
   // get theme for colors
   const theme = useTheme()
