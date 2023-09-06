@@ -1,10 +1,10 @@
 import { BigNumber } from '@ethersproject/bignumber'
 import { CurrencyAmount, Token } from '@uniswap/sdk-core'
 import { useWeb3React } from '@web3-react/core'
+import useDebounce from 'hooks/useDebounce'
 import JSBI from 'jsbi'
 import { useMemo } from 'react'
 import { useEffect, useState } from 'react'
-import { useDispatch } from 'react-redux'
 import { useHMTUniContract, useUniContract } from 'state/governance/hooks'
 import { useAppSelector } from 'state/hooks'
 
@@ -48,10 +48,10 @@ function useTokenBalancesWithLoadingIndicator(
   const [isLoading, setIsLoading] = useState<boolean>(true)
 
   const { account, chainId } = useWeb3React() // we cannot fetch balances cross-chain
-  const dispatch = useDispatch()
 
   const uniContract = useUniContract()
   const hmtUniContract = useHMTUniContract()
+
   const transactions = useAppSelector((state) => state.transactions)
 
   const validatedTokens: Token[] = useMemo(
@@ -59,13 +59,20 @@ function useTokenBalancesWithLoadingIndicator(
     [chainId, tokens]
   )
 
+  const debouncedHmtUniContract = useDebounce(hmtUniContract, 300)
+
+  // polygon HMT - 0x209DFa31D9e780964719f4a7d065486Cd6bcf45d
+  // moonbase HMT - 0x4269800E7e5265DF63E7945190982c98e7432433
+  // avalanche HMT - 0x406DE75a4eA8e554c7B5d9a03A1818fFeB2EeB57
+
   useEffect(() => {
     const fetchBalance = async () => {
       setIsLoading(true)
-      if (uniContract && hmtUniContract) {
+
+      if (uniContract && debouncedHmtUniContract) {
         try {
           const resultVHMT = await uniContract.functions.balanceOf(account)
-          const resultHMT = await hmtUniContract.functions.balanceOf(account)
+          const resultHMT = await debouncedHmtUniContract.functions.balanceOf(account)
 
           if (resultVHMT) setVhmtBalance(resultVHMT)
           if (resultHMT) setHmtBalance(resultHMT)
@@ -78,7 +85,7 @@ function useTokenBalancesWithLoadingIndicator(
     }
 
     fetchBalance()
-  }, [account, uniContract, hmtUniContract, dispatch, transactions])
+  }, [account, uniContract, debouncedHmtUniContract, transactions])
 
   return useMemo(
     () => [
