@@ -1,15 +1,15 @@
 #!/bin/bash
 
-export HM_TOKEN_ADDRESS=$HUB_HM_TOKEN_ADDRESS
-echo "Vote token deployment"
-forge script script/VHMTDeployment.s.sol:VHMTDeployment --rpc-url $HUB_RPC_URL --etherscan-api-key $HUB_ETHERSCAN_API_KEY --broadcast --verify
-export HUB_VOTE_TOKEN_ADDRESS="$(cat "broadcast/VHMTDeployment.s.sol/$HUB_CHAIN_ID/run-latest.json" | jq -r '.transactions[0].contractAddress')"
+# export HM_TOKEN_ADDRESS=$HUB_HM_TOKEN_ADDRESS
+# echo "Vote token deployment"
+# forge script script/VHMTDeployment.s.sol:VHMTDeployment --rpc-url $HUB_RPC_URL --etherscan-api-key $HUB_ETHERSCAN_API_KEY --broadcast --verify
+# export HUB_VOTE_TOKEN_ADDRESS="$(cat "broadcast/VHMTDeployment.s.sol/$HUB_CHAIN_ID/run-latest.json" | jq -r '.transactions[0].contractAddress')"
 
-# hub contract deployment
-echo "Deploying Hub contract"
-forge script script/HubDeployment.s.sol:HubDeployment --rpc-url $HUB_RPC_URL --etherscan-api-key $HUB_ETHERSCAN_API_KEY --broadcast --verify
-export TIMELOCK_ADDRESS="$(cat "broadcast/HubDeployment.s.sol/$HUB_CHAIN_ID/run-latest.json" | jq -r '.transactions[0].contractAddress')"
-export GOVERNOR_ADDRESS="$(cat "broadcast/HubDeployment.s.sol/$HUB_CHAIN_ID/run-latest.json" | jq -r '.transactions[1].contractAddress')"
+# # hub contract deployment
+# echo "Deploying Hub contract"
+# forge script script/HubDeployment.s.sol:HubDeployment --rpc-url $HUB_RPC_URL --etherscan-api-key $HUB_ETHERSCAN_API_KEY --broadcast --verify
+# export TIMELOCK_ADDRESS="$(cat "broadcast/HubDeployment.s.sol/$HUB_CHAIN_ID/run-latest.json" | jq -r '.transactions[0].contractAddress')"
+# export GOVERNOR_ADDRESS="$(cat "broadcast/HubDeployment.s.sol/$HUB_CHAIN_ID/run-latest.json" | jq -r '.transactions[1].contractAddress')"
 
 # spoke contract deployment
 echo "Deploy Spoke contracts"
