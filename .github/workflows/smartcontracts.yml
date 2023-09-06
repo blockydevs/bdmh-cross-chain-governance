@@ -17,6 +17,11 @@ on:
         required: true
         type: boolean
         default: false
+      TEST:
+        description: "Run tests"
+        required: true
+        type: boolean
+        default: true
 
 defaults:
   run:
@@ -58,6 +63,30 @@ jobs:
         uses: foundry-rs/foundry-toolchain@v1
         with:
           version: nightly
+
+      - name: Install hardhat
+        if: ${{ inputs.TEST }}
+        run: |
+          npm install hardhat
+
+      - name: Vote token deployment
+        run: |
+          forge script script/VHMTDeployment.s.sol:VHMTDeployment --rpc-url $HUB_RPC_URL --etherscan-api-key $HUB_ETHERSCAN_API_KEY --broadcast --verify
+          HUB_VOTE_TOKEN_ADDRESS="$(cat "broadcast/VHMTDeployment.s.sol/$HUB_CHAIN_ID/run-latest.json" | jq -r '.transactions[0].contractAddress')"
+          echo "HUB_VOTE_TOKEN_ADDRESS=$HUB_VOTE_TOKEN_ADDRESS" >> "$GITHUB_ENV"
+
+      - name: Deploying Hub contract
+        run: |
+          forge script script/HubDeployment.s.sol:HubDeployment --rpc-url $HUB_RPC_URL --etherscan-api-key $HUB_ETHERSCAN_API_KEY --broadcast --verify
+          TIMELOCK_ADDRESS="$(cat "broadcast/HubDeployment.s.sol/$HUB_CHAIN_ID/run-latest.json" | jq -r '.transactions[0].contractAddress')"
+          GOVERNOR_ADDRESS="$(cat "broadcast/HubDeployment.s.sol/$HUB_CHAIN_ID/run-latest.json" | jq -r '.transactions[1].contractAddress')"
+          echo "TIMELOCK_ADDRESS=$TIMELOCK_ADDRESS" >> "$GITHUB_ENV"
+          echo "GOVERNOR_ADDRESS=$GOVERNOR_ADDRESS" >> "$GITHUB_ENV"
+          
+      - name: Run Test
+        if: ${{ inputs.TEST }}
+        run: |
+          npx hardhat test
 
       - name: Deploy contracts
         run: ./deploy.sh
