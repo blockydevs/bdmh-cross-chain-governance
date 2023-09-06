@@ -403,10 +403,8 @@ export default function VotePage() {
                   <Box>
                     <WarningCircleIcon />
                   </Box>
-                  <Trans>
-                    Only vHMT votes that were self delegated before block {proposalData.startBlock} are eligible for
-                    voting.
-                  </Trans>
+                  Only vHMT votes that were self delegated before block {proposalData.startBlock} are eligible for
+                  voting.
                   {showLinkForUnlock && (
                     <span>
                       <Trans>

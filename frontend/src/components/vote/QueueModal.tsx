@@ -84,7 +84,11 @@ export default function QueueModal({ isOpen, onDismiss, proposalId, proposalExec
           <AutoColumn gap="lg" justify="center">
             <RowBetween>
               <ThemedText.DeprecatedMediumHeader fontWeight={500}>
-                {proposalId && <Trans>Queue Proposal {shortenString(proposalId)}</Trans>}
+                {proposalId && (
+                  <>
+                    <Trans>Queue Proposal</Trans> {shortenString(proposalId)}
+                  </>
+                )}
               </ThemedText.DeprecatedMediumHeader>
               <StyledClosed onClick={wrappedOnDismiss} />
             </RowBetween>
