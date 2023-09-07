@@ -55,7 +55,7 @@ interface DepositHMTProps {
 
 export default function DepositHMTModal({ isOpen, onDismiss, title, hmtBalance }: DepositHMTProps) {
   const { account } = useWeb3React()
-  const hmtUniContract = useHMTUniContract()
+  const { hmtUniContract } = useHMTUniContract()
   const hmtContractToken = useHmtContractToken()
   const uniContract = useUniContract()
   const theme = useTheme()

@@ -51,18 +51,32 @@ export function useUniContract() {
 }
 
 export function useHMTUniContract() {
+  const { chainId } = useWeb3React()
   const uniContract = useUniContract()
 
   const [underlyingAddress, setUnderlyingAddress] = useState<string>('')
+  const [loading, setLoading] = useState<boolean>(false)
+
+  const handleSetLoading = () => {
+    setLoading(true)
+  }
+
+  useEffect(() => {
+    handleSetLoading()
+  }, [chainId])
 
   useEffect(() => {
     const fetchUnderlyingAddress = async () => {
+      setLoading(true)
       if (uniContract) {
         try {
           const address = await uniContract.functions.underlying()
           setUnderlyingAddress(address[0])
         } catch (error) {
           console.log(error)
+          setLoading(false)
+        } finally {
+          setLoading(false)
         }
       }
     }
@@ -70,7 +84,9 @@ export function useHMTUniContract() {
     fetchUnderlyingAddress()
   }, [uniContract])
 
-  return useContract(underlyingAddress, HmtUniJSON.abi, true)
+  const hmtUniContract = useContract(underlyingAddress, HmtUniJSON.abi, true)
+
+  return { hmtUniContract, loading, handleSetLoading }
 }
 
 interface ProposalDetail {
