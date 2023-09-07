@@ -289,7 +289,8 @@ export default function VotePage() {
   } = useCollectionStatus(id)
 
   const showRequestCollectionsButton = Boolean(
-    account &&
+    isHubChainActive &&
+      account &&
       checkProposalState(status, hubBlock, endBlock) === ProposalState.COLLECTION_PHASE &&
       !collectionFinishedResponse
   )
