@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# fail on any error
+set -eo pipefail
+
 # export HM_TOKEN_ADDRESS=$HUB_HM_TOKEN_ADDRESS
 # echo "Vote token deployment"
 # forge script script/VHMTDeployment.s.sol:VHMTDeployment --rpc-url $HUB_RPC_URL --etherscan-api-key $HUB_ETHERSCAN_API_KEY --broadcast --verify
@@ -37,6 +40,8 @@ done
 # remove first character
 export SPOKE_WORMHOLE_CHAIN_IDS=${SPOKE_WORMHOLE_CHAIN_IDS:1}
 export SPOKE_ADDRESSES=${SPOKE_ADDRESSES:1}
+echo "SPOKE_WORMHOLE_CHAIN_IDS=$SPOKE_WORMHOLE_CHAIN_IDS" >> "$GITHUB_ENV"
+echo "SPOKE_ADDRESSES=$SPOKE_ADDRESSES" >> "$GITHUB_ENV"
 
 echo "Setting spoke contracts in the hub"
 forge script script/HubUpdateSpokeContracts.s.sol:HubUpdateSpokeContracts --rpc-url $HUB_RPC_URL --broadcast

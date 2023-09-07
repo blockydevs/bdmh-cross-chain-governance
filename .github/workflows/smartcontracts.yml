@@ -41,6 +41,7 @@ env:
   HUB_CHAIN_ID: ${{ vars.HUB_CHAIN_ID }}
   VOTE_TOKEN_ADDRESS: ${{ vars.VOTE_TOKEN_ADDRESS }}
   HUB_HM_TOKEN_ADDRESS: ${{ vars.HUB_HM_TOKEN_ADDRESS }}
+  HM_TOKEN_ADDRESS: ${{ vars.HUB_HM_TOKEN_ADDRESS }}
   HUB_SECONDS_PER_BLOCK: ${{ vars.HUB_SECONDS_PER_BLOCK }}
   TIMELOCK: ${{ inputs.TIMELOCK }}
   # spoke deployment
@@ -71,7 +72,6 @@ jobs:
 
       - name: Vote token deployment
         run: |
-          echo "HM_TOKEN_ADDRESS=$HUB_HM_TOKEN_ADDRESS" >> "$GITHUB_ENV"
           forge script script/VHMTDeployment.s.sol:VHMTDeployment --rpc-url $HUB_RPC_URL --etherscan-api-key $HUB_ETHERSCAN_API_KEY --broadcast --verify
           HUB_VOTE_TOKEN_ADDRESS="$(cat "broadcast/VHMTDeployment.s.sol/$HUB_CHAIN_ID/run-latest.json" | jq -r '.transactions[0].contractAddress')"
           echo "HUB_VOTE_TOKEN_ADDRESS=$HUB_VOTE_TOKEN_ADDRESS" >> "$GITHUB_ENV"
@@ -83,14 +83,14 @@ jobs:
           GOVERNOR_ADDRESS="$(cat "broadcast/HubDeployment.s.sol/$HUB_CHAIN_ID/run-latest.json" | jq -r '.transactions[1].contractAddress')"
           echo "TIMELOCK_ADDRESS=$TIMELOCK_ADDRESS" >> "$GITHUB_ENV"
           echo "GOVERNOR_ADDRESS=$GOVERNOR_ADDRESS" >> "$GITHUB_ENV"
-          
+
+      - name: Deploy Spoke contracts
+        run: ./deploy.sh
+
       - name: Run Test
         if: ${{ inputs.TEST }}
         run: |
           npx hardhat test
-
-      - name: Deploy contracts
-        run: ./deploy.sh
 
       # store output jsons as artifact, for download see https://docs.github.com/en/rest/actions/artifacts?apiVersion=2022-11-28#download-an-artifact
       - uses: actions/upload-artifact@v3
