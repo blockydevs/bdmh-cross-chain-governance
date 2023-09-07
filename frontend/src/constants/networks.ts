@@ -6,8 +6,14 @@ const allChainIds = Object.values(SupportedChainId)
 
 const RPC_URLS_FROM_ENV: { [key: string]: string | undefined } = {}
 
+const hubRpcUrl = process.env.REACT_APP_HUB_RPC_URL
+
 for (const chainId of allChainIds) {
-  RPC_URLS_FROM_ENV[chainId] = process.env[`REACT_APP_RPC_URL_${chainId}`]
+  if (chainId === process.env.REACT_APP_HUB_CHAIN_ID) {
+    RPC_URLS_FROM_ENV[chainId] = hubRpcUrl
+  } else {
+    RPC_URLS_FROM_ENV[chainId] = process.env[`REACT_APP_RPC_URL_${chainId}`]
+  }
 }
 
 /**
@@ -132,3 +138,4 @@ for (const chainId of allChainIds) {
   const fallbackUrls = FALLBACK_URLS[numChainId as keyof typeof FALLBACK_URLS] || []
   RPC_URLS[chainId] = envUrl.length > 0 ? [envUrl, ...fallbackUrls] : [...fallbackUrls]
 }
+console.log('RPC_URLS:', RPC_URLS)
