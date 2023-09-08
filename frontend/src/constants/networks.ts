@@ -138,4 +138,3 @@ for (const chainId of allChainIds) {
   const fallbackUrls = FALLBACK_URLS[numChainId as keyof typeof FALLBACK_URLS] || []
   RPC_URLS[chainId] = envUrl.length > 0 ? [envUrl, ...fallbackUrls] : [...fallbackUrls]
 }
-console.log('RPC_URLS:', RPC_URLS)
