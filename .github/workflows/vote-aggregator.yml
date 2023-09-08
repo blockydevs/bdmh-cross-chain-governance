@@ -17,6 +17,7 @@ env:
   GCP_REGION: ${{ vars.GCP_REGION }}
 
   # GH environment
+  ESPv2_ARGS: ${{ vars.ESPv2_ARGS }}
   NODE_PORT: ${{ vars.NODE_PORT }}
   HUB_RPC_URL: ${{ vars.HUB_RPC_URL }}
   HUB_ADDRESS: ${{ vars.HUB_ADDRESS }}
