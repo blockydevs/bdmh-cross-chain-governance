@@ -13,7 +13,7 @@ describe("Interacting with governance ecosystem", function () {
 
     before(async function() {
         [deployer, addr1, addr2] = await ethers.getSigners();
-        vhmToken = await ethers.getContractAt("HMToken", process.env.VOTE_TOKEN_ADDRESS);
+        vhmToken = await ethers.getContractAt("VHMToken", process.env.VOTE_TOKEN_ADDRESS);
         governanceContract = await ethers.getContractAt("MetaHumanGovernor", process.env.GOVERNOR_ADDRESS);
         spokeContract = await ethers.getContractAt("DAOSpokeContract", process.env.SPOKE_ADDRESSES);//support for 1 spoke
     });
@@ -97,7 +97,7 @@ describe("Interacting with governance ecosystem", function () {
         await governanceContract.execute([vhmtoken.target], [], [encodedCall], "desc");
         state = await governanceContract.state();
 
-        expect(state).equal("Queued")
+        expect(state).equal("Executed")
     });
 
     it("should have the correct vote counts at the end", async () => {
