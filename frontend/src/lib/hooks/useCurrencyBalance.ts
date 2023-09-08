@@ -1,10 +1,10 @@
 import { BigNumber } from '@ethersproject/bignumber'
 import { CurrencyAmount, Token } from '@uniswap/sdk-core'
 import { useWeb3React } from '@web3-react/core'
+import useDebounce from 'hooks/useDebounce'
 import JSBI from 'jsbi'
 import { useMemo } from 'react'
 import { useEffect, useState } from 'react'
-import { useDispatch } from 'react-redux'
 import { useHMTUniContract, useUniContract } from 'state/governance/hooks'
 import { useAppSelector } from 'state/hooks'
 
@@ -48,10 +48,10 @@ function useTokenBalancesWithLoadingIndicator(
   const [isLoading, setIsLoading] = useState<boolean>(true)
 
   const { account, chainId } = useWeb3React() // we cannot fetch balances cross-chain
-  const dispatch = useDispatch()
 
   const uniContract = useUniContract()
-  const hmtUniContract = useHMTUniContract()
+  const { hmtUniContract, loading: hmtContractLoading, handleSetLoading } = useHMTUniContract()
+
   const transactions = useAppSelector((state) => state.transactions)
 
   const validatedTokens: Token[] = useMemo(
@@ -59,17 +59,17 @@ function useTokenBalancesWithLoadingIndicator(
     [chainId, tokens]
   )
 
+  const debouncedHmtUniContract = useDebounce(hmtUniContract, 500)
+
   useEffect(() => {
-    const fetchBalance = async () => {
+    const fetchBalanceVHMT = async () => {
       setIsLoading(true)
-      if (uniContract && hmtUniContract) {
+      if (uniContract) {
         try {
           const resultVHMT = await uniContract.functions.balanceOf(account)
-          const resultHMT = await hmtUniContract.functions.balanceOf(account)
-
           if (resultVHMT) setVhmtBalance(resultVHMT)
-          if (resultHMT) setHmtBalance(resultHMT)
         } catch (error) {
+          console.log('Error inside fetchBalanceVHMT')
           console.log(error)
         } finally {
           setIsLoading(false)
@@ -77,8 +77,28 @@ function useTokenBalancesWithLoadingIndicator(
       }
     }
 
-    fetchBalance()
-  }, [account, uniContract, hmtUniContract, dispatch, transactions])
+    fetchBalanceVHMT()
+  }, [account, uniContract, transactions])
+
+  useEffect(() => {
+    const fetchBalanceHMT = async () => {
+      setIsLoading(true)
+      handleSetLoading()
+      if (debouncedHmtUniContract && !hmtContractLoading) {
+        try {
+          const resultHMT = await debouncedHmtUniContract.functions.balanceOf(account)
+          if (resultHMT) setHmtBalance(resultHMT)
+        } catch (error) {
+          console.log('Error inside fetchBalanceHMT')
+          console.log(error)
+        } finally {
+          setIsLoading(false)
+        }
+      }
+    }
+
+    fetchBalanceHMT()
+  }, [account, debouncedHmtUniContract, transactions])
 
   return useMemo(
     () => [
