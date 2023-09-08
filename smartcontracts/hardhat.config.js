@@ -9,4 +9,7 @@ module.exports = {
       allowUnlimitedContractSize: true
     }
   },
+  paths: {
+    tests: "./integration-test"
+  }
 };
