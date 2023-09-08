@@ -381,7 +381,7 @@ contract MetaHumanGovernorTest is TestUtil, EIP712 {
 
     function testGetVotingPeriod() public {
         uint256 votingPeriod = governanceContract.votingPeriod();
-        assertEq(votingPeriod, 5);//5 is just taken from MetaHumanGovernor.sol constructor (GovernorSettings)
+        assertEq(votingPeriod, 20 * 15);//5 is just taken from MetaHumanGovernor.sol constructor (GovernorSettings)
     }
 
     function testGetQuorum() public {

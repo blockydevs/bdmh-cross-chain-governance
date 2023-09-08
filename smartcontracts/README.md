@@ -6,7 +6,26 @@ This project contains the smart contracts developed for the MetaHuman Governance
 functionalities related to governance and cross-chain communication.
 
 ## Architecture
-This governance uses Hub-Spoke architecture. The `MetaHumanGovernor` contract is the hub where `DAOSpokeContract` is the spoke.
+This governance protocol uses Hub-Spoke architecture.
+
+![Smart contracts architecture](Smart_contracts_architecture.png "Architecture diagram")
+
+#### Hub chain
+- `MetaHumanGovernor` contract is the Hub. This is the contract where proposals are created and executed. The implementation is based on [OpenZeppelin's Governor](https://docs.openzeppelin.com/contracts/4.x/api/governance#Governor).
+- `TimelockController` is the [Timelock implementation](https://docs.openzeppelin.com/contracts/4.x/api/governance#TimelockController) from [OpenZeppelin Governance primitives](https://docs.openzeppelin.com/contracts/4.x/api/governance).
+- `HMToken` is the [Human Token](https://www.humanprotocol.org/hmt).
+- `VHMToken` is the [ERC20Wrapper](https://docs.openzeppelin.com/contracts/4.x/api/token/erc20#ERC20Wrapper) that enables 1 to 1 exchange for `HMToken`.
+
+#### Spoke chain
+- `DAOSpokeContract` is the Spoke implementation. This contract allows users to vote on proposals.
+- `HMToken` and `VHMToken` are the same implementations as on the Hub chain.
+
+#### Wormhole cross chain communication
+Cross chain communication is achieved by using [Wormhole automatic relayer](https://docs.wormhole.com/wormhole/quick-start/cross-chain-dev/automatic-relayer).
+
+This mechanism is used in two steps of the flow:
+- `crossChainPropose` - Broadcast proposals created on Hub to be also available on Spoke chains.
+- `requestCollections`- Collecting the votes from Spokes to Hub
 
 ## Contracts
 
@@ -52,6 +71,12 @@ To set up and deploy the contracts, follow these steps:
 
 Once deployed, the contracts can be interacted with using Ethereum addresses and appropriate function calls. Refer to
 the contract documentation for detailed information on each contract's functionality and available methods.
+
+## Testing
+
+To run smart contracts unit tests, please run `forge test` command.
+
+To see current coverage, please run `forge coverage`.
 
 ## Generate documentation
 
