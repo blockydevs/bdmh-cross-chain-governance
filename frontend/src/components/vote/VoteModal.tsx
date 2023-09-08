@@ -129,7 +129,7 @@ export default function VoteModal({ isOpen, onDismiss, proposalId, voteOption, a
               <Trans>{`You're voting for proposal`} </Trans> {shortenString(id)}
             </ThemedText.BodyPrimary>
             <ThemedText.HeadlineLarge>
-              <Trans>{formatCurrencyAmount(availableVotes, 4)} Votes</Trans>
+              {formatCurrencyAmount(availableVotes, 4)} <Trans>Votes</Trans>
             </ThemedText.HeadlineLarge>
             <ButtonPrimary onClick={onVote}>
               <ThemedText.BodyPrimary color="white" fontSize={15}>

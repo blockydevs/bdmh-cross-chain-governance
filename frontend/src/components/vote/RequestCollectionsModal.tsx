@@ -92,7 +92,7 @@ export default function RequestCollectionsModal({ isOpen, onDismiss, proposalId 
             </RowBetween>
             <ButtonPrimary onClick={onRequestCollections}>
               <ThemedText.DeprecatedMediumHeader color="white">
-                <Trans>Reqest collections</Trans>
+                <Trans>Request collections</Trans>
               </ThemedText.DeprecatedMediumHeader>
             </ButtonPrimary>
           </AutoColumn>
