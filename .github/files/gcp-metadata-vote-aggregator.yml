@@ -15,6 +15,8 @@ spec:
         ports:
         - containerPort: 8080
         env:
+        - name: ESPv2_ARGS
+          value: "{{ env['ESPv2_ARGS'] }}"
         - name: REDIS_HOST
           value: "{{ env['REDIS_HOST'] }}"
         - name: REDIS_PORT
