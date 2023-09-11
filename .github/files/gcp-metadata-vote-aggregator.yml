@@ -42,4 +42,4 @@ spec:
           value: "{{ item.NETWORK_RPC_URL }}"
         - name: NETWORK_{{ item.NETWORK_DISPLAY_NAME | upper }}_SPOKE_ADDRESS
           value: "{{ item.NETWORK_SPOKE_ADDRESS }}"
-%{%- endfor %}
+{%- endfor %}
