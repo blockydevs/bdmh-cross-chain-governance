@@ -16,6 +16,7 @@ import { TransactionType } from 'state/transactions/types'
 import styled, { useTheme } from 'styled-components/macro'
 import { floatStringToIntegerString } from 'utils/floatStringToIntegerString'
 import { swapErrorToUserReadableMessage } from 'utils/swapErrorToUserReadableMessage'
+import { trimTrailingZeros } from 'utils/trimTrailingZeros'
 
 import { ThemedText } from '../../theme'
 import { ButtonPrimary } from '../Button'
@@ -153,12 +154,12 @@ export default function DepositVHMTModal({ isOpen, onDismiss, title, uniBalance 
             </RowBetween>
             <StyledRowBetween>
               <ThemedText.BodySecondary>
-                <Trans>vHMT balance</Trans>: {userVHMTBalanceAmount}
+                <Trans>vHMT balance</Trans>: {trimTrailingZeros(userVHMTBalanceAmount)}
               </ThemedText.BodySecondary>
             </StyledRowBetween>
             <ExchangeHmtInput
               value={currencyToExchange}
-              maxValue={userVHMTBalanceAmount}
+              maxValue={trimTrailingZeros(userVHMTBalanceAmount)}
               onChange={onInputHmtExchange}
               onMaxChange={onInputMaxExchange}
               error={validationInputError}
