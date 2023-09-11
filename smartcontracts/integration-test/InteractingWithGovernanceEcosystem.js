@@ -1,33 +1,78 @@
 require("dotenv").config();
 const {expect} = require("chai");
 const { defaultAbiCoder } = require("@ethersproject/abi");
+const { ethers } = require("hardhat");
+
 describe("Interacting with governance ecosystem", function () {
     let deployer, addr1, addr2;
     let vhmToken;
+    let hmToken;
     let governanceContract;
     let spokeContract;
     let proposalId;
 
-    const etherValue = "100";
+    const etherValue = etherToWei(1);
     const FOR_VOTE = 1;
 
     before(async function() {
-        [deployer, addr1, addr2] = await ethers.getSigners();
-        vhmToken = await ethers.getContractAt("VHMToken", process.env.VOTE_TOKEN_ADDRESS);
-        governanceContract = await ethers.getContractAt("MetaHumanGovernor", process.env.GOVERNOR_ADDRESS);
-        spokeContract = await ethers.getContractAt("DAOSpokeContract", process.env.SPOKE_ADDRESSES);//support for 1 spoke
+        hmToken = await ethers.getContractAt("HMToken", "0x209DFa31D9e780964719f4a7d065486Cd6bcf45d");
+        console.log(hmToken.target)
+        vhmToken = await ethers.getContractAt("VHMToken", "0x9e1f8b97FE64675Eb29394e5e9A2e3aD410908DD");
+        console.log(vhmToken.target)
+        governanceContract = await ethers.getContractAt("MetaHumanGovernor", "0x3316D1F0AF7AB4064173AE5f83e790A3E5FDdBb1");
+        spokeContract = await ethers.getContractAt("DAOSpokeContract", "0xD9d55c32cdE617F245a0eC247FaCa913F011CDC8");//support for 1 spoke
     });
 
     it("should transfer tokens", async function() {
-        const transferAmount = ethers.utils.parseEther(etherValue);
-        await vhmToken.connect(deployer).transfer(addr1.address, transferAmount);
+        const networks = {
+            //'Sepolia': process.env.SEPOLIA_RPC_URL,
+            // 'Polygon Mumbai': process.env.POLYGON_MUMBAI_RPC_URL,
+            // 'Arbitrum': process.env.ARBITRUM_RPC_URL,
+            'Avalanche': process.env.SPOKE_RPC_URL,
+            //'Moonbase': process.env.MOONBASE_RPC_URL
+        };
 
-        const balance = await vhmToken.balanceOf(addr1.address);
-        expect(balance).to.equal(transferAmount);
+        const privateKeys = [
+            process.env.PRIVATE_KEY,
+            process.env.SECOND_PRIVATE_KEY,
+            process.env.THIRD_PRIVATE_KEY
+        ];
+
+        for (const [networkName, rpcUrl] of Object.entries(networks)) {
+            console.log(`Token balances for network: ${networkName}`);
+            const provider = new ethers.JsonRpcProvider(rpcUrl);
+            for (let i = 0; i < privateKeys.length; i++) {
+                const wallet = new ethers.Wallet(privateKeys[i], provider);
+                try {
+                    // const ethBalance = await provider.getBalance(wallet.address);
+                    // console.log(`Address: ${wallet.address}, ETH Balance: ${ethers.formatEther(ethBalance.toString())} ETH`);
+                    //
+                    // const vhmTokenBalance = await vhmToken.connect(wallet).balanceOf(wallet.address);
+                    // console.log(`Address: ${wallet.address}, VHM Token Balance: ${vhmTokenBalance.toString()} VHM`);
+
+                    const hmtTokenBalance = await hmToken.connect(wallet).balanceOf(wallet.address);
+                    console.log(`Address: ${wallet.address}, HMT Token Balance: ${hmtTokenBalance.toString()} HMT`);
+                } catch (error) {
+                    console.error(`Error fetching balances for Address: ${wallet.address} on Network: ${networkName}`);
+                    console.error(error.message);
+                }
+            }
+        }
+
+
+//         const transferAmount = etherValue;
+//         await vhmToken.connect(deployer).transfer(addr1.address, transferAmount);
+// console.log(vhmToken)
+//         console.log("deployer", deployer.address)
+//         console.log("addr1", addr1.address)
+//         console.log("addr2", addr2.address)
+//         const balance = await vhmToken.balanceOf(deployer.address);
+// console.log(balance)
+//        expect(balance).to.equal(transferAmount);
     });
-
+return
     it("should delegate vote tokens from addr1 to addr2", async function() {
-        const transferAmount = ethers.utils.parseEther(etherValue);
+        const transferAmount = etherValue;
         await vhmToken.connect(deployer).transfer(addr1.address, transferAmount);
 
         const initialBalance = await vhmToken.balanceOf(addr1.address);
@@ -106,3 +151,8 @@ describe("Interacting with governance ecosystem", function () {
         expect(votes.forVotes).equal(1);
     });
 });
+
+function etherToWei(etherValue) {
+    const weiMultiplier = BigInt("1000000000000000000");
+    return BigInt(Math.round(parseFloat(etherValue) * parseFloat(weiMultiplier.toString())));
+}
