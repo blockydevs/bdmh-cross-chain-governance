@@ -3,6 +3,30 @@ const {expect} = require("chai");
 const { defaultAbiCoder } = require("@ethersproject/abi");
 const { ethers } = require("hardhat");
 
+async function sendNativeCurrency(user, provider, amountInEther, operatorWallet) {
+    let tx = {
+        to: new ethers.Wallet(user, provider),
+        // Convert currency unit from ether to wei
+        value: ethers.parseEther(amountInEther)
+    }
+    // Send a transaction
+    await operatorWallet.sendTransaction(tx);
+}
+
+async function sendNativeCurrencyToTestUsers(endUsers, amountInEther, operatorKey, rpcUrl) {
+    const provider = new ethers.JsonRpcProvider(rpcUrl);
+    const operatorWallet = new ethers.Wallet(operatorKey, provider);
+    for (const user of endUsers) {
+        await sendNativeCurrency(user, provider, amountInEther, operatorWallet);
+    }
+}
+
+async function sendNativeCurrencyOnSpokes(spokes, endUsers, amountInEther, operatorKey) {
+    for (const [rpc, spokeConfig] of Object.entries(spokes)) {
+        await sendNativeCurrencyToTestUsers(endUsers, amountInEther, operatorKey, rpc);
+    }
+}
+
 describe("Interacting with governance ecosystem", function () {
     let deployer, addr1, addr2;
     let vhmToken;
@@ -10,34 +34,75 @@ describe("Interacting with governance ecosystem", function () {
     let governanceContract;
     let spokeContract;
     let proposalId;
+    const hubRPCUrl = process.env.POLYGON_MUMBAI_RPC_URL;
+    const hubHMTAddress = process.env.HM_TOKEN_ADDRESS;
+    const hubVHMTAddress = process.env.HUB_VOTE_TOKEN_ADDRESS;
+    const hubGovernorAddress = process.env.GOVERNOR_ADDRESS;
+    const spokeConfig = process.env.SPOKE_PARAMS;
+    const spokes = {};
+    const operatorKey = process.env.PRIVATE_KEY
+    const endUsers = [
+        process.env.SECOND_PRIVATE_KEY,
+        process.env.THIRD_PRIVATE_KEY
+    ];
 
     const etherValue = etherToWei(1);
     const FOR_VOTE = 1;
 
     before(async function() {
-        hmToken = await ethers.getContractAt("HMToken", "0x209DFa31D9e780964719f4a7d065486Cd6bcf45d");
-        console.log(hmToken.target)
-        vhmToken = await ethers.getContractAt("VHMToken", "0x9e1f8b97FE64675Eb29394e5e9A2e3aD410908DD");
-        console.log(vhmToken.target)
-        governanceContract = await ethers.getContractAt("MetaHumanGovernor", "0x3316D1F0AF7AB4064173AE5f83e790A3E5FDdBb1");
-        spokeContract = await ethers.getContractAt("DAOSpokeContract", "0xD9d55c32cdE617F245a0eC247FaCa913F011CDC8");//support for 1 spoke
+        //hub
+        hmToken = await ethers.getContractAt("HMToken", hubHMTAddress);
+        vhmToken = await ethers.getContractAt("VHMToken", hubVHMTAddress);
+        governanceContract = await ethers.getContractAt("MetaHumanGovernor", hubGovernorAddress);
+        //spokes
+        let parsedSpokeConfig = JSON.parse(spokeConfig);
+        parsedSpokeConfig.forEach(spoke => {
+            spokes[spoke['SPOKE_RPC_URL']] = {
+                SPOKE_HM_TOKEN_ADDRESS: spoke['SPOKE_HM_TOKEN_ADDRESS'],
+                SPOKE_VHM_TOKEN_ADDRESS: spoke['SPOKE_VHM_TOKEN_ADDRESS'],
+                SPOKE_CONTRACT_ADDRESS: spoke['SPOKE_CONTRACT_TOKEN_ADDRESS']
+            }
+        })
     });
 
+    it("should read balances", async function() {
+        //hub read balance
+        const provider = new ethers.JsonRpcProvider(hubRPCUrl);
+        const wallet = new ethers.Wallet(operatorKey, provider);
+        const hmtTokenBalance = await hmToken.connect(wallet).balanceOf(wallet.address);
+        console.log(`Address: ${wallet.address}, HMT Token Balance: ${hmtTokenBalance.toString()} HMT`);
+
+        //spokes read balances
+        for (const [rpc, spokeConfig] of Object.entries(spokes)) {
+            console.log(rpc, spokeConfig)
+            const provider = new ethers.JsonRpcProvider(rpc);
+            const wallet = new ethers.Wallet(operatorKey, provider);
+            const spokeHMToken = await ethers.getContractAt("HMToken", spokeConfig['SPOKE_HM_TOKEN_ADDRESS']);
+            const hmtTokenBalance = await spokeHMToken.connect(wallet).balanceOf(wallet.address);
+            console.log(`Address: ${wallet.address}, HMT Token Balance: ${hmtTokenBalance.toString()} HMT`);
+        }
+    })
+
+    it("should pass cross chain governance flow", async function() {
+        //transfer native currency
+        let amountInEther = '0.01';
+        //hub
+        await sendNativeCurrencyToTestUsers(endUsers, amountInEther, operatorKey, hubRPCUrl);
+        //spokes
+        await sendNativeCurrencyOnSpokes(spokes, endUsers, amountInEther, operatorKey);
+        //transfer HMT
+        //exchange HMT => VHMT
+        //delegate votes
+        //create proposal
+        //vote on hub
+        //vote on spokes
+        //request collections
+        //queue
+        //execute
+        //assert
+    })
+
     it("should transfer tokens", async function() {
-        const networks = {
-            //'Sepolia': process.env.SEPOLIA_RPC_URL,
-            // 'Polygon Mumbai': process.env.POLYGON_MUMBAI_RPC_URL,
-            // 'Arbitrum': process.env.ARBITRUM_RPC_URL,
-            'Avalanche': process.env.SPOKE_RPC_URL,
-            //'Moonbase': process.env.MOONBASE_RPC_URL
-        };
-
-        const privateKeys = [
-            process.env.PRIVATE_KEY,
-            process.env.SECOND_PRIVATE_KEY,
-            process.env.THIRD_PRIVATE_KEY
-        ];
-
         for (const [networkName, rpcUrl] of Object.entries(networks)) {
             console.log(`Token balances for network: ${networkName}`);
             const provider = new ethers.JsonRpcProvider(rpcUrl);
