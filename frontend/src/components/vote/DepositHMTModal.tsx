@@ -16,6 +16,7 @@ import { ExchangeInputErrors } from 'state/governance/types'
 import { useTransactionAdder } from 'state/transactions/hooks'
 import { TransactionType } from 'state/transactions/types'
 import styled, { useTheme } from 'styled-components/macro'
+import { floatStringToIntegerString } from 'utils/floatStringToIntegerString'
 import { swapErrorToUserReadableMessage } from 'utils/swapErrorToUserReadableMessage'
 
 import { ThemedText } from '../../theme'
@@ -46,6 +47,11 @@ const ModalViewWrapper = styled('div')`
   padding-top: 16px;
 `
 
+const StyledRowBetween = styled(RowBetween)`
+  word-break: break-all;
+  text-align: left;
+`
+
 interface DepositHMTProps {
   isOpen: boolean
   onDismiss: () => void
@@ -62,8 +68,6 @@ export default function DepositHMTModal({ isOpen, onDismiss, title, hmtBalance }
   const addTransaction = useTransactionAdder()
   const isMobile = useIsMobile()
 
-  const userHmtBalanceAmount = hmtBalance && hmtBalance?.toExact()
-
   const [attempting, setAttempting] = useState(false)
   const [currencyToExchange, setCurrencyToExchange] = useState<string>('')
   const [approveHash, setApproveHash] = useState<string | undefined>()
@@ -71,8 +75,10 @@ export default function DepositHMTModal({ isOpen, onDismiss, title, hmtBalance }
   const [validationInputError, setValidationInputError] = useState<string>('')
   const [error, setError] = useState<string>('')
   const [isTransactionApproved, setIsTransactionApproved] = useState<boolean>(false)
-
   const [isApproveWaitResponse, setIsApproveWaitResponse] = useState<boolean>(false)
+
+  const userHmtBalanceAmount = hmtBalance && hmtBalance.toFixed()
+  const userFormattedHmtBalanceAmount = userHmtBalanceAmount && floatStringToIntegerString(userHmtBalanceAmount)
 
   // wrapper to reset state on modal close
   function wrappedOnDismiss() {
@@ -109,19 +115,21 @@ export default function DepositHMTModal({ isOpen, onDismiss, title, hmtBalance }
   )
 
   async function onTransactionApprove() {
+    const convertedCurrency = parseUnits(currencyToExchange, hmtContractToken?.decimals).toString()
+
     if (!uniContract || !hmtUniContract) return
     if (currencyToExchange.length === 0 || currencyToExchange === '0') {
       setValidationInputError(ExchangeInputErrors.EMPTY_INPUT)
       return
     }
-    if (userHmtBalanceAmount && BigNumber.from(userHmtBalanceAmount) < BigNumber.from(currencyToExchange)) {
+
+    if (userHmtBalanceAmount && BigNumber.from(userFormattedHmtBalanceAmount).lt(BigNumber.from(convertedCurrency))) {
       setValidationInputError(ExchangeInputErrors.EXCEEDS_BALANCE)
       return
     }
 
     try {
       setAttempting(true)
-      const convertedCurrency = parseUnits(currencyToExchange, hmtContractToken?.decimals).toString()
 
       const response = await hmtUniContract.approve(uniContract.address, convertedCurrency)
 
@@ -179,14 +187,14 @@ export default function DepositHMTModal({ isOpen, onDismiss, title, hmtBalance }
               </ThemedText.DeprecatedMediumHeader>
               <StyledClosed stroke={theme.textPrimary} onClick={wrappedOnDismiss} />
             </RowBetween>
-            <RowBetween>
+            <StyledRowBetween>
               <ThemedText.BodySecondary>
                 <Trans>HMT balance</Trans>: {userHmtBalanceAmount}
               </ThemedText.BodySecondary>
-            </RowBetween>
+            </StyledRowBetween>
             <ExchangeHmtInput
               value={currencyToExchange}
-              maxValue={hmtBalance?.toExact()}
+              maxValue={userHmtBalanceAmount}
               onChange={onInputHmtExchange}
               onMaxChange={onInputMaxExchange}
               error={validationInputError}
