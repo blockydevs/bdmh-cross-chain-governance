@@ -14,6 +14,7 @@ import { ExchangeInputErrors } from 'state/governance/types'
 import { useTransactionAdder } from 'state/transactions/hooks'
 import { TransactionType } from 'state/transactions/types'
 import styled, { useTheme } from 'styled-components/macro'
+import { floatStringToIntegerString } from 'utils/floatStringToIntegerString'
 import { swapErrorToUserReadableMessage } from 'utils/swapErrorToUserReadableMessage'
 
 import { ThemedText } from '../../theme'
@@ -44,6 +45,11 @@ const StyledClosed = styled(X)`
   }
 `
 
+const StyledRowBetween = styled(RowBetween)`
+  word-break: break-all;
+  text-align: left;
+`
+
 interface DepositVHMTProps {
   isOpen: boolean
   onDismiss: () => void
@@ -55,7 +61,8 @@ export default function DepositVHMTModal({ isOpen, onDismiss, title, uniBalance 
   const { account } = useWeb3React()
   const uniContract = useUniContract()
 
-  const userVHMTBalanceAmount = uniBalance && uniBalance?.toExact()
+  const userVHMTBalanceAmount = uniBalance && uniBalance.toFixed()
+  const userFormattedVhmtBalanceAmount = userVHMTBalanceAmount && floatStringToIntegerString(userVHMTBalanceAmount)
 
   const addTransaction = useTransactionAdder()
 
@@ -99,19 +106,19 @@ export default function DepositVHMTModal({ isOpen, onDismiss, title, uniBalance 
   )
 
   async function onWithdrawToVHMTSubmit() {
+    const convertedCurrency = parseUnits(currencyToExchange, uniBalance?.currency.decimals).toString()
+
     if (!uniContract) return
     if (currencyToExchange.length === 0 || currencyToExchange === '0') {
       setValidationInputError(ExchangeInputErrors.EMPTY_INPUT)
       setAttempting(false)
       return
     }
-    if (userVHMTBalanceAmount && BigNumber.from(userVHMTBalanceAmount) < BigNumber.from(currencyToExchange)) {
+    if (userVHMTBalanceAmount && BigNumber.from(userFormattedVhmtBalanceAmount).lt(BigNumber.from(convertedCurrency))) {
       setValidationInputError(ExchangeInputErrors.EXCEEDS_BALANCE)
       setAttempting(false)
       return
     }
-
-    const convertedCurrency = parseUnits(currencyToExchange, Number(uniBalance?.currency.decimals)).toString()
 
     try {
       setAttempting(true)
@@ -144,14 +151,14 @@ export default function DepositVHMTModal({ isOpen, onDismiss, title, uniBalance 
               </ThemedText.DeprecatedMediumHeader>
               <StyledClosed stroke={theme.textPrimary} onClick={wrappedOnDismiss} />
             </RowBetween>
-            <RowBetween>
+            <StyledRowBetween>
               <ThemedText.BodySecondary>
                 <Trans>vHMT balance</Trans>: {userVHMTBalanceAmount}
               </ThemedText.BodySecondary>
-            </RowBetween>
+            </StyledRowBetween>
             <ExchangeHmtInput
               value={currencyToExchange}
-              maxValue={uniBalance?.toExact()}
+              maxValue={userVHMTBalanceAmount}
               onChange={onInputHmtExchange}
               onMaxChange={onInputMaxExchange}
               error={validationInputError}
