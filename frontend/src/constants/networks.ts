@@ -6,14 +6,8 @@ const allChainIds = Object.values(SupportedChainId)
 
 const RPC_URLS_FROM_ENV: { [key: string]: string | undefined } = {}
 
-const hubRpcUrl = process.env.REACT_APP_HUB_RPC_URL
-
 for (const chainId of allChainIds) {
-  if (chainId === process.env.REACT_APP_HUB_CHAIN_ID) {
-    RPC_URLS_FROM_ENV[chainId] = hubRpcUrl
-  } else {
-    RPC_URLS_FROM_ENV[chainId] = process.env[`REACT_APP_RPC_URL_${chainId}`]
-  }
+  RPC_URLS_FROM_ENV[chainId] = process.env[`REACT_APP_RPC_URL_${chainId}`]
 }
 
 /**

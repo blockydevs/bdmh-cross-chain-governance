@@ -1,6 +1,5 @@
-import { extractAddressesFromJSON } from 'utils/getSpokeAddresses'
+import { getEnvAddresses } from 'utils/getEnvAddresses'
 
-import spokeData from '../frontend-spoke-params.json'
 import { SupportedChainId } from './chains'
 
 export type AddressMap = { [chainId: number]: string }
@@ -27,10 +26,8 @@ export const HUB_VOTE_TOKEN_ADDRESS: AddressMap = {
   [HUB_CHAIN_ID]: HUB_TOKEN_ADDRESS as string,
 }
 
-const { governanceSpokeAddresses, voteTokenAddresses } = extractAddressesFromJSON(spokeData)
-
-export const GOVERNANCE_SPOKE_ADRESSES: AddressMap = governanceSpokeAddresses
-export const SPOKE_VOTE_TOKEN_ADDRESSES: AddressMap = voteTokenAddresses
+export const GOVERNANCE_SPOKE_ADRESSES: AddressMap = getEnvAddresses('REACT_APP_GOVERNANCE_SPOKE_CHAIN_')
+export const SPOKE_VOTE_TOKEN_ADDRESSES: AddressMap = getEnvAddresses('REACT_APP_GOVERNANCE_SPOKE_VOTE_TOKEN_')
 
 // celo v3 addresses
 const CELO_MULTICALL_ADDRESS = '0x633987602DE5C4F337e3DbF265303A1080324204'
