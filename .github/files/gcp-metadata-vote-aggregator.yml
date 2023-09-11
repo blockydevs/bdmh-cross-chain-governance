@@ -33,13 +33,13 @@ spec:
           value: "{{ env['HUB_CHAIN_NAME'] }}"
         - name: REDIS_EXPIRATION_TIME_IN_SEC
           value: "{{ env['REDIS_EXPIRATION_TIME_IN_SEC'] }}"
-{%- for item in NETWORK_PARAMS  %}
+{%- for item in NETWORK_PARAMS %}
         - name: NETWORK_{{ item.NETWORK_DISPLAY_NAME | upper }}_CHAIN_ID
           value: "{{ item.NETWORK_CHAIN_ID }}"
         - name: NETWORK_{{ item.NETWORK_DISPLAY_NAME | upper }}_DISPLAY_NAME
           value: "{{ item.NETWORK_DISPLAY_NAME }}"
         - name: NETWORK_{{ item.NETWORK_DISPLAY_NAME | upper }}_RPC_URL
-          value: "{{ item.NETWORK_RPC_URL }}
+          value: "{{ item.NETWORK_RPC_URL }}"
         - name: NETWORK_{{ item.NETWORK_DISPLAY_NAME | upper }}_SPOKE_ADDRESS
-          value: "{{ item.NETWORK_SPOKE_ADDRESS }}
+          value: "{{ item.NETWORK_SPOKE_ADDRESS }}"
 %{%- endfor %}
