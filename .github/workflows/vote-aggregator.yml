@@ -50,9 +50,9 @@ jobs:
           data_file: data.json
           data_format: json
 
-      - name: Debug
-        run: |
-          cat gcp-metadata-vote-aggregator.yml
+      # - name: Debug
+      #   run: |
+      #     cat gcp-metadata-vote-aggregator.yml
 
       - name: Google Auth
         id: auth
