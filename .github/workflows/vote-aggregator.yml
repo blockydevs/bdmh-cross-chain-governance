@@ -52,7 +52,7 @@ jobs:
 
       - name: Debug
         run: |
-          cat data.json
+          cat gcp-metadata-vote-aggregator.yml
 
       - name: Google Auth
         id: auth
