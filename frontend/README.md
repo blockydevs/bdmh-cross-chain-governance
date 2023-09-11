@@ -34,7 +34,7 @@ There can be only one hub chain, defined by four specific environment variables:
 
 - `REACT_APP_GOVERNANCE_HUB_ADDRESS` corresponds to its address,
 - `REACT_APP_HUB_VOTE_TOKEN` refers to its voting token,
-- `REACT_APP_HUB_<CHAIN_ID>` specifies the hub chain ID,
+- `REACT_APP_HUB_CHAIN_ID` specifies the hub chain ID,
 - `REACT_APP_RPC_URL_<CHAIN_ID>` is used to set the RPC URL for a particular chain.
 
 You can define multiple spoke chains. If you want to add another spoke chain please create three variables:
@@ -43,7 +43,7 @@ You can define multiple spoke chains. If you want to add another spoke chain ple
 - `REACT_APP_GOVERNANCE_SPOKE_VOTE_TOKEN_<CHAINID>`,
 - `REACT_APP_RPC_URL_<CHAIN_ID>`
 
-(remember to change `<CHAINID>` with the actual number for both cases and assign address to them).
+(remember to change `<CHAINID>` with the actual number for all cases and assign address to them).
 
 ## Setup and Installation
 

@@ -28,6 +28,7 @@ env:
   REACT_APP_RPC_URL_1287: ${{ vars.REACT_APP_RPC_URL_1287 }}
   # PUBLIC_URL: ${{ vars.PUBLIC_URL }}
   REACT_APP_VOTE_AGGREGATOR_ADDRESS: ${{ vars.REACT_APP_VOTE_AGGREGATOR_ADDRESS }}
+  FRONTEND_SPOKE_PARAMS: ${{ vars.FRONTEND_SPOKE_PARAMS }}
 
 jobs:
   build:
@@ -39,6 +40,11 @@ jobs:
       with:
         node-version: 14
         registry-url: https://registry.npmjs.org
+
+    - name: Prepare variables
+      run: ./frontend_create_vars.sh
+      shell: bash
+      working-directory: .github/files
         
     - run: yarn install
       working-directory: frontend
