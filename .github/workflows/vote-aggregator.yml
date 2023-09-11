@@ -22,14 +22,7 @@ env:
   HUB_RPC_URL: ${{ vars.HUB_RPC_URL }}
   HUB_ADDRESS: ${{ vars.HUB_ADDRESS }}
   HUB_CHAIN_NAME: ${{ vars.HUB_CHAIN_NAME }}
-  NETWORK_MOONBASE_SPOKE_ADDRESS: ${{ vars.NETWORK_MOONBASE_SPOKE_ADDRESS }}
-  NETWORK_MOONBASE_CHAIN_ID: ${{ vars.NETWORK_MOONBASE_CHAIN_ID }}
-  NETWORK_MOONBASE_RPC_URL: ${{ vars.NETWORK_MOONBASE_RPC_URL }}
-  NETWORK_MOONBASE_DISPLAY_NAME: ${{ vars.NETWORK_MOONBASE_DISPLAY_NAME }}
-  NETWORK_AVALANCHE_SPOKE_ADDRESS: ${{ vars.NETWORK_AVALANCHE_SPOKE_ADDRESS }}
-  NETWORK_AVALANCHE_CHAIN_ID: ${{ vars.NETWORK_AVALANCHE_CHAIN_ID }}
-  NETWORK_AVALANCHE_RPC_URL: ${{ vars.NETWORK_AVALANCHE_RPC_URL }}
-  NETWORK_AVALANCHE_DISPLAY_NAME: ${{ vars.NETWORK_AVALANCHE_DISPLAY_NAME }}
+  NETWORK_PARAMS: ${{ vars.NETWORK_PARAMS }}
   REDIS_EXPIRATION_TIME_IN_SEC: ${{ vars.REDIS_EXPIRATION_TIME_IN_SEC }}
 
 jobs:
@@ -45,12 +38,17 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
+      - name: Create data file
+        run: |
+          echo "$NETWORK_PARAMS" >> data.json
       - name: Setup metadata
         uses: cuchi/jinja2-action@v1.2.0
         with:
           template: .github/files/gcp-metadata-vote-aggregator.yml
           output_file: gcp-metadata-vote-aggregator.yml
           strict: true
+          data_file: data.json
+          data_format: json
 
       - name: Google Auth
         id: auth
