@@ -61,8 +61,8 @@ describe("Interacting with governance ecosystem", function () {
         console.log("hub");
         await sendNativeCurrencyToTestUsers(endUsers, amountInEther, operatorKey, hubRPCUrl);
 
-        console.log("spokes"); //TODO: Error: insufficient funds for intrinsic transaction cost
-        // await sendNativeCurrencyOnSpokes(spokes, endUsers, amountInEther, operatorKey);
+        console.log("spokes");
+        await sendNativeCurrencyOnSpokes(spokes, endUsers, amountInEther, operatorKey);
 
         console.log("transfer HMT");
         await transferToken(hubRPCUrl, endUsers, hmToken, operatorKey, amountInEther);
@@ -80,17 +80,17 @@ describe("Interacting with governance ecosystem", function () {
         console.log("vote on hub");
         await voteOnHub(governanceContract, hubRPCUrl, operatorKey, proposalId);
 
-        console.log("vote on spokes");
-        await voteOnSpokes();
+        console.log("vote on spokes"); //TODO: Error: execution reverted: "DAOSpokeContract: not a started vote"
+        // await voteOnSpokes(spokes, proposalId, endUsers);
 
-        console.log("request collections");
-        await requestCollections();
+        console.log("request collections"); //TODO: timeout
+        // await requestCollections(hubRPCUrl, governanceContract, proposalId);
 
-        console.log("queue");
-        await queue();
+        console.log("queue"); //TODO: timeout
+        // await queue(hubRPCUrl, governanceContract, vhmToken, operatorKey);
 
-        console.log("execute");
-        await execute();
+        console.log("execute"); //TODO: timeout
+        // await execute(hubRPCUrl, governanceContract, vhmToken, operatorKey);
 
         console.log("assert");
         expect(true).equal(true);
@@ -222,18 +222,50 @@ async function voteOnHub(governanceContract, hubRPCUrl, operatorKey, proposalId)
     await provider.waitForTransaction(tx.hash);
 }
 
-async function voteOnSpokes() {
+async function voteOnSpokes(spokes, proposalId, endUsers) {
+    let i = 0;
+    for (const [rpc, spokeConfig] of Object.entries(spokes)) {
+        const provider = new ethers.JsonRpcProvider(rpc);
+        const wallet = new ethers.Wallet(endUsers[i], provider);
 
+        const spokeContract = await ethers.getContractAt(
+            "DAOSpokeContract",
+            spokeConfig.SPOKE_CONTRACT_ADDRESS
+        );
+
+        const tx = await spokeContract.connect(wallet).castVote(proposalId, 1);
+
+        await provider.waitForTransaction(tx.hash);
+        i++;
+    }
 }
 
-async function requestCollections() {
-
+async function requestCollections(hubRPCUrl, governanceContract, proposalId) {
+    const provider = new ethers.JsonRpcProvider(hubRPCUrl);
+    const tx = await governanceContract.requestCollections(proposalId);
+    await provider.waitForTransaction(tx.hash);
 }
 
-async function queue() {
-
+async function queue(hubRPCUrl, governanceContract, vhmToken, operatorKey) {
+    const provider = new ethers.JsonRpcProvider(hubRPCUrl);
+    const wallet = new ethers.Wallet(operatorKey, provider);
+    const encodedCall = defaultAbiCoder.encode(
+        ["address", "uint256"],
+        [wallet.address, 1]
+    );
+    const descriptionHash = ethers.keccak256(ethers.toUtf8Bytes("desc"));
+    const tx = await governanceContract.queue([vhmToken.target], [], [encodedCall], descriptionHash);
+    await provider.waitForTransaction(tx.hash);
 }
 
-async function execute() {
-
+async function execute(hubRPCUrl, governanceContract, vhmToken, operatorKey) {
+    const provider = new ethers.JsonRpcProvider(hubRPCUrl);
+    const wallet = new ethers.Wallet(operatorKey, provider);
+    const encodedCall = defaultAbiCoder.encode(
+        ["address", "uint256"],
+        [wallet.address, 1]
+    );
+    const descriptionHash = ethers.keccak256(ethers.toUtf8Bytes("desc"));
+    const tx = await governanceContract.execute([vhmToken.target], [], [encodedCall], descriptionHash);
+    await provider.waitForTransaction(tx.hash);
 }
