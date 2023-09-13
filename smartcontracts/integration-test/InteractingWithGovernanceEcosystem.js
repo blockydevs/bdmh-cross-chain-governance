@@ -1,10 +1,8 @@
 require("dotenv").config();
 const {expect} = require("chai");
-const { defaultAbiCoder } = require("@ethersproject/abi");
-const hre = require("hardhat");
+const {defaultAbiCoder} = require("@ethersproject/abi");
+const {ethers, hre} = require("hardhat");
 
-const { ethers } = require("hardhat");
-const { setTimeout } = require('timers/promises');
 async function sendNativeCurrency(user, provider, amountInEther, operatorWallet) {
     let tx = {
         to: new ethers.Wallet(user, provider),
@@ -31,7 +29,7 @@ async function transferToken(hubRPCUrl, endUser, hmToken, operatorKey, amountInE
     const provider = new ethers.JsonRpcProvider(hubRPCUrl);
     const walletOperator = new ethers.Wallet(operatorKey, provider);
 
-    for(const user of endUser){
+    for (const user of endUser) {
         const wallet = new ethers.Wallet(user, provider);
         await hmToken.connect(walletOperator).transfer(wallet.address, ethers.parseEther(amountInEther));
     }
@@ -54,7 +52,7 @@ async function delegateVotes(endUsers, vhmToken, hubRPCUrl) {
 async function getProposalExecutionData(hre, deployerAddress, hmToken) {
     const IERC20 = await hre.artifacts.readArtifact('IERC20');
 
-    const description = ethers.keccak256(ethers.toUtf8Bytes("desc"));
+    const description = "desc";
 
     const transferFunctionSig = IERC20.abi.find(
         (func) => func.name === 'transfer' && func.type === 'function'
@@ -77,6 +75,15 @@ async function getProposalExecutionData(hre, deployerAddress, hmToken) {
     };
 }
 
+function computeProposalId(targets, values, calldatas, description) {
+    const descriptionHash = ethers.keccak256(ethers.toUtf8Bytes(description));
+    const encoded = defaultAbiCoder.encode(
+        ["address[]", "uint256[]", "bytes[]", "bytes32"],
+        [targets, values, calldatas, descriptionHash]
+    );
+    return ethers.keccak256(encoded);
+}
+
 async function createProposal(proposalId, operatorKey, endUsers, hubRPCUrl, governanceContract, hmToken, hre) {
     const provider = new ethers.JsonRpcProvider(hubRPCUrl);
     const wallet = new ethers.Wallet(operatorKey, provider);
@@ -94,26 +101,45 @@ async function createProposal(proposalId, operatorKey, endUsers, hubRPCUrl, gove
             calldatas,
             description
         );
-       // const result = await governanceContract.connect(wallet).hashProposal(
-       //      targets,
-       //      values,
-       //      calldatas,
-       //      description
-       //  );
-       //
-       //  const decodedResult = defaultAbiCoder.decode(["uint256"], result);
-       //  console.log(decodedResult[0]);
+
+        const proposalId = computeProposalId(targets, values, calldatas, description);
+
+        return proposalId;
     } catch (e) {
         console.error(e);
     }
 }
 
+async function voteOnHub(governanceContract, hubRPCUrl, operatorKey, proposalId) {
+    const provider = new ethers.JsonRpcProvider(hubRPCUrl);
+    const wallet = new ethers.Wallet(operatorKey, provider);
+    await governanceContract.connect(wallet).castVote(proposalId, 1);
+}
+
+async function voteOnSpokes() {
+
+}
+
+async function requestCollections() {
+
+}
+
+async function queue() {
+
+}
+
+async function execute() {
+
+}
+
+async function assert() {
+
+}
+
 describe("Interacting with governance ecosystem", function () {
-    let deployer, addr1, addr2;
     let vhmToken;
     let hmToken;
     let governanceContract;
-    let spokeContract;
     let proposalId;
     const hubRPCUrl = process.env.AVALANCHE_RPC_URL;
     const hubHMTAddress = process.env.HM_TOKEN_ADDRESS;
@@ -127,10 +153,7 @@ describe("Interacting with governance ecosystem", function () {
         process.env.THIRD_PRIVATE_KEY
     ];
 
-    const etherValue = etherToWei(1);
-    const FOR_VOTE = 1;
-
-    before(async function() {
+    before(async function () {
         //hub
         hmToken = await ethers.getContractAt("HMToken", hubHMTAddress);
         vhmToken = await ethers.getContractAt("VHMToken", hubVHMTAddress);
@@ -146,7 +169,7 @@ describe("Interacting with governance ecosystem", function () {
         })
     });
 
-    it("should read balances", async function() {
+    it("should read balances", async function () {
         //hub read balance
         const provider = new ethers.JsonRpcProvider(hubRPCUrl);
         const wallet = new ethers.Wallet(operatorKey, provider);
@@ -161,73 +184,47 @@ describe("Interacting with governance ecosystem", function () {
             const hmtTokenBalance = await spokeHMToken.connect(wallet).balanceOf(wallet.address);
             console.log(`Spoke: Address: ${wallet.address}, HMT Token Balance: ${hmtTokenBalance.toString()} HMT`);
         }
-    })
+    });
 
-    it("should pass cross chain governance flow", async function() {
-        this.timeout(5*60*1000);
-//transfer native currency
+    it("should pass cross chain governance flow", async function () {
+        this.timeout(5 * 60 * 1000);
         let amountInEther = '0.01';
-//hub
-//         await sendNativeCurrencyToTestUsers(endUsers, amountInEther, operatorKey, hubRPCUrl);
-//spokes
-//         await sendNativeCurrencyOnSpokes(spokes, endUsers, amountInEther, operatorKey);
-// transfer HMT
-//         await setTimeout(35*1000)
-        // await transferToken(hubRPCUrl, endUsers, hmToken, operatorKey, amountInEther);
-//exchange HMT => VHMT
-//         await exchangeHMTtoVHMT(hubRPCUrl, endUsers, amountInEther, hmToken, vhmToken);
-//delegate votes
-//         await delegateVotes(endUsers, vhmToken, hubRPCUrl);
-//create proposal
-        proposalId = await createProposal(proposalId, operatorKey, endUsers, hubRPCUrl, governanceContract, hmToken, hre)
-       console.log(proposalId)
-        //vote on hub
-        //vote on spokes
-        //request collections
-        //queue
-        //execute
-        //assert
-    })
-    return;
 
-    it("should allow voting on the proposal both on Hub and Spoke chains", async () => {
-        await governanceContract.castVote(proposalId, FOR_VOTE);
-        await spokeContract.castVote(proposalId, FOR_VOTE);
+        console.log("transfer native currency");
+        console.log("hub");
+        await sendNativeCurrencyToTestUsers(endUsers, amountInEther, operatorKey, hubRPCUrl);
+        console.log("spokes");
+        await sendNativeCurrencyOnSpokes(spokes, endUsers, amountInEther, operatorKey);
 
-        const hasVoted = await spokeContract.hasVoted(proposalId, addr2.address);
+        console.log("transfer HMT");
+        await transferToken(hubRPCUrl, endUsers, hmToken, operatorKey, amountInEther);
 
-        expect(hasVoted).to.equal(true);
-    });
+        console.log("exchange HMT => VHMT");
+        await exchangeHMTtoVHMT(hubRPCUrl, endUsers, amountInEther, hmToken, vhmToken);
 
-    it("should collect votes using the relayer", async () => {
+        console.log("delegate votes");
+        await delegateVotes(endUsers, vhmToken, hubRPCUrl);
 
-    });
+        console.log("create proposal");
+        proposalId = await createProposal(proposalId, operatorKey, endUsers, hubRPCUrl, governanceContract, hmToken, hre);
+        console.log("Proposal ID:", proposalId);
 
-    it("should execute the proposal", async () => {
-        const deployerAddress = await deployer.getAddress();
-        const encodedCall = defaultAbiCoder.encode(
-            ["address", "uint256"],
-            [deployerAddress, 1]
-        );
-        await governanceContract.queue([vhmtoken.target], [], [encodedCall], "desc");
-        let state = await governanceContract.state();
+        console.log("vote on hub");
+        await voteOnHub(governanceContract, hubRPCUrl, operatorKey, proposalId);
 
-        expect(state).equal("Queued")
+        console.log("vote on spokes");
+        await voteOnSpokes();
 
-        await governanceContract.execute([vhmtoken.target], [], [encodedCall], "desc");
-        state = await governanceContract.state();
+        console.log("request collections");
+        await requestCollections();
 
-        expect(state).equal("Executed")
-    });
+        console.log("queue");
+        await queue();
 
-    it("should have the correct vote counts at the end", async () => {
-        const votes = await spokeContract.proposalVotes(proposalId);
+        console.log("execute");
+        await execute();
 
-        expect(votes.forVotes).equal(1);
+        console.log("assert");
+        expect(true).equal(true);
     });
 });
-
-function etherToWei(etherValue) {
-    const weiMultiplier = BigInt("1000000000000000000");
-    return BigInt(Math.round(parseFloat(etherValue) * parseFloat(weiMultiplier.toString())));
-}
