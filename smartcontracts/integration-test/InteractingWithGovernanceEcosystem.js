@@ -36,26 +36,12 @@ describe("Interacting with governance ecosystem", function () {
         })
     });
 
-    it("should read balances", async function () {
-        //hub read balance
-        const provider = new ethers.JsonRpcProvider(hubRPCUrl);
-        const wallet = new ethers.Wallet(operatorKey, provider);
-        const hmtTokenBalance = await hmToken.connect(wallet).balanceOf(wallet.address);
-        console.log(`Hub: Address: ${wallet.address}, HMT Token Balance: ${hmtTokenBalance.toString()} HMT`);
-
-        //spokes read balances
-        for (const [rpc, spokeConfig] of Object.entries(spokes)) {
-            const provider = new ethers.JsonRpcProvider(rpc);
-            const wallet = new ethers.Wallet(endUsers[0], provider);
-            const spokeHMToken = await ethers.getContractAt("HMToken", spokeConfig['SPOKE_HM_TOKEN_ADDRESS']);
-            const hmtTokenBalance = await spokeHMToken.connect(wallet).balanceOf(wallet.address);
-            console.log(`Spoke: Address: ${wallet.address}, HMT Token Balance: ${hmtTokenBalance.toString()} HMT`);
-        }
-    });
-
     it("should pass cross chain governance flow", async function () {
         this.timeout(5 * 60 * 1000);
         let amountInEther = '0.01';
+
+        await hubReadBalances(hubRPCUrl, operatorKey, hmToken, vhmToken);
+        await spokeReadBalances(spokes, endUsers);
 
         console.log("transfer native currency");
         console.log("hub");
@@ -69,6 +55,9 @@ describe("Interacting with governance ecosystem", function () {
 
         console.log("exchange HMT => VHMT");
         await exchangeHMTtoVHMT(hubRPCUrl, endUsers, amountInEther, hmToken, vhmToken);
+
+        await hubReadBalances(hubRPCUrl, operatorKey, hmToken, vhmToken);
+        await spokeReadBalances(spokes, endUsers);
 
         console.log("delegate votes");
         await delegateVotes(endUsers, vhmToken, hubRPCUrl);
@@ -96,6 +85,27 @@ describe("Interacting with governance ecosystem", function () {
         expect(true).equal(true);
     });
 });
+
+async function hubReadBalances(hubRPCUrl, operatorKey, hmToken, vhmToken) {
+    const provider = new ethers.JsonRpcProvider(hubRPCUrl);
+    const wallet = new ethers.Wallet(operatorKey, provider);
+    const hmtTokenBalance = await hmToken.connect(wallet).balanceOf(wallet.address);
+    const vhmtTokenBalance = await vhmToken.connect(wallet).balanceOf(wallet.address);
+    console.log(`Hub: Address: ${wallet.address}, HMT Token Balance: ${hmtTokenBalance.toString()} HMT`);
+    console.log(`Hub: Address: ${wallet.address}, VHMT Token Balance: ${vhmtTokenBalance.toString()} VHMT`);
+}
+async function spokeReadBalances(spokes, endUsers) {
+    for (const [rpc, spokeConfig] of Object.entries(spokes)) {
+        const provider = new ethers.JsonRpcProvider(rpc);
+        const wallet = new ethers.Wallet(endUsers[0], provider);
+        const spokeHMToken = await ethers.getContractAt("HMToken", spokeConfig['SPOKE_HM_TOKEN_ADDRESS']);
+        const hmtTokenBalance = await spokeHMToken.connect(wallet).balanceOf(wallet.address);
+        const spokeVHMToken = await ethers.getContractAt("VHMToken", spokeConfig['SPOKE_VHM_TOKEN_ADDRESS']);
+        const vhmtTokenBalance = await spokeVHMToken.connect(wallet).balanceOf(wallet.address);
+        console.log(`Spoke: Address: ${wallet.address}, HMT Token Balance: ${hmtTokenBalance.toString()} HMT`);
+        console.log(`Spoke: Address: ${wallet.address}, VHMT Token Balance: ${vhmtTokenBalance.toString()} VHMT`);
+    }
+}
 
 async function sendNativeCurrency(user, provider, amountInEther, operatorWallet) {
     let tx = {
