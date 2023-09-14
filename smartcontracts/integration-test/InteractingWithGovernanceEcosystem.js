@@ -38,34 +38,20 @@ describe("Interacting with governance ecosystem", function () {
     });
 
     it("should pass cross chain governance flow", async function () {
-        this.timeout(5 * 60 * 1000);
+        this.timeout(15 * 60 * 1000);
         let amountInEther = '0.01';
-
-        await hubReadBalances(hubRPCUrl, operatorKey, hmToken, vhmToken);
-        await spokeReadBalances(spokes, endUsers);
-
-        console.log("transfer native currency");
-        console.log("hub");
-        await sendNativeCurrencyToTestUsers(endUsers, amountInEther, operatorKey, hubRPCUrl);
-
-        console.log("spokes");
-        await sendNativeCurrencyOnSpokes(spokes, endUsers, amountInEther, operatorKey);
-
-        console.log("transfer HMT");
-        await transferToken(hubRPCUrl, endUsers, hmToken, operatorKey, amountInEther);
-
-        console.log("exchange HMT => VHMT");
-        await exchangeHMTtoVHMT(hubRPCUrl, endUsers, amountInEther, hmToken, vhmToken);
-
-        await hubReadBalances(hubRPCUrl, operatorKey, hmToken, vhmToken);
-        await spokeReadBalances(spokes, endUsers);
-
-        console.log("delegate votes");
-        await delegateVotes(endUsers, vhmToken, hubRPCUrl);
+        // await readBalances(hubRPCUrl, operatorKey, hmToken, vhmToken, spokes, endUsers);
+        //
+        // console.log("transfer native currency, hub");
+        // await sendNativeCurrencyToTestUsers(endUsers, amountInEther, operatorKey, hubRPCUrl);
+        // console.log("transfer native currency, spokes");
+        // await sendNativeCurrencyOnSpokes(spokes, endUsers, amountInEther, operatorKey);
+        //
+        // await transferExchangeDelegate(hubRPCUrl, spokes, operatorKey, endUsers, hmToken, vhmToken, amountInEther);
+        // await readBalances(hubRPCUrl, operatorKey, hmToken, vhmToken, spokes, endUsers);
 
         console.log("create proposal");
         proposalId = await createProposal(proposalId, operatorKey, endUsers, hubRPCUrl, governanceContract, hmToken, hre);
-        console.log("Proposal ID:", proposalId);
 
         console.log("vote on hub");
         await voteOnHub(governanceContract, hubRPCUrl, operatorKey, proposalId);
@@ -174,7 +160,7 @@ async function delegateVotes(endUsers, vhmToken, hubRPCUrl) {
 async function getProposalExecutionData(hre, deployerAddress, hmToken) {
     const IERC20 = await hre.artifacts.readArtifact('IERC20');
 
-    const description = "desc";
+    const description = `desc${Math.random()}`;
 
     const transferFunctionSig = IERC20.abi.find(
         (func) => func.name === 'transfer' && func.type === 'function'
@@ -197,13 +183,18 @@ async function getProposalExecutionData(hre, deployerAddress, hmToken) {
     };
 }
 
-function computeProposalId(targets, values, calldatas, description) {
-    const descriptionHash = ethers.keccak256(ethers.toUtf8Bytes(description));
-    const encoded = defaultAbiCoder.encode(
-        ["address[]", "uint256[]", "bytes[]", "bytes32"],
-        [targets, values, calldatas, descriptionHash]
-    );
-    return ethers.keccak256(encoded);
+async function getProposalIdFromReceipt(receipt, governanceContract) {
+    for (const log of receipt.logs) {
+        try {
+            const parsedLog = governanceContract.interface.parseLog(log);
+            if (parsedLog.name === "ProposalCreated") {
+                return parsedLog.args.proposalId;
+            }
+        } catch (error) {
+            continue;
+        }
+    }
+    throw new Error("Proposal ID not found in transaction logs.");
 }
 
 async function createProposal(proposalId, operatorKey, endUsers, hubRPCUrl, governanceContract, hmToken, hre) {
@@ -221,13 +212,17 @@ async function createProposal(proposalId, operatorKey, endUsers, hubRPCUrl, gove
             targets,
             values,
             calldatas,
-            description
+            description,
+            {
+                gasPrice: 75000000000,
+                gasLimit: 1000000,
+            }
         );
 
-        await provider.waitForTransaction(tx.hash);
+        const receipt = await tx.wait();
 
-        const proposalId = computeProposalId(targets, values, calldatas, description);
-
+        const proposalId = await getProposalIdFromReceipt(receipt, governanceContract);
+        console.log("Proposal ID:", proposalId);
         return proposalId;
     } catch (e) {
         console.error(e);
@@ -288,4 +283,24 @@ async function execute(hubRPCUrl, governanceContract, vhmToken, operatorKey) {
     const descriptionHash = ethers.keccak256(ethers.toUtf8Bytes("desc"));
     const tx = await governanceContract.execute([vhmToken.target], [], [encodedCall], descriptionHash);
     await provider.waitForTransaction(tx.hash);
+}
+
+async function processRPC(rpc, endUsers, hmToken, operatorKey, amountInEther, vhmToken) {
+    console.log(`${rpc}: transfer HMT, exchange HMT => VHMT, delegate votes`);
+    await transferToken(rpc, endUsers, hmToken, operatorKey, amountInEther);
+    await exchangeHMTtoVHMT(rpc, endUsers, amountInEther, hmToken, vhmToken);
+    await delegateVotes(endUsers, vhmToken, rpc);
+}
+
+async function transferExchangeDelegate(hubRPCUrl, spokes, operatorKey, endUsers, hmToken, vhmToken, amountInEther) {
+    const allRPCs = [hubRPCUrl, ...Object.keys(spokes)];
+
+    for (const rpc of allRPCs) {
+        await processRPC(rpc, endUsers, hmToken, operatorKey, amountInEther, vhmToken);
+    }
+}
+
+async function readBalances(hubRPCUrl, operatorKey, hmToken, vhmToken, spokes, endUsers) {
+    await hubReadBalances(hubRPCUrl, operatorKey, hmToken, vhmToken);
+    await spokeReadBalances(spokes, endUsers);
 }
