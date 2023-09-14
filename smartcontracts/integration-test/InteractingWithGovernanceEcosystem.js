@@ -5,11 +5,11 @@ const {ethers} = require("hardhat");
 const hre = require("hardhat");
 
 describe("Interacting with governance ecosystem", function () {
-    let vhmToken;
     let hmToken;
+    let vhmToken;
     let governanceContract;
     let proposalId;
-    const hubRPCUrl = process.env.AVALANCHE_RPC_URL;
+    const hubRPCUrl = process.env.POLYGON_MUMBAI_RPC_URL;
     const hubHMTAddress = process.env.HM_TOKEN_ADDRESS;
     const hubVHMTAddress = process.env.HUB_VOTE_TOKEN_ADDRESS;
     const hubGovernorAddress = process.env.GOVERNOR_ADDRESS;
@@ -17,7 +17,8 @@ describe("Interacting with governance ecosystem", function () {
     const spokes = {};
     const operatorKey = process.env.PRIVATE_KEY
     const endUsers = [
-        process.env.SECOND_PRIVATE_KEY
+        process.env.SECOND_PRIVATE_KEY,
+        process.env.THIRD_PRIVATE_KEY
     ];
 
     before(async function () {
@@ -95,15 +96,17 @@ async function hubReadBalances(hubRPCUrl, operatorKey, hmToken, vhmToken) {
     console.log(`Hub: Address: ${wallet.address}, VHMT Token Balance: ${vhmtTokenBalance.toString()} VHMT`);
 }
 async function spokeReadBalances(spokes, endUsers) {
+    let i = 0;
     for (const [rpc, spokeConfig] of Object.entries(spokes)) {
         const provider = new ethers.JsonRpcProvider(rpc);
-        const wallet = new ethers.Wallet(endUsers[0], provider);
+        const wallet = new ethers.Wallet(endUsers[i], provider);
         const spokeHMToken = await ethers.getContractAt("HMToken", spokeConfig['SPOKE_HM_TOKEN_ADDRESS']);
         const hmtTokenBalance = await spokeHMToken.connect(wallet).balanceOf(wallet.address);
         const spokeVHMToken = await ethers.getContractAt("VHMToken", spokeConfig['SPOKE_VHM_TOKEN_ADDRESS']);
         const vhmtTokenBalance = await spokeVHMToken.connect(wallet).balanceOf(wallet.address);
-        console.log(`Spoke: Address: ${wallet.address}, HMT Token Balance: ${hmtTokenBalance.toString()} HMT`);
-        console.log(`Spoke: Address: ${wallet.address}, VHMT Token Balance: ${vhmtTokenBalance.toString()} VHMT`);
+        console.log(`Spoke ${i}: Address: ${wallet.address}, HMT Token Balance: ${hmtTokenBalance.toString()} HMT`);
+        console.log(`Spoke ${i}: Address: ${wallet.address}, VHMT Token Balance: ${vhmtTokenBalance.toString()} VHMT`);
+        i++;
     }
 }
 
@@ -130,11 +133,11 @@ async function sendNativeCurrencyOnSpokes(spokes, endUsers, amountInEther, opera
     }
 }
 
-async function transferToken(hubRPCUrl, endUser, hmToken, operatorKey, amountInEther) {
+async function transferToken(hubRPCUrl, endUsers, hmToken, operatorKey, amountInEther) {
     const provider = new ethers.JsonRpcProvider(hubRPCUrl);
     const walletOperator = new ethers.Wallet(operatorKey, provider);
 
-    for (const user of endUser) {
+    for (const user of endUsers) {
         const wallet = new ethers.Wallet(user, provider);
 
         const transferTx = await hmToken.connect(walletOperator).transfer(wallet.address, ethers.parseEther(amountInEther));
@@ -144,21 +147,27 @@ async function transferToken(hubRPCUrl, endUser, hmToken, operatorKey, amountInE
 
 async function exchangeHMTtoVHMT(hubRPCUrl, endUsers, amountInEther, hmToken, vhmToken) {
     const provider = new ethers.JsonRpcProvider(hubRPCUrl);
-    const wallet = new ethers.Wallet(endUsers[0], provider);
 
-    const approveTx = await hmToken.connect(wallet).approve(vhmToken.target, ethers.parseEther(amountInEther));
-    await provider.waitForTransaction(approveTx.hash);
+    for (const user of endUsers) {
+        const wallet = new ethers.Wallet(user, provider);
 
-    const depositTx = await vhmToken.connect(wallet).depositFor(wallet.address, ethers.parseEther(amountInEther));
-    await provider.waitForTransaction(depositTx.hash);
+        const approveTx = await hmToken.connect(wallet).approve(vhmToken.target, ethers.parseEther(amountInEther));
+        await provider.waitForTransaction(approveTx.hash);
+
+        const depositTx = await vhmToken.connect(wallet).depositFor(wallet.address, ethers.parseEther(amountInEther));
+        await provider.waitForTransaction(depositTx.hash);
+    }
 }
 
 async function delegateVotes(endUsers, vhmToken, hubRPCUrl) {
     const provider = new ethers.JsonRpcProvider(hubRPCUrl);
-    const wallet = new ethers.Wallet(endUsers[0], provider);
 
-    const tx = await vhmToken.connect(wallet).delegate(wallet.address);
-    await provider.waitForTransaction(tx.hash);
+    for (const user of endUsers) {
+        const wallet = new ethers.Wallet(user, provider);
+
+        const tx = await vhmToken.connect(wallet).delegate(wallet.address);
+        await provider.waitForTransaction(tx.hash);
+    }
 }
 
 async function getProposalExecutionData(hre, deployerAddress, hmToken) {
