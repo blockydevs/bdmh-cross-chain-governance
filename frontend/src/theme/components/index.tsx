@@ -167,7 +167,7 @@ export const UniTokenAnimated = styled.img`
   filter: drop-shadow(0px 2px 4px rgba(0, 0, 0, 0.15));
 `
 
-const StyledLink = styled(Link)`
+const StyledLink = styled('a')`
   ${ClickableStyle}
   ${LinkStyle}
 `
@@ -186,7 +186,7 @@ export function ExternalLink({
   rel = 'noopener noreferrer',
   ...rest
 }: Omit<HTMLProps<HTMLAnchorElement>, 'as' | 'ref' | 'onClick'> & { href: string }) {
-  return <StyledLink target={target} rel={rel} to={href} {...rest} />
+  return <StyledLink target={target} rel={rel} href={href} {...rest} />
 }
 
 export function ExternalLinkIcon({
