@@ -59,12 +59,14 @@ function useTokenBalancesWithLoadingIndicator(
     [chainId, tokens]
   )
 
+  const tokenChainId = tokens && tokens[0]?.chainId
+
   const debouncedHmtUniContract = useDebounce(hmtUniContract, 500)
 
   useEffect(() => {
     const fetchBalanceVHMT = async () => {
       setIsLoading(true)
-      if (uniContract) {
+      if (uniContract && address && tokenChainId === chainId) {
         try {
           const resultVHMT = await uniContract.functions.balanceOf(account)
           if (resultVHMT) setVhmtBalance(resultVHMT)
@@ -84,7 +86,7 @@ function useTokenBalancesWithLoadingIndicator(
     const fetchBalanceHMT = async () => {
       setIsLoading(true)
       handleSetLoading()
-      if (debouncedHmtUniContract && !hmtContractLoading) {
+      if (debouncedHmtUniContract && !hmtContractLoading && address && tokenChainId === chainId) {
         try {
           const resultHMT = await debouncedHmtUniContract.functions.balanceOf(account)
           if (resultHMT) setHmtBalance(resultHMT)
