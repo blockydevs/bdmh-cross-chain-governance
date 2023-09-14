@@ -110,13 +110,14 @@ async function spokeReadBalances(spokes, endUsers) {
     }
 }
 
-async function sendNativeCurrency(user, provider, amountInEther, operatorWallet) {
+async function sendNativeCurrency(user, provider, amountInEther, wallet) {
     let tx = {
         to: new ethers.Wallet(user, provider),
-        value: ethers.parseEther(amountInEther)
+        value: ethers.parseEther(amountInEther),
+        gasPrice: 75000000000
     }
-    const sendTx = await operatorWallet.sendTransaction(tx);
-    await provider.waitForTransaction(sendTx.hash);
+    const sendTx = await wallet.sendTransaction(tx);
+    await sendTx.wait();
 }
 
 async function sendNativeCurrencyToTestUsers(endUsers, amountInEther, operatorKey, rpcUrl) {
@@ -141,7 +142,7 @@ async function transferToken(hubRPCUrl, endUsers, hmToken, operatorKey, amountIn
         const wallet = new ethers.Wallet(user, provider);
 
         const transferTx = await hmToken.connect(walletOperator).transfer(wallet.address, ethers.parseEther(amountInEther));
-        await provider.waitForTransaction(transferTx.hash);
+        await transferTx.wait();
     }
 }
 
@@ -152,10 +153,10 @@ async function exchangeHMTtoVHMT(hubRPCUrl, endUsers, amountInEther, hmToken, vh
         const wallet = new ethers.Wallet(user, provider);
 
         const approveTx = await hmToken.connect(wallet).approve(vhmToken.target, ethers.parseEther(amountInEther));
-        await provider.waitForTransaction(approveTx.hash);
+        await approveTx.wait();
 
         const depositTx = await vhmToken.connect(wallet).depositFor(wallet.address, ethers.parseEther(amountInEther));
-        await provider.waitForTransaction(depositTx.hash);
+        await depositTx.wait();
     }
 }
 
@@ -166,7 +167,7 @@ async function delegateVotes(endUsers, vhmToken, hubRPCUrl) {
         const wallet = new ethers.Wallet(user, provider);
 
         const tx = await vhmToken.connect(wallet).delegate(wallet.address);
-        await provider.waitForTransaction(tx.hash);
+        await tx.wait();
     }
 }
 
