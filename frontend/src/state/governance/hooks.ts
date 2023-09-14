@@ -52,6 +52,7 @@ export function useUniContract() {
 
 export function useHMTUniContract() {
   const { chainId } = useWeb3React()
+
   const uniContract = useUniContract()
 
   const [underlyingAddress, setUnderlyingAddress] = useState<string>('')
@@ -68,7 +69,7 @@ export function useHMTUniContract() {
   useEffect(() => {
     const fetchUnderlyingAddress = async () => {
       setLoading(true)
-      if (uniContract) {
+      if (uniContract && uniContract.signer) {
         try {
           const address = await uniContract.functions.underlying()
           setUnderlyingAddress(address[0])
@@ -82,7 +83,7 @@ export function useHMTUniContract() {
     }
 
     fetchUnderlyingAddress()
-  }, [uniContract])
+  }, [uniContract, chainId])
 
   const hmtUniContract = useContract(underlyingAddress, HmtUniJSON.abi, true)
 

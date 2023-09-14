@@ -20,7 +20,7 @@ export function useHmtContractToken() {
   useEffect(() => {
     const fetchUnderlyingAddress = async () => {
       try {
-        if (uniContract && account) {
+        if (uniContract && uniContract.signer && account) {
           const address = await uniContract.underlying()
           const hmtToken = address && chainId && new Token(chainId, address, 18, 'HMT', 'Human')
           setHmtToken(hmtToken)
@@ -50,6 +50,7 @@ function useTokenBalancesWithLoadingIndicator(
   const { account, chainId } = useWeb3React() // we cannot fetch balances cross-chain
 
   const uniContract = useUniContract()
+
   const { hmtUniContract, loading: hmtContractLoading, handleSetLoading } = useHMTUniContract()
 
   const transactions = useAppSelector((state) => state.transactions)
@@ -60,13 +61,16 @@ function useTokenBalancesWithLoadingIndicator(
   )
 
   const tokenChainId = tokens && tokens[0]?.chainId
+  const tokenAddress = tokens && tokens[0]?.address
 
   const debouncedHmtUniContract = useDebounce(hmtUniContract, 500)
+
+  const contractMatches = debouncedHmtUniContract?.address === tokenAddress
 
   useEffect(() => {
     const fetchBalanceVHMT = async () => {
       setIsLoading(true)
-      if (uniContract && address && account && tokenChainId === chainId) {
+      if (uniContract?.signer && address && account && tokenChainId === chainId) {
         try {
           const resultVHMT = await uniContract.functions.balanceOf(account)
           if (resultVHMT) setVhmtBalance(resultVHMT)
@@ -80,13 +84,20 @@ function useTokenBalancesWithLoadingIndicator(
     }
 
     fetchBalanceVHMT()
-  }, [account, uniContract, transactions])
+  }, [account, uniContract, transactions, chainId])
 
   useEffect(() => {
     const fetchBalanceHMT = async () => {
       setIsLoading(true)
       handleSetLoading()
-      if (debouncedHmtUniContract && !hmtContractLoading && address && account && tokenChainId === chainId) {
+      if (
+        debouncedHmtUniContract?.signer &&
+        !hmtContractLoading &&
+        address &&
+        account &&
+        tokenChainId === chainId &&
+        contractMatches
+      ) {
         try {
           const resultHMT = await debouncedHmtUniContract.functions.balanceOf(account)
           if (resultHMT) setHmtBalance(resultHMT)
@@ -100,7 +111,7 @@ function useTokenBalancesWithLoadingIndicator(
     }
 
     fetchBalanceHMT()
-  }, [account, debouncedHmtUniContract, transactions])
+  }, [account, debouncedHmtUniContract, transactions, chainId])
 
   return useMemo(
     () => [
