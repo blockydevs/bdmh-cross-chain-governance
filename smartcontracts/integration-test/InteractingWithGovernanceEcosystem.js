@@ -135,7 +135,7 @@ async function transferToken(hubRPCUrl, endUsers, hmToken, operatorKey, amountIn
     }
 }
 
-async function exchangeHMTtoVHMT(hubRPCUrl, endUsers, amountInEther, hmToken, vhmToken) {
+async function exchangeHMTtoVHMT(hubRPCUrl, endUsers, hmToken, vhmToken, amountInEther) {
     const provider = new ethers.JsonRpcProvider(hubRPCUrl);
 
     for (const user of endUsers) {
@@ -149,7 +149,7 @@ async function exchangeHMTtoVHMT(hubRPCUrl, endUsers, amountInEther, hmToken, vh
     }
 }
 
-async function delegateVotes(endUsers, vhmToken, hubRPCUrl) {
+async function delegateVotes(hubRPCUrl, endUsers, vhmToken) {
     const provider = new ethers.JsonRpcProvider(hubRPCUrl);
 
     for (const user of endUsers) {
@@ -309,18 +309,19 @@ async function execute(hubRPCUrl, governanceContract, operatorKey, description, 
     await provider.waitForTransaction(tx.hash);
 }
 
-async function processRPC(rpc, endUsers, hmToken, operatorKey, amountInEther, vhmToken) {
+async function processRPC(rpc, operatorKey, endUsers, hmToken, vhmToken, amountInEther) {
     console.log(`${rpc}: transfer HMT, exchange HMT => VHMT, delegate votes`);
     await transferToken(rpc, endUsers, hmToken, operatorKey, amountInEther);
-    await exchangeHMTtoVHMT(rpc, endUsers, amountInEther, hmToken, vhmToken);
-    await delegateVotes(endUsers, vhmToken, rpc);
+    await exchangeHMTtoVHMT(rpc, endUsers, hmToken, vhmToken, amountInEther);
+    await delegateVotes(rpc, endUsers, vhmToken);
 }
 
 async function getVotePrivileges(hubRPCUrl, spokes, operatorKey, endUsers, hmToken, vhmToken, amountInEther) {
-    const allRPCs = [hubRPCUrl, ...Object.keys(spokes)];
-
-    for (const rpc of allRPCs) {
-        await processRPC(rpc, endUsers, hmToken, operatorKey, amountInEther, vhmToken);
+    await processRPC(hubRPCUrl, operatorKey, endUsers, hmToken, vhmToken, amountInEther);
+    for (const [rpc, spokeConfig] of Object.entries(spokes)) {
+        const hmToken = await ethers.getContractAt("HMToken", spokeConfig.SPOKE_HM_TOKEN_ADDRESS);
+        const vhmToken = await ethers.getContractAt("VHMToken", spokeConfig.SPOKE_VHM_TOKEN_ADDRESS);
+        await processRPC(rpc, operatorKey, endUsers, hmToken, vhmToken, amountInEther);
     }
 }
 
