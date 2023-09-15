@@ -3,12 +3,14 @@ const {expect} = require("chai");
 const {defaultAbiCoder} = require("@ethersproject/abi");
 const {ethers} = require("hardhat");
 const hre = require("hardhat");
+const {setTimeout} = require('timers/promises');
 
 describe("Interacting with governance ecosystem", function () {
     let hmToken;
     let vhmToken;
     let governanceContract;
     let proposalId;
+    const description = `desc-${Math.random()}`;
     const hubRPCUrl = process.env.POLYGON_MUMBAI_RPC_URL;
     const hubHMTAddress = process.env.HM_TOKEN_ADDRESS;
     const hubVHMTAddress = process.env.HUB_VOTE_TOKEN_ADDRESS;
@@ -40,33 +42,33 @@ describe("Interacting with governance ecosystem", function () {
     it("should pass cross chain governance flow", async function () {
         this.timeout(15 * 60 * 1000);
         let amountInEther = '0.01';
-        // await readBalances(hubRPCUrl, operatorKey, hmToken, vhmToken, spokes, endUsers);
-        //
-        // console.log("transfer native currency, hub");
-        // await sendNativeCurrencyToTestUsers(endUsers, amountInEther, operatorKey, hubRPCUrl);
-        // console.log("transfer native currency, spokes");
-        // await sendNativeCurrencyOnSpokes(spokes, endUsers, amountInEther, operatorKey);
-        //
-        // await transferExchangeDelegate(hubRPCUrl, spokes, operatorKey, endUsers, hmToken, vhmToken, amountInEther);
-        // await readBalances(hubRPCUrl, operatorKey, hmToken, vhmToken, spokes, endUsers);
+        await readBalances(hubRPCUrl, operatorKey, hmToken, vhmToken, spokes, endUsers);
+
+        console.log("transfer native currency, hub");
+        await sendNativeCurrencyToTestUsers(endUsers, amountInEther, operatorKey, hubRPCUrl);
+        console.log("transfer native currency, spokes");
+        await sendNativeCurrencyOnSpokes(spokes, endUsers, amountInEther, operatorKey);
+
+        await getVotePrivileges(hubRPCUrl, spokes, operatorKey, endUsers, hmToken, vhmToken, amountInEther);
+        await readBalances(hubRPCUrl, operatorKey, hmToken, vhmToken, spokes, endUsers);
 
         console.log("create proposal");
-        proposalId = await createProposal(proposalId, operatorKey, endUsers, hubRPCUrl, governanceContract, hmToken, hre);
+        proposalId = await createProposal(proposalId, operatorKey, endUsers, hubRPCUrl, governanceContract, hmToken, hre, description);
 
         console.log("vote on hub");
-        await voteOnHub(governanceContract, hubRPCUrl, operatorKey, proposalId);
+        // await voteOnHub(governanceContract, hubRPCUrl, operatorKey, proposalId);
 
-        console.log("vote on spokes"); //TODO: Error: execution reverted: "DAOSpokeContract: not a started vote"
-        // await voteOnSpokes(spokes, proposalId, endUsers);
+        console.log("vote on spokes");
+        await voteOnSpokes(spokes, proposalId, endUsers);
 
-        console.log("request collections"); //TODO: timeout
-        // await requestCollections(hubRPCUrl, governanceContract, proposalId);
+        console.log("request collections");
+        await requestCollections(hubRPCUrl, governanceContract, proposalId, operatorKey);
 
-        console.log("queue"); //TODO: timeout
-        // await queue(hubRPCUrl, governanceContract, vhmToken, operatorKey);
+        console.log("queue");
+        await queue(hubRPCUrl, governanceContract, operatorKey, description, hre, hmToken);
 
-        console.log("execute"); //TODO: timeout
-        // await execute(hubRPCUrl, governanceContract, vhmToken, operatorKey);
+        console.log("execute");
+        await execute(hubRPCUrl, governanceContract, operatorKey, description, hre, hmToken);
 
         console.log("assert");
         expect(true).equal(true);
@@ -81,6 +83,7 @@ async function hubReadBalances(hubRPCUrl, operatorKey, hmToken, vhmToken) {
     console.log(`Hub: Address: ${wallet.address}, HMT Token Balance: ${hmtTokenBalance.toString()} HMT`);
     console.log(`Hub: Address: ${wallet.address}, VHMT Token Balance: ${vhmtTokenBalance.toString()} VHMT`);
 }
+
 async function spokeReadBalances(spokes, endUsers) {
     let i = 0;
     for (const [rpc, spokeConfig] of Object.entries(spokes)) {
@@ -160,8 +163,6 @@ async function delegateVotes(endUsers, vhmToken, hubRPCUrl) {
 async function getProposalExecutionData(hre, deployerAddress, hmToken) {
     const IERC20 = await hre.artifacts.readArtifact('IERC20');
 
-    const description = `desc${Math.random()}`;
-
     const transferFunctionSig = IERC20.abi.find(
         (func) => func.name === 'transfer' && func.type === 'function'
     );
@@ -178,8 +179,7 @@ async function getProposalExecutionData(hre, deployerAddress, hmToken) {
     return {
         targets,
         values,
-        calldatas,
-        description
+        calldatas
     };
 }
 
@@ -197,14 +197,13 @@ async function getProposalIdFromReceipt(receipt, governanceContract) {
     throw new Error("Proposal ID not found in transaction logs.");
 }
 
-async function createProposal(proposalId, operatorKey, endUsers, hubRPCUrl, governanceContract, hmToken, hre) {
+async function createProposal(proposalId, operatorKey, endUsers, hubRPCUrl, governanceContract, hmToken, hre, description) {
     const provider = new ethers.JsonRpcProvider(hubRPCUrl);
     const wallet = new ethers.Wallet(operatorKey, provider);
     const {
         targets,
         values,
-        calldatas,
-        description
+        calldatas
     } = await getProposalExecutionData(hre, wallet.address, hmToken);
 
     try {
@@ -215,7 +214,7 @@ async function createProposal(proposalId, operatorKey, endUsers, hubRPCUrl, gove
             description,
             {
                 gasPrice: 75000000000,
-                gasLimit: 1000000,
+                value: ethers.parseEther('0.05')
             }
         );
 
@@ -248,40 +247,65 @@ async function voteOnSpokes(spokes, proposalId, endUsers) {
             spokeConfig.SPOKE_CONTRACT_ADDRESS
         );
 
-        const tx = await spokeContract.connect(wallet).castVote(proposalId, 1);
-
-        await provider.waitForTransaction(tx.hash);
+        if (await isProposalOnSpoke(spokeContract, provider, wallet, proposalId)) {
+            const tx = await spokeContract.connect(wallet).castVote(proposalId, 1);
+            await tx.wait();
+        }
         i++;
     }
 }
 
-async function requestCollections(hubRPCUrl, governanceContract, proposalId) {
+async function requestCollections(hubRPCUrl, governanceContract, proposalId, operatorKey) {
     const provider = new ethers.JsonRpcProvider(hubRPCUrl);
-    const tx = await governanceContract.requestCollections(proposalId);
+    const wallet = new ethers.Wallet(operatorKey, provider);
+    const tx = await governanceContract.connect(wallet).requestCollections(
+        proposalId,
+        {
+            gasPrice: 75000000000,
+        }
+    );
     await provider.waitForTransaction(tx.hash);
 }
 
-async function queue(hubRPCUrl, governanceContract, vhmToken, operatorKey) {
+async function queue(hubRPCUrl, governanceContract, operatorKey, description, hre, hmToken) {
     const provider = new ethers.JsonRpcProvider(hubRPCUrl);
     const wallet = new ethers.Wallet(operatorKey, provider);
-    const encodedCall = defaultAbiCoder.encode(
-        ["address", "uint256"],
-        [wallet.address, 1]
+    const {
+        targets,
+        values,
+        calldatas
+    } = await getProposalExecutionData(hre, wallet.address, hmToken);
+    const descriptionHash = ethers.keccak256(ethers.toUtf8Bytes(description));
+    const tx = await governanceContract.connect(wallet).queue(
+        targets,
+        values,
+        calldatas,
+        descriptionHash,
+        {
+            gasPrice: 75000000000
+        }
     );
-    const descriptionHash = ethers.keccak256(ethers.toUtf8Bytes("desc"));
-    const tx = await governanceContract.queue([vhmToken.target], [], [encodedCall], descriptionHash);
     await provider.waitForTransaction(tx.hash);
 }
 
-async function execute(hubRPCUrl, governanceContract, vhmToken, operatorKey) {
+async function execute(hubRPCUrl, governanceContract, operatorKey, description, hre, hmToken) {
     const provider = new ethers.JsonRpcProvider(hubRPCUrl);
     const wallet = new ethers.Wallet(operatorKey, provider);
-    const encodedCall = defaultAbiCoder.encode(
-        ["address", "uint256"],
-        [wallet.address, 1]
+    const {
+        targets,
+        values,
+        calldatas
+    } = await getProposalExecutionData(hre, wallet.address, hmToken);
+    const descriptionHash = ethers.keccak256(ethers.toUtf8Bytes(description));
+    const tx = await governanceContract.connect(wallet).execute(
+        targets,
+        values,
+        calldatas,
+        descriptionHash,
+        {
+            gasPrice: 75000000000
+        }
     );
-    const descriptionHash = ethers.keccak256(ethers.toUtf8Bytes("desc"));
-    const tx = await governanceContract.execute([vhmToken.target], [], [encodedCall], descriptionHash);
     await provider.waitForTransaction(tx.hash);
 }
 
@@ -292,7 +316,7 @@ async function processRPC(rpc, endUsers, hmToken, operatorKey, amountInEther, vh
     await delegateVotes(endUsers, vhmToken, rpc);
 }
 
-async function transferExchangeDelegate(hubRPCUrl, spokes, operatorKey, endUsers, hmToken, vhmToken, amountInEther) {
+async function getVotePrivileges(hubRPCUrl, spokes, operatorKey, endUsers, hmToken, vhmToken, amountInEther) {
     const allRPCs = [hubRPCUrl, ...Object.keys(spokes)];
 
     for (const rpc of allRPCs) {
@@ -303,4 +327,15 @@ async function transferExchangeDelegate(hubRPCUrl, spokes, operatorKey, endUsers
 async function readBalances(hubRPCUrl, operatorKey, hmToken, vhmToken, spokes, endUsers) {
     await hubReadBalances(hubRPCUrl, operatorKey, hmToken, vhmToken);
     await spokeReadBalances(spokes, endUsers);
+}
+
+async function isProposalOnSpoke(spokeContract, provider, wallet, proposalId, maxRetries = 5) {
+    for (let i = 0; i < maxRetries; i++) {
+        const res = await spokeContract.connect(wallet).isProposal(proposalId);
+        if (res) {
+            return res;
+        }
+        await setTimeout(1 * 60 * 1000);
+    }
+    throw new Error(`Proposal ${proposalId} was not found on spoke after ${maxRetries} attempts.`);
 }
