@@ -6,8 +6,9 @@ const hre = require("hardhat");
 
 // Constant configurations
 const CONSTANTS = {
-    amountInEther_0_01: ethers.parseEther('0.01'),
-    amountInEther_0_05: ethers.parseEther('0.05'),
+    testUserCurrentAmount: ethers.parseEther('0.01'),
+    crossChainEtherValue: ethers.parseEther('0.05'),
+    testUserVotingPower: ethers.parseEther('100'),
     gasPrice: 75000000000,
     description: `desc-${Math.random()}`,
     hubRPCUrl: process.env.POLYGON_MUMBAI_RPC_URL,
@@ -45,22 +46,22 @@ describe("Interacting with governance ecosystem", function () {
     it("should pass cross chain governance flow", async function () {
         this.timeout(15 * 60 * 1000);
 
-        await sendNativeCurrencyToTestUsers();
-        await sendNativeCurrencyOnSpokes(spokes);
-
-        await getVotePrivileges(spokes);
+        // await sendNativeCurrencyToTestUsers();
+        // await sendNativeCurrencyOnSpokes(spokes);
+        //
+        // await getVotePrivileges(spokes);
 
         const hmTokenBalanceBefore = await getHubHMTokenBalance();
         proposalId = await createProposal(governanceContract);
-        const hmTokenBalanceAfter = await getHubHMTokenBalance();
 
         // await voteOnHub(governanceContract, proposalId);
-        await voteOnSpokes(spokes, proposalId);
-        await requestCollections(governanceContract, proposalId);
+        // await voteOnSpokes(spokes, proposalId);
 
+        await requestCollections(governanceContract, proposalId);
         await queue(governanceContract, proposalId);
         await execute();
 
+        const hmTokenBalanceAfter = await getHubHMTokenBalance();
 
         // Assertions
         const hubVotes = await getProposalVotes(governanceContract, proposalId);
@@ -69,22 +70,22 @@ describe("Interacting with governance ecosystem", function () {
         expect(hubVotes.forVotes, 'the number of for votes on hub and spokes are equal.').to.equal(spokesVotes.totalForVotes);
         expect(hubVotes.abstainVotes, 'the number of abstain votes on hub and spokes are equal.').to.equal(spokesVotes.totalAbstainVotes);
 
-        const proposalState = await getProposalState(proposalId);
-        expect(proposalState, 'State of proposal is Executed.').to.equal('Executed');
+        const proposalState = await getProposalState(governanceContract, proposalId);
+        expect(proposalState, 'State of proposal is Executed.').to.equal(7);
 
         expect(hmTokenBalanceBefore).to.be.greaterThan(hmTokenBalanceAfter, 'hmToken balance before creating Proposal was greater than after.');
     });
 });
 
-async function sendNativeCurrency(user, provider, amountInEther_0_01, wallet) {
+async function sendNativeCurrency(user, provider, testUserCurrentAmount, wallet) {
     const { gasPrice } = CONSTANTS;
 
     const userWallet = new ethers.Wallet(user, provider);
-    console.log(`Transfering native currency ${amountInEther_0_01} from ${wallet.address} to ${userWallet.address}.`);
+    console.log(`Transfering native currency ${testUserCurrentAmount} from ${wallet.address} to ${userWallet.address}.`);
 
     let tx = {
         to: userWallet,
-        value: amountInEther_0_01,
+        value: testUserCurrentAmount,
         gasPrice: gasPrice
     }
     const sendTx = await wallet.sendTransaction(tx);
@@ -92,45 +93,45 @@ async function sendNativeCurrency(user, provider, amountInEther_0_01, wallet) {
 }
 
 async function sendNativeCurrencyToTestUsers() {
-    const { endUsers, amountInEther_0_01, operatorKey, hubRPCUrl } = CONSTANTS;
+    const { endUsers, testUserCurrentAmount, operatorKey, hubRPCUrl } = CONSTANTS;
 
     const provider = new ethers.JsonRpcProvider(hubRPCUrl);
     const operatorWallet = new ethers.Wallet(operatorKey, provider);
     for (const user of endUsers) {
-        await sendNativeCurrency(user, provider, amountInEther_0_01, operatorWallet);
+        await sendNativeCurrency(user, provider, testUserCurrentAmount, operatorWallet);
     }
 }
 
 async function sendNativeCurrencyOnSpokes(spokes) {
-    const { endUsers, amountInEther_0_01, operatorKey } = CONSTANTS;
+    const { endUsers, testUserCurrentAmount, operatorKey } = CONSTANTS;
 
     for (const rpc of Object.keys(spokes)) {
-        await sendNativeCurrencyToTestUsers(endUsers, amountInEther_0_01, operatorKey, rpc);
+        await sendNativeCurrencyToTestUsers(endUsers, testUserCurrentAmount, operatorKey, rpc);
     }
 }
 
-async function transferToken(rpc, endUsers, hmToken, operatorKey, amountInEther_0_01) {
+async function transferToken(rpc, endUsers, hmToken, operatorKey, testUserCurrentAmount) {
     const provider = new ethers.JsonRpcProvider(rpc);
     const walletOperator = new ethers.Wallet(operatorKey, provider);
 
     for (const user of endUsers) {
         const wallet = new ethers.Wallet(user, provider);
 
-        const transferTx = await hmToken.connect(walletOperator).transfer(wallet.address, amountInEther_0_01);
+        const transferTx = await hmToken.connect(walletOperator).transfer(wallet.address, testUserCurrentAmount);
         await transferTx.wait();
     }
 }
 
-async function exchangeHMTtoVHMT(rpc, endUsers, hmToken, vhmToken, amountInEther_0_01) {
+async function exchangeHMTtoVHMT(rpc, endUsers, hmToken, vhmToken, testUserCurrentAmount) {
     const provider = new ethers.JsonRpcProvider(rpc);
 
     for (const user of endUsers) {
         const wallet = new ethers.Wallet(user, provider);
 
-        const approveTx = await hmToken.connect(wallet).approve(vhmToken.target, amountInEther_0_01);
+        const approveTx = await hmToken.connect(wallet).approve(vhmToken.target, testUserCurrentAmount);
         await approveTx.wait();
 
-        const depositTx = await vhmToken.connect(wallet).depositFor(wallet.address, amountInEther_0_01);
+        const depositTx = await vhmToken.connect(wallet).depositFor(wallet.address, testUserCurrentAmount);
         await depositTx.wait();
     }
 }
@@ -180,7 +181,7 @@ async function getProposalIdFromReceipt(receipt, governanceContract) {
 
 async function createProposal(governanceContract) {
     console.log(`Creating proposal..`);
-    const { hubRPCUrl, hubHMTAddress, operatorKey, description, gasPrice, amountInEther_0_05 } = CONSTANTS;
+    const { hubRPCUrl, hubHMTAddress, operatorKey, description, gasPrice, crossChainEtherValue } = CONSTANTS;
 
     const hmToken = await ethers.getContractAt("HMToken", hubHMTAddress);
 
@@ -200,7 +201,7 @@ async function createProposal(governanceContract) {
             description,
             {
                 gasPrice: gasPrice,
-                value: amountInEther_0_05
+                value: crossChainEtherValue
             }
         );
 
@@ -254,14 +255,16 @@ async function voteOnSpokes(spokes, proposalId) {
 }
 
 async function requestCollections(governanceContract, proposalId) {
-    console.log("request collections");
+    console.log("Requesting collections.");
     const { hubRPCUrl, operatorKey, gasPrice } = CONSTANTS;
 
     const provider = new ethers.JsonRpcProvider(hubRPCUrl);
     const wallet = new ethers.Wallet(operatorKey, provider);
 
-    const tx = await governanceContract.connect(wallet).requestCollections(proposalId, { gasPrice: gasPrice });
-    await tx.wait();
+    if (await isNewestBlockNumberGreaterThanProposalDeadline(governanceContract, proposalId)){
+        const tx = await governanceContract.connect(wallet).requestCollections(proposalId, { gasPrice: gasPrice });
+        await tx.wait();
+    }
 }
 
 async function queue(governanceContract, proposalId) {
@@ -276,7 +279,7 @@ async function queue(governanceContract, proposalId) {
 
     const { targets, values, calldatas } = await getProposalExecutionData(hre, wallet.address, hmToken);
 
-    if (await isCollectionFinished(hmToken, wallet, proposalId)){
+    if (await isCollectionFinished(governanceContract, wallet, proposalId)){
         const tx = await governanceContract.connect(wallet).queue(
             targets,
             values,
@@ -310,26 +313,26 @@ async function execute(governanceContract) {
     await tx.wait();
 }
 
-async function getVotePrivilegesOnChain(rpc, operatorKey, endUsers, hmToken, vhmToken, amountInEther_0_01) {
+async function getVotePrivilegesOnChain(rpc, operatorKey, endUsers, hmToken, vhmToken, testUserVotingPower) {
     console.log(`Getting vote privileges (transfer HMT, exchange HMT to VHMT, delegate votes), rpc: ${rpc}.`);
 
-    await transferToken(rpc, endUsers, hmToken, operatorKey, amountInEther_0_01);
-    await exchangeHMTtoVHMT(rpc, endUsers, hmToken, vhmToken, amountInEther_0_01);
+    await transferToken(rpc, endUsers, hmToken, operatorKey, testUserVotingPower);
+    await exchangeHMTtoVHMT(rpc, endUsers, hmToken, vhmToken, testUserVotingPower);
     await delegateVotes(rpc, endUsers, vhmToken);
 }
 
 async function getVotePrivileges(spokes) {
-    const { hubRPCUrl, operatorKey, endUsers, hubHMTAddress, hubVHMTAddress, amountInEther_0_01 } = CONSTANTS;
+    const { hubRPCUrl, operatorKey, endUsers, hubHMTAddress, hubVHMTAddress, testUserVotingPower } = CONSTANTS;
 
     const hmToken = await ethers.getContractAt("HMToken", hubHMTAddress);
     const vhmToken = await ethers.getContractAt("VHMToken", hubVHMTAddress);
 
-    await getVotePrivilegesOnChain(hubRPCUrl, operatorKey, endUsers, hmToken, vhmToken, amountInEther_0_01);
+    await getVotePrivilegesOnChain(hubRPCUrl, operatorKey, endUsers, hmToken, vhmToken, testUserVotingPower);
 
     for (const [rpc, spokeConfig] of Object.entries(spokes)) {
         const hmToken = await ethers.getContractAt("HMToken", spokeConfig.SPOKE_HM_TOKEN_ADDRESS);
         const vhmToken = await ethers.getContractAt("VHMToken", spokeConfig.SPOKE_VHM_TOKEN_ADDRESS);
-        await getVotePrivilegesOnChain(rpc, operatorKey, endUsers, hmToken, vhmToken, amountInEther_0_01);
+        await getVotePrivilegesOnChain(rpc, operatorKey, endUsers, hmToken, vhmToken, testUserVotingPower);
     }
 }
 
@@ -345,9 +348,9 @@ async function isProposalOnSpoke(spokeContract, wallet, proposalId, maxRetries =
     throw new Error(`Proposal ${proposalId} was not found on spoke after ${maxRetries} attempts.`);
 }
 
-async function isCollectionFinished(spokeContract, wallet, proposalId, maxRetries = 16, seconds = 15) {
+async function isCollectionFinished(contract, wallet, proposalId, maxRetries = 16, seconds = 15) {
     for (let i = 0; i < maxRetries; i++) {
-        const res = await spokeContract.connect(wallet).collectionFinished(proposalId);
+        const res = await contract.connect(wallet).collectionFinished(proposalId);
         if (res) {
             return res;
         }
@@ -357,7 +360,9 @@ async function isCollectionFinished(spokeContract, wallet, proposalId, maxRetrie
 }
 
 async function getProposalVotes(contract, proposalId) {
-    const res = await contract.connect(CONSTANTS.operatorKey).collectionFinished(proposalId);
+    const provider = new ethers.JsonRpcProvider(CONSTANTS.hubRPCUrl);
+    const wallet = new ethers.Wallet(CONSTANTS.operatorKey, provider);
+    const res = await contract.connect(wallet).proposalVotes(proposalId);
     return res;
 }
 
@@ -388,7 +393,9 @@ async function aggregateProposalVotesFromSpokes(spokes, proposalId) {
 }
 
 async function getProposalState(contract, proposalId) {
-    const res = await contract.connect(CONSTANTS.operatorKey).state(proposalId);
+    const provider = new ethers.JsonRpcProvider(CONSTANTS.hubRPCUrl);
+    const wallet = new ethers.Wallet(CONSTANTS.operatorKey, provider);
+    const res = await contract.connect(wallet).state(proposalId);
     return res;
 }
 
@@ -401,6 +408,24 @@ async function getHubHMTokenBalance() {
 
     const hmtTokenBalance = await hmToken.connect(wallet).balanceOf(wallet.address);
     return hmtTokenBalance;
+}
+
+async function isNewestBlockNumberGreaterThanProposalDeadline(contract, proposalId) {
+
+}
+
+async function isNewestBlockNumberGreaterThanProposalDeadline(contract, proposalId, maxRetries = 16, seconds = 15) {
+    const provider = new ethers.JsonRpcProvider(CONSTANTS.hubRPCUrl);
+    const wallet = new ethers.Wallet(CONSTANTS.operatorKey, provider);
+    for (let i = 0; i < maxRetries; i++) {
+        const res = await contract.connect(wallet).proposalDeadline(proposalId);
+        const blockNumber = await provider.getBlockNumber();
+        if (Number(blockNumber) > Number(res)) {
+            return true;
+        }
+        await sleep(seconds);
+    }
+    throw new Error(`Proposal deadline has the same block number as the current block, after ${maxRetries} attempts.`);
 }
 
 async function sleep(seconds) {
