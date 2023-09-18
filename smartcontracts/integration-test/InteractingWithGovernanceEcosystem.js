@@ -46,16 +46,16 @@ describe("Interacting with governance ecosystem", function () {
     it("should pass cross chain governance flow", async function () {
         this.timeout(15 * 60 * 1000);
 
-        // await sendNativeCurrencyToTestUsers();
-        // await sendNativeCurrencyOnSpokes(spokes);
-        //
-        // await getVotePrivileges(spokes);
+        await sendNativeCurrencyToTestUsers();
+        await sendNativeCurrencyOnSpokes(spokes);
+
+        await getVotePrivileges(spokes);
 
         const hmTokenBalanceBefore = await getHubHMTokenBalance();
         proposalId = await createProposal(governanceContract);
 
         // await voteOnHub(governanceContract, proposalId);
-        // await voteOnSpokes(spokes, proposalId);
+        await voteOnSpokes(spokes, proposalId);
 
         await requestCollections(governanceContract, proposalId);
         await queue(governanceContract, proposalId);
