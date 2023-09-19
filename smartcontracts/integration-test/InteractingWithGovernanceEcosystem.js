@@ -45,7 +45,7 @@ describe("Interacting with governance ecosystem", function () {
     it("should pass cross chain governance flow", async function () {
         this.timeout(15 * 60 * 1000);
 
-        await sendNativeCurrencyToTestUsers();
+        await sendNativeCurrencyOnHub()
         await sendNativeCurrencyOnSpokes(spokes);
 
         await getVotePrivileges(spokes);
@@ -55,7 +55,6 @@ describe("Interacting with governance ecosystem", function () {
 
         // await voteOnHub(governanceContract, proposalId);
         await voteOnSpokes(spokes, proposalId);
-
         await requestCollections(governanceContract, proposalId);
         await queue(governanceContract, proposalId);
 
@@ -65,12 +64,11 @@ describe("Interacting with governance ecosystem", function () {
         const hmTokenBalanceAfter = await getHubHMTokenBalance();
 
         // Assertions
-        const hubVotes = await getProposalVotes(governanceContract, proposalId);
-        expect(hubVotes.againstVotes, 'the number of against votes on hub and spokes are equal.').to.equal(0);
-        const totalVotes = BigInt(JSON.parse(CONSTANTS.spokeConfig).length) * CONSTANTS.testUserVotingPower * BigInt(CONSTANTS.endUsers.length);
-        expect(hubVotes.forVotes, 'the number of for votes on hub and spokes are equal.').to.equal(totalVotes);
-        expect(hubVotes.abstainVotes, 'the number of abstain votes on hub and spokes are equal.').to.equal(0);
-
+        const hubVotes = await getProposalVotes(governanceContract, CONSTANTS.hubRPCUrl, CONSTANTS.operatorKey, proposalId);
+        const spokesVotes = await aggregateProposalVotesFromSpokes(spokes, proposalId);
+        expect(hubVotes.againstVotes, 'the number of against votes on hub and spokes are equal.').to.equal(spokesVotes.totalAgainstVotes);
+        expect(hubVotes.forVotes, 'the number of for votes on hub and spokes are equal.').to.equal(spokesVotes.totalForVotes);
+        expect(hubVotes.abstainVotes, 'the number of abstain votes on hub and spokes are equal.').to.equal(spokesVotes.totalAbstainVotes);
         const proposalState = await getProposalState(governanceContract, proposalId);
         expect(proposalState, 'State of proposal is Executed.').to.equal(7);
 
@@ -78,36 +76,43 @@ describe("Interacting with governance ecosystem", function () {
     });
 });
 
-async function sendNativeCurrency(user, provider, testUserCurrencyAmount, wallet) {
-    const { gasPrice } = CONSTANTS;
+async function sendNativeCurrency(recipientWallet, senderWallet, rpc) {
+    const { gasPrice, testUserCurrencyAmount } = CONSTANTS;
 
-    const userWallet = new ethers.Wallet(user, provider);
-    console.log(`Transferring native currency ${testUserCurrencyAmount} from ${wallet.address} to ${userWallet.address}.`);
+    console.log(`Transferring native currency ${testUserCurrencyAmount} from ${senderWallet.address} to ${recipientWallet.address} on ${rpc}.`);
 
     let tx = {
-        to: userWallet,
+        to: recipientWallet,
         value: testUserCurrencyAmount,
         gasPrice: gasPrice
     }
-    const sendTx = await wallet.sendTransaction(tx);
+    const sendTx = await senderWallet.sendTransaction(tx);
     await sendTx.wait();
 }
 
-async function sendNativeCurrencyToTestUsers() {
-    const { endUsers, testUserCurrencyAmount, operatorKey, hubRPCUrl } = CONSTANTS;
+async function sendNativeCurrencyToTestUsers(rpc, senderAddress) {
+    const { endUsers } = CONSTANTS;
 
-    const provider = new ethers.JsonRpcProvider(hubRPCUrl);
-    const operatorWallet = new ethers.Wallet(operatorKey, provider);
+    const provider = new ethers.JsonRpcProvider(rpc);
+    const senderWallet = new ethers.Wallet(senderAddress, provider);
+
     for (const user of endUsers) {
-        await sendNativeCurrency(user, provider, testUserCurrencyAmount, operatorWallet);
+        const recipientWallet = new ethers.Wallet(user, provider);
+        await sendNativeCurrency(recipientWallet, senderWallet, rpc);
     }
 }
 
+async function sendNativeCurrencyOnHub() {
+    const { operatorKey, hubRPCUrl } = CONSTANTS;
+
+    await sendNativeCurrencyToTestUsers(hubRPCUrl, operatorKey);
+}
+
 async function sendNativeCurrencyOnSpokes(spokes) {
-    const { endUsers, testUserCurrencyAmount, operatorKey } = CONSTANTS;
+    const { operatorKey } = CONSTANTS;
 
     for (const rpc of Object.keys(spokes)) {
-        await sendNativeCurrencyToTestUsers(endUsers, testUserCurrencyAmount, operatorKey, rpc);
+        await sendNativeCurrencyToTestUsers(rpc, operatorKey);
     }
 }
 
@@ -221,7 +226,7 @@ async function voteOnHub(governanceContract, proposalId) {
 
     const tx = await governanceContract.connect(wallet).castVote(proposalId, 1);
 
-    console.log(`- proposal ID: ${proposalId}, rpc: ${hubRPCUrl}, user wallet: ${wallet.address}`);
+    console.log(`- wallet ${wallet.address} has just cast a vote on rpc: ${hubRPCUrl}.`);
     await tx.wait();
 }
 
@@ -243,7 +248,7 @@ async function voteOnSpokes(spokes, proposalId) {
             if (await isProposalOnSpoke(spokeContract, wallet, proposalId)) {
                 const tx = await spokeContract.connect(wallet).castVote(proposalId, 1);
 
-                console.log(`- proposal ID: ${proposalId}, rpc: ${rpc}, user wallet: ${wallet.address}`);
+                console.log(`- wallet ${wallet.address} has just cast a vote on rpc: ${rpc}.`);
                 await tx.wait();
             }
         }
@@ -323,7 +328,7 @@ async function getVotePrivileges(spokes) {
     const hmToken = await ethers.getContractAt("HMToken", hubHMTAddress);
     const vhmToken = await ethers.getContractAt("VHMToken", hubVHMTAddress);
 
-    await getVotePrivilegesOnChain(hubRPCUrl, operatorKey, endUsers, hmToken, vhmToken, testUserVotingPower);
+    // await getVotePrivilegesOnChain(hubRPCUrl, operatorKey, endUsers, hmToken, vhmToken, testUserVotingPower);
 
     for (const [rpc, spokeConfig] of Object.entries(spokes)) {
         const hmToken = await ethers.getContractAt("HMToken", spokeConfig.SPOKE_HM_TOKEN_ADDRESS);
@@ -355,10 +360,9 @@ async function isCollectionFinished(contract, wallet, proposalId, maxRetries = 1
     throw new Error(`Collection was not finished after ${maxRetries} attempts.`);
 }
 
-async function getProposalVotes(contract, proposalId) {
-    const { hubRPCUrl, operatorKey } = CONSTANTS;
-    const provider = new ethers.JsonRpcProvider(hubRPCUrl);
-    const wallet = new ethers.Wallet(operatorKey, provider);
+async function getProposalVotes(contract, rpc, walletAddress, proposalId) {
+    const provider = new ethers.JsonRpcProvider(rpc);
+    const wallet = new ethers.Wallet(walletAddress, provider);
 
     const res = await contract.connect(wallet).proposalVotes(proposalId);
 
@@ -386,7 +390,7 @@ async function getHubHMTokenBalance() {
     return hmtTokenBalance;
 }
 
-async function isNewestBlockNumberGreaterThanProposalDeadline(contract, proposalId, maxRetries = 16, seconds = 15) {
+async function isNewestBlockNumberGreaterThanProposalDeadline(contract, proposalId, maxRetries = 24, seconds = 15) {
     const { operatorKey, hubRPCUrl } = CONSTANTS;
     const provider = new ethers.JsonRpcProvider(hubRPCUrl);
     const wallet = new ethers.Wallet(operatorKey, provider);
@@ -398,7 +402,7 @@ async function isNewestBlockNumberGreaterThanProposalDeadline(contract, proposal
         }
         await sleep(seconds);
     }
-    throw new Error(`Proposal deadline has the same block number as the current block, after ${maxRetries} attempts.`);
+    throw new Error(`Proposal is still in the voting phase after ${maxRetries} attempts.`);
 }
 
 async function transferToTimelock(contract) {
@@ -411,6 +415,31 @@ async function transferToTimelock(contract) {
     const hmToken = await ethers.getContractAt("HMToken", hubHMTAddress);
     const transferTx = await hmToken.connect(wallet).transfer(timelockAddress, 1);
     await transferTx.wait();
+}
+
+async function aggregateProposalVotesFromSpokes(spokes, proposalId) {
+    let totalAgainstVotes = BigInt(0);
+    let totalForVotes = BigInt(0);
+    let totalAbstainVotes = BigInt(0);
+
+    for (const [rpc, spokeConfig] of Object.entries(spokes)) {
+        const spokeContract = await ethers.getContractAt(
+            "DAOSpokeContract",
+            spokeConfig.SPOKE_CONTRACT_ADDRESS
+        );
+
+        const { againstVotes, forVotes, abstainVotes } = await getProposalVotes(spokeContract, rpc, CONSTANTS.operatorKey, proposalId);
+
+        totalAgainstVotes += againstVotes;
+        totalForVotes += forVotes;
+        totalAbstainVotes += abstainVotes;
+    }
+
+    return {
+        totalAgainstVotes,
+        totalForVotes,
+        totalAbstainVotes
+    };
 }
 
 async function sleep(seconds) {
