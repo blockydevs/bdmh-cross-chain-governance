@@ -1,6 +1,5 @@
 require("dotenv").config();
 const {expect} = require("chai");
-const {defaultAbiCoder} = require("@ethersproject/abi");
 const {ethers} = require("hardhat");
 const hre = require("hardhat");
 
@@ -68,7 +67,7 @@ describe("Interacting with governance ecosystem", function () {
         // Assertions
         const hubVotes = await getProposalVotes(governanceContract, proposalId);
         expect(hubVotes.againstVotes, 'the number of against votes on hub and spokes are equal.').to.equal(0);
-        expect(hubVotes.forVotes, 'the number of for votes on hub and spokes are equal.').to.equal(CONSTANTS.testUserVotingPower * CONSTANTS.endUsers.length);
+        expect(hubVotes.forVotes, 'the number of for votes on hub and spokes are equal.').to.equal(CONSTANTS.testUserVotingPower * BigInt(CONSTANTS.endUsers.length));
         expect(hubVotes.abstainVotes, 'the number of abstain votes on hub and spokes are equal.').to.equal(0);
 
         const proposalState = await getProposalState(governanceContract, proposalId);
@@ -150,15 +149,10 @@ async function delegateVotes(rpc, endUsers, vhmToken) {
 
 async function getProposalExecutionData(hre, deployerAddress, hmToken) {
     const IERC20 = await hre.artifacts.readArtifact('IERC20');
+    const IERC20Abi = IERC20.abi;
 
-    const transferFunctionSig = IERC20.abi.find(
-        (func) => func.name === 'transfer' && func.type === 'function'
-    );
-
-    const encodedCall = defaultAbiCoder.encode(
-        transferFunctionSig.inputs.map((x) => x.type),
-        [deployerAddress, 1]
-    );
+    let iface = new ethers.Interface(IERC20Abi);
+    const encodedCall = iface.encodeFunctionData('transfer', [deployerAddress, 1]);
 
     const targets = [hmToken.target];
     const values = [0];
