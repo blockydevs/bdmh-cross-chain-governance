@@ -67,7 +67,8 @@ describe("Interacting with governance ecosystem", function () {
         // Assertions
         const hubVotes = await getProposalVotes(governanceContract, proposalId);
         expect(hubVotes.againstVotes, 'the number of against votes on hub and spokes are equal.').to.equal(0);
-        expect(hubVotes.forVotes, 'the number of for votes on hub and spokes are equal.').to.equal(CONSTANTS.testUserVotingPower * BigInt(CONSTANTS.endUsers.length));
+        const totalVotes = BigInt(JSON.parse(CONSTANTS.spokeConfig).length) * CONSTANTS.testUserVotingPower * BigInt(CONSTANTS.endUsers.length);
+        expect(hubVotes.forVotes, 'the number of for votes on hub and spokes are equal.').to.equal(totalVotes);
         expect(hubVotes.abstainVotes, 'the number of abstain votes on hub and spokes are equal.').to.equal(0);
 
         const proposalState = await getProposalState(governanceContract, proposalId);
