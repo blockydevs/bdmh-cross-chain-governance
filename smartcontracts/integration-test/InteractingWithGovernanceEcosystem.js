@@ -61,7 +61,7 @@ describe("Interacting with governance ecosystem", function () {
         await queue(governanceContract, proposalId);
 
         await transferToTimelock(governanceContract);
-        await execute();
+        await execute(governanceContract);
 
         const hmTokenBalanceAfter = await getHubHMTokenBalance();
 
