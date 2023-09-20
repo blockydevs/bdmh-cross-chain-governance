@@ -50,7 +50,6 @@ describe("Interacting with governance ecosystem", function () {
 
         await getVotePrivileges(spokes);
 
-        const hmTokenBalanceBefore = await getHubHMTokenBalance();
         proposalId = await createProposal(governanceContract);
 
         // await voteOnHub(governanceContract, proposalId);
@@ -59,8 +58,9 @@ describe("Interacting with governance ecosystem", function () {
         await queue(governanceContract, proposalId);
 
         await transferToTimelock(governanceContract);
-        await execute(governanceContract);
 
+        const hmTokenBalanceBefore = await getHubHMTokenBalance();
+        await execute(governanceContract);
         const hmTokenBalanceAfter = await getHubHMTokenBalance();
 
         // Assertions
@@ -72,7 +72,7 @@ describe("Interacting with governance ecosystem", function () {
         const proposalState = await getProposalState(governanceContract, proposalId);
         expect(proposalState, 'State of proposal is Executed.').to.equal(7);
 
-        expect(hmTokenBalanceAfter).to.be.greaterThan(hmTokenBalanceBefore, 'hmToken balance before creating Proposal was greater than after.');
+        expect(hmTokenBalanceAfter).to.be.greaterThan(hmTokenBalanceBefore, 'hmToken balance after creating Proposal was greater than before.');
     });
 });
 
@@ -232,7 +232,7 @@ async function voteOnHub(governanceContract, proposalId) {
 
 async function voteOnSpokes(spokes, proposalId) {
     console.log("Casting a vote on spokes.");
-    const { endUsers } = CONSTANTS;
+    const { endUsers, gasPrice } = CONSTANTS;
 
     for (const [rpc, spokeConfig] of Object.entries(spokes)) {
         const provider = new ethers.JsonRpcProvider(rpc);
@@ -246,7 +246,11 @@ async function voteOnSpokes(spokes, proposalId) {
             );
 
             if (await isProposalOnSpoke(spokeContract, wallet, proposalId)) {
-                const tx = await spokeContract.connect(wallet).castVote(proposalId, 1);
+                const tx = await spokeContract.connect(wallet).castVote(
+                    proposalId,
+                    1,
+                    {gasPrice: gasPrice}
+                );
 
                 console.log(`- wallet ${wallet.address} has just cast a vote on rpc: ${rpc}.`);
                 await tx.wait();
@@ -338,27 +342,31 @@ async function getVotePrivileges(spokes) {
 }
 
 async function isProposalOnSpoke(spokeContract, wallet, proposalId, maxRetries = 16, seconds = 15) {
-    console.log(`Checking is proposal on spoke ${spokeContract.target}.`);
-    for (let i = 0; i < maxRetries; i++) {
+    console.log(`Checking if proposal is on spoke ${spokeContract.target}.`);
+
+    const operation = async () => {
         const res = await spokeContract.connect(wallet).isProposal(proposalId);
         if (res) {
             return res;
         }
-        await sleep(seconds);
+        throw new Error(`Proposal ${proposalId} not yet found on spoke. Retrying...`);
     }
-    throw new Error(`Proposal ${proposalId} was not found on spoke after ${maxRetries} attempts.`);
+
+    return retryOperation(operation, maxRetries, seconds);
 }
 
 async function isCollectionFinished(contract, wallet, proposalId, maxRetries = 16, seconds = 15) {
-    for (let i = 0; i < maxRetries; i++) {
+    const operation = async () => {
         const res = await contract.connect(wallet).collectionFinished(proposalId);
         if (res) {
             return res;
         }
-        await sleep(seconds);
+        throw new Error("Collection not yet finished. Retrying...");
     }
-    throw new Error(`Collection was not finished after ${maxRetries} attempts.`);
+
+    return retryOperation(operation, maxRetries, seconds);
 }
+
 
 async function getProposalVotes(contract, rpc, walletAddress, proposalId) {
     const provider = new ethers.JsonRpcProvider(rpc);
@@ -394,16 +402,19 @@ async function isNewestBlockNumberGreaterThanProposalDeadline(contract, proposal
     const { operatorKey, hubRPCUrl } = CONSTANTS;
     const provider = new ethers.JsonRpcProvider(hubRPCUrl);
     const wallet = new ethers.Wallet(operatorKey, provider);
-    for (let i = 0; i < maxRetries; i++) {
+
+    const operation = async () => {
         const res = await contract.connect(wallet).proposalDeadline(proposalId);
         const blockNumber = await provider.getBlockNumber();
         if (Number(blockNumber) > Number(res)) {
             return true;
         }
-        await sleep(seconds);
+        throw new Error(`Proposal is still in the voting phase. Retrying...`);
     }
-    throw new Error(`Proposal is still in the voting phase after ${maxRetries} attempts.`);
+
+    return retryOperation(operation, maxRetries, seconds);
 }
+
 
 async function transferToTimelock(contract) {
     const { hubRPCUrl, operatorKey, hubHMTAddress } = CONSTANTS;
@@ -445,3 +456,19 @@ async function aggregateProposalVotesFromSpokes(spokes, proposalId) {
 async function sleep(seconds) {
     return new Promise(resolve => setTimeout(resolve, seconds * 1000));
 }
+
+async function retryOperation(operation, maxRetries, delayInSeconds) {
+    for (let i = 0; i < maxRetries; i++) {
+        try {
+            const result = await operation();
+            return result;
+        } catch (e) {
+            console.log(`Error during attempt ${i + 1}.`);
+            if (i === maxRetries - 1) {
+                throw e;
+            }
+            await sleep(delayInSeconds);
+        }
+    }
+}
+
