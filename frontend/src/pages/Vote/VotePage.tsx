@@ -146,7 +146,7 @@ const ProgressWrapper = styled.div`
   position: relative;
 `
 
-const Progress = styled.div<{ percentageString?: string }>`
+export const Progress = styled.div<{ percentageString?: string }>`
   height: 4px;
   width: ${({ percentageString }) => percentageString ?? '0%'};
   max-width: 100%;

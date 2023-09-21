@@ -1,4 +1,5 @@
 import { useScreenSize } from 'hooks/useScreenSize'
+import { Progress } from 'pages/Vote/VotePage'
 import { ProposalState } from 'state/governance/hooks'
 import { VoteOption } from 'state/governance/types'
 import styled, { useTheme } from 'styled-components/macro'
@@ -24,12 +25,12 @@ const VotingButtonsContainer = styled('div')`
   }
 `
 
-const InnerButtonTextContainer = styled('div')`
+const InnerButtonTextContainer = styled('div')<{ showVotingButtons?: boolean }>`
   display: flex;
   flex-direction: column;
   justify-content: center;
   gap: 8px;
-  margin-bottom: 24px;
+  margin-bottom: ${({ showVotingButtons }) => (showVotingButtons ? '24px' : '0')};
 
   @media only screen and (max-width: ${({ theme }) => `${theme.breakpoint.md}px`}) {
     margin-bottom: 0;
@@ -74,10 +75,23 @@ const VotesNumberContainer = styled('div')`
   }
 `
 
+const ResultsLabelContainer = styled('div')`
+  width: 100%;
+  text-align: center;
+`
+
+const ProgressWrapper = styled.div`
+  width: 100%;
+  height: 4px;
+  border-radius: 4px;
+  background-color: ${({ theme }) => theme.deprecated_bg3};
+  position: relative;
+`
+
 interface VotingButtonsProps {
-  forVotes: number | undefined
-  againstVotes: number | undefined
-  abstainVotes: number | undefined
+  forVotes: number
+  againstVotes: number
+  abstainVotes: number
   setVoteOption: React.Dispatch<React.SetStateAction<VoteOption | undefined>>
   showVotingButtons: boolean | undefined
   proposalStatus: ProposalState | undefined
@@ -98,6 +112,7 @@ export default function VotingButtons({
   const isScreenSize = useScreenSize()
 
   const showNumberLabel = isScreenSize.xs && isScreenSize.sm && isScreenSize.md
+  const allVotesSum = forVotes + againstVotes + abstainVotes
 
   const chooseValue = (valueType: number) => {
     if (valueType === 0) return againstVotes
@@ -106,35 +121,56 @@ export default function VotingButtons({
   }
 
   return (
-    <VotingButtonsContainer>
-      {VOTING_BUTTONS.map(({ buttonLabel, voteOption, numberLabel }, index) => (
-        <ButtonContainer key={index}>
-          <ButtonPrimary
-            padding="8px"
-            onClick={() => {
-              setVoteOption(voteOption)
-              toggleVoteModal()
-            }}
-            disabled={!showVotingButtons}
-          >
-            <ThemedText.BodyPrimary
-              fontSize={15}
-              color={proposalStatus === ProposalState.PENDING || !showVotingButtons ? theme.accentGray : theme.white}
-            >
-              {buttonLabel}
-            </ThemedText.BodyPrimary>
-          </ButtonPrimary>
-
-          <InnerButtonTextContainer>
-            {showNumberLabel ? <ThemedText.BodyPrimary fontSize={14}>{numberLabel}</ThemedText.BodyPrimary> : undefined}
-            <VotesNumberContainer>
-              <ThemedText.BodyPrimary fontSize={isScreenSize.xs ? 20 : 16} fontWeight={500}>
-                {loading ? '-' : chooseValue(voteOption)}
-              </ThemedText.BodyPrimary>
-            </VotesNumberContainer>
-          </InnerButtonTextContainer>
-        </ButtonContainer>
-      ))}
-    </VotingButtonsContainer>
+    <>
+      {!showVotingButtons && (
+        <ResultsLabelContainer>
+          <ThemedText.BodyPrimary fontSize={24} fontWeight={400}>
+            Live Results
+          </ThemedText.BodyPrimary>
+        </ResultsLabelContainer>
+      )}
+      <VotingButtonsContainer>
+        {VOTING_BUTTONS.map(({ buttonLabel, voteOption, numberLabel }, index) => (
+          <ButtonContainer key={index}>
+            {showVotingButtons ? (
+              <ButtonPrimary
+                padding="8px"
+                onClick={() => {
+                  setVoteOption(voteOption)
+                  toggleVoteModal()
+                }}
+              >
+                <ThemedText.BodyPrimary
+                  fontSize={15}
+                  color={
+                    proposalStatus === ProposalState.PENDING || !showVotingButtons ? theme.accentGray : theme.white
+                  }
+                >
+                  {buttonLabel}
+                </ThemedText.BodyPrimary>
+              </ButtonPrimary>
+            ) : (
+              <ProgressWrapper>
+                <Progress
+                  percentageString={
+                    chooseValue(voteOption) === 0 ? '0%' : `${(chooseValue(voteOption) / allVotesSum) * 100}%`
+                  }
+                />
+              </ProgressWrapper>
+            )}
+            <InnerButtonTextContainer>
+              {showNumberLabel ? (
+                <ThemedText.BodyPrimary fontSize={14}>{numberLabel}</ThemedText.BodyPrimary>
+              ) : undefined}
+              <VotesNumberContainer>
+                <ThemedText.BodyPrimary fontSize={isScreenSize.xs ? 20 : 16} fontWeight={500}>
+                  {loading ? '-' : chooseValue(voteOption)}
+                </ThemedText.BodyPrimary>
+              </VotesNumberContainer>
+            </InnerButtonTextContainer>
+          </ButtonContainer>
+        ))}
+      </VotingButtonsContainer>
+    </>
   )
 }
