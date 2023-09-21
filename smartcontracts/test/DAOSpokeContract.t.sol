@@ -10,6 +10,8 @@ pragma solidity ^0.8.20;
 
 contract DAOSpokeContractTest is TestUtil {
 
+    event VoteCast(address indexed voter, uint256 proposalId, uint8 support, uint256 weight, string reason);
+
     function setUp() public {
         hmToken = new HMToken(100 ether, "HMToken", 18, "HMT");
         voteToken = new VHMToken(IERC20(address(hmToken)));
@@ -70,6 +72,18 @@ contract DAOSpokeContractTest is TestUtil {
         uint256 proposalId = _createProposalOnSpoke();
         bool isProposal = daoSpokeContract.isProposal(proposalId);
         assertTrue(isProposal);
+    }
+
+    function testCastVoteEmitsEvent() public {
+        uint256 proposalId = _createProposalOnSpoke();
+        address someUser = _createMockUserWithVotingPower(1, voteToken);
+        vm.roll(block.number + 3);
+        vm.startPrank(someUser);
+        vm.expectEmit();
+        emit VoteCast(someUser, proposalId, 0, 1 ether, "");
+        uint256 voteWeight = daoSpokeContract.castVote(proposalId, 0);
+        vm.stopPrank();
+        assertGt(voteWeight, 0);
     }
 
     function testCastVoteAgainst() public {
