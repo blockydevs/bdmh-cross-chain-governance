@@ -282,19 +282,12 @@ export function useAllProposalData(): { data: ProposalData[]; loading: boolean }
   // get all proposal statuses
   useEffect(() => {
     async function getProposalStatuses() {
-      const batchSize = 5
-      let proposalStatesV2: number[] = []
+      const proposalStatesV2Promises = govHubProposalIndexes.map(async (id) => {
+        const [status] = await govHubContract?.functions.state(id.toString(), {})
+        return status
+      })
 
-      for (let i = 0; i < govHubProposalIndexes.length; i += batchSize) {
-        const batch = govHubProposalIndexes.slice(i, i + batchSize)
-        const batchResults = await Promise.all(
-          batch.map(async (id) => {
-            const [status] = await govHubContract?.functions.state(id.toString(), {})
-            return status
-          })
-        )
-        proposalStatesV2 = [...proposalStatesV2, ...batchResults]
-      }
+      const proposalStatesV2 = await Promise.all(proposalStatesV2Promises)
       setProposalStatuses(proposalStatesV2)
     }
 
