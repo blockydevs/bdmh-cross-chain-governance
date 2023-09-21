@@ -47,6 +47,8 @@ contract DAOSpokeContract is IWormholeReceiver {
         bool voteFinished;
     }
 
+    event VoteCast(address indexed voter, uint256 proposalId, uint8 support, uint256 weight, string reason);
+
    /**
       @dev Contract constructor.
       @param _hubContractAddress The address of the hub contract.
@@ -98,6 +100,8 @@ contract DAOSpokeContract is IWormholeReceiver {
 
         uint256 weight = token.getPastVotes(msg.sender, proposal.localVoteStart);
         _countVote(proposalId, msg.sender, support, weight);
+
+        emit VoteCast(msg.sender, proposalId, support, weight, "");
 
         return weight;
     }
