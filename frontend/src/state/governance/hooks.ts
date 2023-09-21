@@ -130,6 +130,7 @@ export enum ProposalState {
 }
 
 const GovernanceInterface = new Interface(GOVERNOR_HUB_ABI)
+const SpokeInterface = new Interface(GOVERNOR_SPOKE_ABI)
 
 interface FormattedProposalLog {
   id: BigNumber
@@ -659,12 +660,13 @@ export function useExecuteCallback(): (
   )
 }
 
-export function useHasVoted(proposalId: string | undefined): boolean {
+export function useHasVoted(proposalId: string | undefined): { hasVoted: boolean; userVoteType: VoteOption } {
   const { account, chainId } = useWeb3React()
   const addTransaction = useTransactionAdder()
 
   const isHubChainActive = useAppSelector((state) => state.application.isHubChainActive)
   const transactions = useAppSelector((state) => state.transactions)
+  const contractInterface = isHubChainActive ? GovernanceInterface : SpokeInterface
 
   const contract = useContract(
     isHubChainActive ? GOVERNANCE_HUB_ADDRESS : GOVERNANCE_SPOKE_ADRESSES,
@@ -672,7 +674,6 @@ export function useHasVoted(proposalId: string | undefined): boolean {
   )
 
   const [hasVoted, setHasVoted] = useState<boolean>(false)
-  console.log('hasVoted:', hasVoted)
 
   const filter = useMemo(() => {
     const filter = contract?.filters?.VoteCast(account)
@@ -683,11 +684,17 @@ export function useHasVoted(proposalId: string | undefined): boolean {
     }
     // eslint-disable-next-line
   }, [contract])
-  console.log('filter:', filter)
-  console.log('contract:', contract)
 
   const useLogsResult = useLogs(filter)
-  console.log('useLogsResult:', useLogsResult)
+
+  const proposalIdBigNumber = BigNumber.from(proposalId)
+
+  const parsedLogs = useLogsResult?.logs?.map((log) => {
+    const parsed = contractInterface.parseLog(log).args
+    return parsed
+  })
+
+  const userVoteType = parsedLogs?.find((p) => p.proposalId.eq(proposalIdBigNumber))?.support
 
   useEffect(() => {
     if (!account || !contract || !proposalId || !chainId) return
@@ -697,7 +704,7 @@ export function useHasVoted(proposalId: string | undefined): boolean {
     })
   }, [account, contract, proposalId, chainId, transactions, addTransaction])
 
-  return hasVoted
+  return { hasVoted, userVoteType }
 }
 
 export function useAllVotes(proposalId: string | undefined) {
