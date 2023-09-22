@@ -673,6 +673,7 @@ export function useHasVoted(proposalId: string | undefined): { hasVoted: boolean
   const [rawSpokeLogs, setRawSpokeLogs] = useState<Log[]>([])
 
   const toBlockNumber = useBlockNumber()
+  const startProposalBlock = useProposalStartBlock()
   const fromBlockNumber = 0
 
   const filter = useMemo(() => {
@@ -697,7 +698,7 @@ export function useHasVoted(proposalId: string | undefined): { hasVoted: boolean
       const result = await provider.getLogs({
         address: contract.address,
         topics: filter.topics,
-        fromBlock: 0,
+        fromBlock: startProposalBlock,
         toBlock: toBlockNumber,
       })
 
@@ -755,4 +756,36 @@ export function useAllVotes(proposalId: string | undefined) {
   }, [proposalId])
 
   return { votes, loading, error }
+}
+
+function useProposalStartBlock(): number | undefined {
+  const isHubChainActive = useAppSelector((state) => state.application.isHubChainActive)
+  const contract = useContract(
+    isHubChainActive ? GOVERNANCE_HUB_ADDRESS : GOVERNANCE_SPOKE_ADRESSES,
+    isHubChainActive ? GOVERNOR_HUB_ABI : GOVERNOR_SPOKE_ABI
+  )
+
+  const { id } = useParams()
+
+  const [startProposalBlock, setStartProposalBlock] = useState<number | undefined>(undefined)
+
+  useEffect(() => {
+    async function getStartBlock() {
+      if (isHubChainActive) {
+        if (contract && id) {
+          const proposalSnapshot = await contract.functions.proposalSnapshot(id.toString(), {})
+          setStartProposalBlock(Number(proposalSnapshot.toString()))
+        }
+      } else {
+        if (contract && id) {
+          const proposalSnapshot = await contract.proposals(id.toString())
+          setStartProposalBlock(Number(proposalSnapshot[0].toString()))
+        }
+      }
+    }
+
+    getStartBlock()
+  }, [contract, id, isHubChainActive])
+
+  return startProposalBlock
 }
