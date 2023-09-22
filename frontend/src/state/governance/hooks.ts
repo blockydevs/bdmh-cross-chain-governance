@@ -706,6 +706,7 @@ export function useHasVoted(proposalId: string | undefined): { hasVoted: boolean
     }
 
     if (hasVoted) fetchLogs()
+    // eslint-disable-next-line
   }, [provider, contract, filter, hasVoted])
 
   const proposalIdBigNumber = BigNumber.from(proposalId)
