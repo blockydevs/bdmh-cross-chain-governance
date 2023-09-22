@@ -9,6 +9,6 @@ export function voteOptionToString(vote: VoteOption): string {
     case VoteOption.Abstain:
       return 'You have already ABSTAINED from the vote on this proposal'
     default:
-      return ''
+      return 'You have already voted on this proposal'
   }
 }
