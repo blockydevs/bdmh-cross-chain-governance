@@ -19,9 +19,11 @@ import { HUB_CHAIN_ID } from 'constants/addresses'
 import { SupportedChainId } from 'constants/chains'
 import { RPC_PROVIDERS } from 'constants/providers'
 import { useContract, useContractWithCustomProvider } from 'hooks/useContract'
+import useBlockNumber from 'lib/hooks/useBlockNumber'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { useAppSelector } from 'state/hooks'
+import { Log } from 'state/logs/utils'
 import { aggregateVotes } from 'utils/aggregateVotes'
 import { calculateGasMargin } from 'utils/calculateGasMargin'
 
@@ -347,6 +349,7 @@ export function useProposalData(governorIndex: number, id: string): ProposalData
 //get quorum value
 export function useQuorum(): CurrencyAmount<Token> | undefined {
   const [quorum, setQuorum] = useState<number | undefined>(undefined)
+
   const { chainId } = useWeb3React()
   const uni = useMemo(() => (chainId ? UNI[chainId] : undefined), [chainId])
   const gov2 = useGovernanceHubContract()
@@ -654,7 +657,7 @@ export function useExecuteCallback(): (
 }
 
 export function useHasVoted(proposalId: string | undefined): { hasVoted: boolean; userVoteType: VoteOption } {
-  const { account, chainId } = useWeb3React()
+  const { account, chainId, provider } = useWeb3React()
   const addTransaction = useTransactionAdder()
 
   const isHubChainActive = useAppSelector((state) => state.application.isHubChainActive)
@@ -667,6 +670,10 @@ export function useHasVoted(proposalId: string | undefined): { hasVoted: boolean
   )
 
   const [hasVoted, setHasVoted] = useState<boolean>(false)
+  const [rawSpokeLogs, setRawSpokeLogs] = useState<Log[]>([])
+
+  const toBlockNumber = useBlockNumber()
+  const fromBlockNumber = 0
 
   const filter = useMemo(() => {
     const filter = contract?.filters?.VoteCast(account)
@@ -674,15 +681,35 @@ export function useHasVoted(proposalId: string | undefined): { hasVoted: boolean
 
     return {
       ...filter,
+      fromBlockNumber,
+      toBlockNumber,
     }
     // eslint-disable-next-line
   }, [contract])
 
-  const useLogsResult = useLogs(filter)
+  const rawHubLogs = useLogs(filter)
+  const activeLogs = isHubChainActive ? rawHubLogs.logs : rawSpokeLogs
+
+  useEffect(() => {
+    async function fetchLogs() {
+      if (!provider || !contract || !filter) return
+
+      const result = await provider.getLogs({
+        address: contract.address,
+        topics: filter.topics,
+        fromBlock: 0,
+        toBlock: toBlockNumber,
+      })
+
+      setRawSpokeLogs(result)
+    }
+
+    if (hasVoted) fetchLogs()
+  }, [provider, contract, filter, hasVoted])
 
   const proposalIdBigNumber = BigNumber.from(proposalId)
 
-  const parsedLogs = useLogsResult?.logs?.map((log) => {
+  const parsedLogs = activeLogs?.map((log) => {
     const parsed = contractInterface.parseLog(log).args
     return parsed
   })

@@ -28,12 +28,49 @@
       },
       {
         "internalType": "address",
-        "name": "_wormholeCoreBridgeAddress",
+        "name": "_wormholeRelayerAddress",
         "type": "address"
       }
     ],
     "stateMutability": "nonpayable",
     "type": "constructor"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "voter",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "proposalId",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint8",
+        "name": "support",
+        "type": "uint8"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "weight",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "string",
+        "name": "reason",
+        "type": "string"
+      }
+    ],
+    "name": "VoteCast",
+    "type": "event"
   },
   {
     "inputs": [
@@ -67,32 +104,6 @@
         "internalType": "uint16",
         "name": "",
         "type": "uint16"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "consistencyLevel",
-    "outputs": [
-      {
-        "internalType": "uint8",
-        "name": "",
-        "type": "uint8"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "coreBridge",
-    "outputs": [
-      {
-        "internalType": "contract IWormhole",
-        "name": "",
-        "type": "address"
       }
     ],
     "stateMutability": "view",
@@ -256,13 +267,33 @@
     "inputs": [
       {
         "internalType": "bytes",
-        "name": "VAA",
+        "name": "payload",
         "type": "bytes"
+      },
+      {
+        "internalType": "bytes[]",
+        "name": "additionalVaas",
+        "type": "bytes[]"
+      },
+      {
+        "internalType": "bytes32",
+        "name": "sourceAddress",
+        "type": "bytes32"
+      },
+      {
+        "internalType": "uint16",
+        "name": "sourceChain",
+        "type": "uint16"
+      },
+      {
+        "internalType": "bytes32",
+        "name": "deliveryHash",
+        "type": "bytes32"
       }
     ],
-    "name": "receiveMessage",
+    "name": "receiveWormholeMessages",
     "outputs": [],
-    "stateMutability": "nonpayable",
+    "stateMutability": "payable",
     "type": "function"
   },
   {
@@ -284,6 +315,19 @@
     "outputs": [
       {
         "internalType": "contract IVotes",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "wormholeRelayer",
+    "outputs": [
+      {
+        "internalType": "contract IWormholeRelayer",
         "name": "",
         "type": "address"
       }
