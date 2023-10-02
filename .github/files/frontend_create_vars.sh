@@ -5,8 +5,8 @@
 # GITHUB_ENV="env-test.txt"
 # touch $GITHUB_ENV
 
-COUNT=$(echo "$FRONTEND_SPOKE_PARAMS" | jq -s '. | length')
-for ((i=0; i <= $COUNT; i++)); do
+COUNT=$(echo "$FRONTEND_SPOKE_PARAMS" | jq -s '.[] | length')
+for ((i=0; i < $COUNT; i++)); do
   # set vars
   chain_id=$(echo "$FRONTEND_SPOKE_PARAMS" | jq -r --argjson i "$i" '.[$i].REACT_APP_SPOKE_CHAIN_ID')
 
