@@ -11,8 +11,10 @@ import { useToggleVoteModal } from '../../state/application/hooks'
 const VOTING_BUTTONS = [
   { buttonLabel: 'Vote For', voteOption: VoteOption.For, numberLabel: 'Votes For' },
   { buttonLabel: 'Vote Against', voteOption: VoteOption.Against, numberLabel: 'Votes Against' },
-  { buttonLabel: 'Abstain', voteOption: VoteOption.Abstain, numberLabel: 'Votes Abstain' },
+  { buttonLabel: 'Abstain', voteOption: VoteOption.Abstain, numberLabel: 'Abstain' },
 ]
+
+const MAX_CONTAINER_WIDTH = '320px'
 
 const VotingButtonsContainer = styled('div')`
   width: 100%;
@@ -26,28 +28,33 @@ const VotingButtonsContainer = styled('div')`
 `
 
 const InnerButtonTextContainer = styled('div')<{ showVotingButtons?: boolean }>`
+  width: 100%;
+  max-width: ${MAX_CONTAINER_WIDTH};
   display: flex;
   flex-direction: column;
-  justify-content: center;
+  justify-content: space-between;
+  align-items: center;
   gap: 8px;
   margin-bottom: ${({ showVotingButtons }) => (showVotingButtons ? '24px' : '0')};
+  white-space: nowrap;
+  margin-bottom: 24px;
 
   @media only screen and (max-width: ${({ theme }) => `${theme.breakpoint.md}px`}) {
     margin-bottom: 0;
+    flex-direction: row;
   }
 `
 
 const ButtonContainer = styled('div')`
   width: 100%;
   display: flex;
-  flex-direction: column-reverse;
+  flex-direction: column;
   justify-content: center;
   align-items: center;
   text-align: center;
   padding: 16px 24px;
   background: ${({ theme }) => theme.backgroundGray};
   border-radius: 7px;
-  gap: 16px;
 
   > button {
     max-width: 204px;
@@ -56,36 +63,39 @@ const ButtonContainer = styled('div')`
 
   @media only screen and (max-width: ${({ theme }) => `${theme.breakpoint.md}px`}) {
     gap: 36px;
-    flex-direction: row;
+    padding: 24px 24px 24px 32px;
   }
 
   @media only screen and (max-width: ${({ theme }) => `${theme.breakpoint.sm}px`}) {
-    gap: 24px;
-  }
-
-  @media only screen and (max-width: ${({ theme }) => `${theme.breakpoint.xs}px`}) {
-    gap: 36px;
-    padding: 16px 8px;
+    gap: 16px;
   }
 `
 
-const VotesNumberContainer = styled('div')`
-  @media only screen and (max-width: ${({ theme }) => `${theme.breakpoint.md}px`}) {
-    width: 90px;
-  }
-`
+const VotesNumberContainer = styled('div')``
 
 const ResultsLabelContainer = styled('div')`
-  width: 100%;
-  text-align: center;
+  margin-bottom: 0px;
+
+  @media only screen and (max-width: ${({ theme }) => `${theme.breakpoint.md}px`}) {
+    padding: 8px 0 8px 0;
+    margin-bottom: -16px;
+  }
 `
 
 const ProgressWrapper = styled.div`
   width: 100%;
-  height: 4px;
+  height: 7px;
   border-radius: 4px;
   background-color: ${({ theme }) => theme.deprecated_bg3};
   position: relative;
+  max-width: ${MAX_CONTAINER_WIDTH};
+`
+
+const StyledButtonPrimary = styled(ButtonPrimary)`
+  && {
+    width: 100%;
+    max-width: ${MAX_CONTAINER_WIDTH};
+  }
 `
 
 interface VotingButtonsProps {
@@ -111,12 +121,11 @@ export default function VotingButtons({
   const theme = useTheme()
   const isScreenSize = useScreenSize()
 
-  const showNumberLabel = isScreenSize.xs && isScreenSize.sm && isScreenSize.md
   const allVotesSum = forVotes + againstVotes + abstainVotes
 
   const chooseValue = (valueType: number) => {
-    if (valueType === 0) return againstVotes
-    if (valueType === 1) return forVotes
+    if (valueType === VoteOption.Against) return againstVotes
+    if (valueType === VoteOption.For) return forVotes
     return abstainVotes
   }
 
@@ -124,7 +133,7 @@ export default function VotingButtons({
     <>
       {!showVotingButtons && (
         <ResultsLabelContainer>
-          <ThemedText.BodyPrimary fontSize={24} fontWeight={400}>
+          <ThemedText.BodyPrimary fontSize={isScreenSize.md ? 20 : 18} fontWeight={500} fontFamily="Inter">
             Live Results
           </ThemedText.BodyPrimary>
         </ResultsLabelContainer>
@@ -132,8 +141,16 @@ export default function VotingButtons({
       <VotingButtonsContainer>
         {VOTING_BUTTONS.map(({ buttonLabel, voteOption, numberLabel }, index) => (
           <ButtonContainer key={index}>
+            <InnerButtonTextContainer>
+              <ThemedText.BodyPrimary fontSize={14}>{numberLabel}</ThemedText.BodyPrimary>
+              <VotesNumberContainer>
+                <ThemedText.BodyPrimary fontSize={isScreenSize.xs ? 20 : 16} fontWeight={500}>
+                  {loading ? '-' : chooseValue(voteOption)}
+                </ThemedText.BodyPrimary>
+              </VotesNumberContainer>
+            </InnerButtonTextContainer>
             {showVotingButtons ? (
-              <ButtonPrimary
+              <StyledButtonPrimary
                 padding="8px"
                 onClick={() => {
                   setVoteOption(voteOption)
@@ -148,26 +165,18 @@ export default function VotingButtons({
                 >
                   {buttonLabel}
                 </ThemedText.BodyPrimary>
-              </ButtonPrimary>
+              </StyledButtonPrimary>
             ) : (
               <ProgressWrapper>
                 <Progress
                   percentageString={
-                    chooseValue(voteOption) === 0 ? '0%' : `${(chooseValue(voteOption) / allVotesSum) * 100}%`
+                    (chooseValue(voteOption) as number) === 0
+                      ? '0%'
+                      : `${(chooseValue(voteOption) / allVotesSum) * 100}%`
                   }
                 />
               </ProgressWrapper>
             )}
-            <InnerButtonTextContainer>
-              {showNumberLabel ? (
-                <ThemedText.BodyPrimary fontSize={14}>{numberLabel}</ThemedText.BodyPrimary>
-              ) : undefined}
-              <VotesNumberContainer>
-                <ThemedText.BodyPrimary fontSize={isScreenSize.xs ? 20 : 16} fontWeight={500}>
-                  {loading ? '-' : chooseValue(voteOption)}
-                </ThemedText.BodyPrimary>
-              </VotesNumberContainer>
-            </InnerButtonTextContainer>
           </ButtonContainer>
         ))}
       </VotingButtonsContainer>
