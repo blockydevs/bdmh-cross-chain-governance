@@ -115,7 +115,7 @@ const ArrowWrapper = styled(StyledInternalLink)`
   }
 `
 
-const StyledAutoColumn = styled(AutoColumn)`
+const StyledTitleAutoColumn = styled(AutoColumn)`
   width: 100%;
   margin-top: 24px;
 
@@ -135,6 +135,7 @@ const StyledDataCard = styled(DataCard)`
   background-color: ${({ theme }) => theme.deprecated_bg1};
   height: fit-content;
   z-index: 2;
+  border-radius: 7px;
 `
 
 const ProgressWrapper = styled.div`
@@ -146,8 +147,8 @@ const ProgressWrapper = styled.div`
   position: relative;
 `
 
-const Progress = styled.div<{ percentageString?: string }>`
-  height: 4px;
+export const Progress = styled.div<{ percentageString?: string }>`
+  height: 100%;
   width: ${({ percentageString }) => percentageString ?? '0%'};
   max-width: 100%;
   border-radius: 4px;
@@ -374,7 +375,7 @@ export default function VotePage() {
             </ArrowWrapper>
             {proposalData && <ProposalStatus status={checkProposalState(status, hubBlock, endBlock)} />}
           </RowBetween>
-          <StyledAutoColumn gap="10px">
+          <StyledTitleAutoColumn gap="10px">
             <ThemedText.SubHeaderLarge style={{ marginBottom: '.5rem' }}>
               {proposalData?.title}
             </ThemedText.SubHeaderLarge>
@@ -432,7 +433,7 @@ export default function VotePage() {
                 <Trans>Please connect a wallet with delegated voting power.</Trans>
               </GrayCard>
             )}
-          </StyledAutoColumn>
+          </StyledTitleAutoColumn>
 
           <VotingButtons
             forVotes={forVotes}
@@ -488,11 +489,11 @@ export default function VotePage() {
               <CardSection>
                 <AutoColumn gap="md">
                   <WrapSmall>
-                    <ThemedText.BodyPrimary>
+                    <ThemedText.BodyPrimary fontSize={14}>
                       <Trans>Quorum</Trans>
                     </ThemedText.BodyPrimary>
                     {proposalData ? (
-                      <ThemedText.BodyPrimary>
+                      <ThemedText.BodyPrimary fontSize={14}>
                         {totalVotes}
                         <span>{` / ${quorumNumber ? quorumNumber : '-'}`}</span>
                       </ThemedText.BodyPrimary>
