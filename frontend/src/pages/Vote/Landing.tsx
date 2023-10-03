@@ -23,7 +23,8 @@ import {
   useToggleDelegateModal,
 } from 'state/application/hooks'
 import { ApplicationModal } from 'state/application/reducer'
-import { ProposalData, useAllProposalData, useUserDelegatee, useUserVotes } from 'state/governance/hooks'
+import { ProposalData } from 'state/governance/hooks'
+import { useAllProposalData, useUserDelegatee, useUserVotes } from 'state/governance/hooks'
 import styled from 'styled-components/macro'
 import { ExternalLink, ThemedText } from 'theme'
 import { shortenAddress } from 'utils'

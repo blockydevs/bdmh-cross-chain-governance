@@ -20,7 +20,6 @@ import { useAppSelector } from 'state/hooks'
 import styled from 'styled-components/macro'
 import { checkProposalState } from 'utils/checkProposalPendingState'
 import { getDateFromBlock } from 'utils/getDateFromBlock'
-import { voteOptionToString } from 'utils/voteOptionToString'
 
 import { ButtonPrimary } from '../../components/Button'
 import { GrayCard } from '../../components/Card'
@@ -207,7 +206,7 @@ export default function VotePage() {
     })
   )
 
-  const { hasVoted, userVoteType } = useHasVoted(id)
+  const hasVoted = useHasVoted(id)
 
   // get data for this specific proposal
   const proposalData: ProposalData | undefined = useProposalData(parsedGovernorIndex, id)
@@ -411,9 +410,8 @@ export default function VotePage() {
                     <span>
                       <Trans>
                         <StyledInternalLink to="/vote">Unlock voting</StyledInternalLink> to prepare for the next
-                        proposal
+                        proposal.
                       </Trans>
-                      .
                     </span>
                   )}
                 </GrayCard>
@@ -423,7 +421,7 @@ export default function VotePage() {
                 <Box>
                   <WarningCircleIcon />
                 </Box>
-                {voteOptionToString(userVoteType)}.
+                <Trans>You have already voted for this proposal.</Trans>
               </GrayCard>
             )}
             {proposalData && !account && (
@@ -431,7 +429,7 @@ export default function VotePage() {
                 <Box>
                   <WarningCircleIcon />
                 </Box>
-                <Trans>Please connect a wallet with delegated voting power</Trans>.
+                <Trans>Please connect a wallet with delegated voting power.</Trans>
               </GrayCard>
             )}
           </StyledAutoColumn>
