@@ -45,6 +45,8 @@ You can define multiple spoke chains. If you want to add another spoke chain ple
 
 (remember to change `<CHAINID>` with the actual number for all cases and assign address to them).
 
+- `REACT_APP_SHOW_TEST_BANNER` - this variable is used to display a test version banner on the website. Set it to `"true"` if you want the banner to be visible. If the variable is not set or set to anything other than "true", the banner will not be displayed.
+
 ## Setup and Installation
 
 Follow the steps below to set up the project on your local machine:
