@@ -20,6 +20,8 @@ import { useIsExpertMode } from '../state/user/hooks'
 import DarkModeQueryParamReader from '../theme/components/DarkModeQueryParamReader'
 import NotFound from './NotFound'
 
+const isBannerVisible = process.env.REACT_APP_SHOW_TEST_BANNER === 'true'
+
 const Vote = lazy(() => retry(() => import('./Vote')))
 
 const HeaderWrapper = styled.div`
@@ -32,16 +34,17 @@ const HeaderWrapper = styled.div`
   z-index: ${Z_INDEX.dropdown};
 `
 
-const BodyWrapper = styled.div`
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  gap: 40px;
+const BodyWrapper = styled.div<{ isBannerVisible: boolean }>`
   width: 100%;
   min-height: 100vh;
-  padding: ${({ theme }) => theme.navHeight}px 0px 0 0px;
-  align-items: center;
+  position: relative;
+  display: flex;
   flex: 1;
+  flex-direction: column;
+  align-items: center;
+  gap: 40px;
+  padding: ${({ isBannerVisible, theme }) =>
+    isBannerVisible ? theme.navHeight * 2 + 'px 0 0 0' : theme.navHeight + 'px 0 0 0'};
 
   @media only screen and (max-width: ${({ theme }) => `${theme.breakpoint.sm}px`}) {
     align-items: unset;
@@ -120,7 +123,7 @@ export default function App() {
       <HeaderWrapper>
         <NavBar />
       </HeaderWrapper>
-      <BodyWrapper>
+      <BodyWrapper isBannerVisible={isBannerVisible}>
         <Suspense fallback={<Loader />}>
           {isLoaded ? (
             <Routes>
