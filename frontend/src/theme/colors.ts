@@ -104,6 +104,7 @@ export const colors = {
   grayBackground: '#F6F7FE',
   grayLight: '#E0E0E0',
   orange: '#ED6C02',
+  magentaBanner: '#FA2A75',
 }
 
 type Theme = typeof lightTheme
@@ -194,6 +195,7 @@ export const darkTheme: Theme = {
 
   backgroundGray: colors.grayBackground,
   backgroundLightGray: colors.grayLight,
+  banner: colors.magentaBanner,
 }
 
 export const lightTheme = {
@@ -255,4 +257,5 @@ export const lightTheme = {
 
   backgroundGray: colors.grayBackground,
   backgroundLightGray: colors.grayLight,
+  banner: colors.magentaBanner,
 }

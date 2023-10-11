@@ -1,3 +1,4 @@
+import Banner from 'components/NavBar/Banner'
 import Web3Status from 'components/Web3Status'
 import { Box } from 'nft/components/Box'
 import { Row } from 'nft/components/Flex'
@@ -7,6 +8,12 @@ import styled, { useTheme } from 'styled-components/macro'
 
 import { ChainSelector } from './ChainSelector'
 import * as styles from './style.css'
+
+const isBannerVisible = process.env.REACT_APP_SHOW_TEST_BANNER === 'true'
+
+const NavWrapper = styled.div`
+  width: 100%;
+`
 
 const Nav = styled.nav`
   padding: 12px 60px;
@@ -24,7 +31,7 @@ const Navbar = () => {
   const { darkMode } = useTheme()
 
   return (
-    <>
+    <NavWrapper>
       <Nav>
         <Box display="flex" height="full" flexWrap="nowrap">
           <Box className={styles.leftSideContainer}>
@@ -45,7 +52,8 @@ const Navbar = () => {
           </Box>
         </Box>
       </Nav>
-    </>
+      {isBannerVisible && <Banner />}
+    </NavWrapper>
   )
 }
 
