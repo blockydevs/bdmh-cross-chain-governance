@@ -58,12 +58,12 @@ export function useHMTUniContract() {
   const [underlyingAddress, setUnderlyingAddress] = useState<string>('')
   const [loading, setLoading] = useState<boolean>(false)
 
-  const handleSetLoading = () => {
-    setLoading(true)
+  const handleSetHMTLoading = (bool: boolean) => {
+    setLoading(bool)
   }
 
   useEffect(() => {
-    handleSetLoading()
+    handleSetHMTLoading(false)
   }, [chainId])
 
   useEffect(() => {
@@ -87,7 +87,7 @@ export function useHMTUniContract() {
 
   const hmtUniContract = useContract(underlyingAddress, HmtUniJSON.abi, true)
 
-  return { hmtUniContract, loading, handleSetLoading }
+  return { hmtUniContract, loading, handleSetHMTLoading }
 }
 
 interface ProposalDetail {

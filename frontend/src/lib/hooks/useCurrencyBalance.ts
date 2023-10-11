@@ -51,7 +51,7 @@ function useTokenBalancesWithLoadingIndicator(
 
   const uniContract = useUniContract()
 
-  const { hmtUniContract, loading: hmtContractLoading, handleSetLoading } = useHMTUniContract()
+  const { hmtUniContract, loading: hmtContractLoading, handleSetHMTLoading } = useHMTUniContract()
 
   const transactions = useAppSelector((state) => state.transactions)
 
@@ -89,7 +89,8 @@ function useTokenBalancesWithLoadingIndicator(
   useEffect(() => {
     const fetchBalanceHMT = async () => {
       setIsLoading(true)
-      handleSetLoading()
+      handleSetHMTLoading(true)
+
       if (
         debouncedHmtUniContract?.signer &&
         !hmtContractLoading &&
@@ -106,6 +107,7 @@ function useTokenBalancesWithLoadingIndicator(
           console.log(error)
         } finally {
           setIsLoading(false)
+          handleSetHMTLoading(false)
         }
       }
     }
