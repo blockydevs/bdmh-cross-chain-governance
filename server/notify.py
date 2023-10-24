@@ -18,7 +18,7 @@ if w3:
     contract_abi = []
 
     def event_callback(event):
-        global should_print_hello_world
+        global run_script
         print("Event received")
         run_script = True
 
