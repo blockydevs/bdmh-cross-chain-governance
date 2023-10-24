@@ -9,6 +9,8 @@ import "../src/hm-token/HMToken.sol";
 import "./DeploymentUtils.sol";
 
 contract CreateProposal is Script, DeploymentUtils {
+    event RunFunctionExecuted(address indexed executor, uint256 timestamp);
+
     function run() external {
         uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY");
         address payable governorAddress = payable(vm.envAddress("GOVERNOR_ADDRESS"));
@@ -18,6 +20,9 @@ contract CreateProposal is Script, DeploymentUtils {
         (address[] memory targets, uint256[] memory values, bytes[] memory calldatas, string memory description) = getProposalExecutionData();
 
         governanceContract.crossChainPropose{value: 0.1 ether}(targets, values, calldatas, description);
+
+        // Emit the event to log the execution of the run function.
+        emit RunFunctionExecuted(msg.sender, block.timestamp);
 
         vm.stopBroadcast();
     }
