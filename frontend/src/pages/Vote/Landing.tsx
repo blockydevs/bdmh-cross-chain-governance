@@ -340,7 +340,7 @@ export default function Landing() {
               </StyledButtonPrimary>
             </StyledButtonsContainer>
 
-            {/* Delegate to self */}
+            {/* Delegate to self, , comment out the showUnlockVoting variable so it will shows all the time */}
             {/* {showUnlockVoting ? ( */}
             <UnlockVotingContainer>
               <ThemedText.BodySecondary fontWeight={500} mr="4px">
@@ -356,7 +356,7 @@ export default function Landing() {
               </StyledButtonPrimary>
             </UnlockVotingContainer>
             {/* ) : null} */}
-            {/* Delegate to someone */}
+            {/* Delegate to someone, , comment out the showUnlockVoting variable so it will shows all the time */}
             {/* {showUnlockVoting ? ( */}
             <UnlockVotingContainer>
               <ThemedText.BodySecondary fontWeight={500} mr="4px">
@@ -380,62 +380,62 @@ export default function Landing() {
             {/* ) : null} */}
           </WrapSmall>
 
-          {/* After delegate  */}
-          {!showUnlockVoting && (
-            <RowBetween>
-              {userDelegatee && userDelegatee[0] !== ZERO_ADDRESS && chainId ? (
-                <StyledRowBetween justify="between">
-                  <RowFixed>
-                    <ThemedText.SubHeaderLarge mr="4px">
-                      <Trans>Delegated to:</Trans>
-                    </ThemedText.SubHeaderLarge>
-                    <AddressButton>
-                      <StyledExternalLink
-                        href={getExplorerLink(
-                          chainId,
-                          userDelegatee,
-                          ExplorerDataType.ADDRESS
-                        )}
-                        style={{ margin: "0 4px" }}
-                      >
-                        {shortenAddress(userDelegatee[0])}{" "}
-                        <Trans>
-                          {userDelegatee[0] == account ? "self" : "other"}
-                        </Trans>
-                      </StyledExternalLink>
-                    </AddressButton>
-                  </RowFixed>
+          {/* After delegate , after delegate it will shows the latest address delegate to*/}
+          {/* {!showUnlockVoting && ( */}
+          <RowBetween>
+            {userDelegatee && userDelegatee[0] !== ZERO_ADDRESS && chainId ? (
+              <StyledRowBetween justify="between">
+                <RowFixed>
+                  <ThemedText.SubHeaderLarge mr="4px">
+                    <Trans>Delegated to:</Trans>
+                  </ThemedText.SubHeaderLarge>
+                  <AddressButton>
+                    <StyledExternalLink
+                      href={getExplorerLink(
+                        chainId,
+                        userDelegatee,
+                        ExplorerDataType.ADDRESS
+                      )}
+                      style={{ margin: "0 4px" }}
+                    >
+                      {shortenAddress(userDelegatee[0])}{" "}
+                      <Trans>
+                        {userDelegatee[0] == account ? "(self)" : "(other)"}
+                      </Trans>
+                    </StyledExternalLink>
+                  </AddressButton>
+                </RowFixed>
 
-                  {availableVotes &&
-                  JSBI.notEqual(JSBI.BigInt(0), availableVotes?.quotient) ? (
-                    <RowFixed>
-                      <ThemedText.SubHeaderLarge mr="6px">
-                        {uniBalance?.toExact()} <Trans>Votes</Trans>
-                      </ThemedText.SubHeaderLarge>
-                    </RowFixed>
-                  ) : uniBalance &&
-                    userDelegatee &&
-                    userDelegatee[0] !== ZERO_ADDRESS &&
-                    JSBI.notEqual(JSBI.BigInt(0), uniBalance?.quotient) ? (
-                    <RowFixed>
-                      <ThemedText.DeprecatedBody fontWeight={500} mr="6px">
-                        {uniBalance?.toExact()} <Trans>Votes</Trans>
-                      </ThemedText.DeprecatedBody>
-                    </RowFixed>
-                  ) : (
-                    ""
-                  )}
-                </StyledRowBetween>
-              ) : (
-                ""
-              )}
-            </RowBetween>
-          )}
+                {availableVotes &&
+                JSBI.notEqual(JSBI.BigInt(0), availableVotes?.quotient) ? (
+                  <RowFixed>
+                    <ThemedText.SubHeaderLarge mr="6px">
+                      {uniBalance?.toExact()} <Trans>Votes</Trans>
+                    </ThemedText.SubHeaderLarge>
+                  </RowFixed>
+                ) : uniBalance &&
+                  userDelegatee &&
+                  userDelegatee[0] !== ZERO_ADDRESS &&
+                  JSBI.notEqual(JSBI.BigInt(0), uniBalance?.quotient) ? (
+                  <RowFixed>
+                    <ThemedText.DeprecatedBody fontWeight={500} mr="6px">
+                      {uniBalance?.toExact()} <Trans>Votes</Trans>
+                    </ThemedText.DeprecatedBody>
+                  </RowFixed>
+                ) : (
+                  ""
+                )}
+              </StyledRowBetween>
+            ) : (
+              ""
+            )}
+          </RowBetween>
+          {/* )} */}
 
           <ThemedText.HeadlineLarge
             style={{ margin: "28px 0 12px 0", flexShrink: 0 }}
           >
-            <Trans>Proposalsa</Trans>
+            <Trans>Proposal</Trans>
           </ThemedText.HeadlineLarge>
           <div />
 

@@ -106,6 +106,7 @@ export default function DelegateModal({
               />
             </RowBetween>
             <ThemedText.DeprecatedBody>
+              Delegating to: {accountAddress} <br />
               <Trans>
                 vHMT tokens represent voting shares in MetaHuman governance.
               </Trans>
@@ -115,8 +116,7 @@ export default function DelegateModal({
               onClick={onDelegate}
             >
               <ThemedText.DeprecatedMediumHeader color="white">
-                {parsedAddress}
-                <Trans>Self Delegate</Trans>
+                <Trans>Delegate</Trans>
               </ThemedText.DeprecatedMediumHeader>
             </ButtonPrimary>
           </AutoColumn>
