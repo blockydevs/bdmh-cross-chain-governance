@@ -344,7 +344,7 @@ export default function Landing() {
             {/* {showUnlockVoting ? ( */}
             <UnlockVotingContainer>
               <ThemedText.BodySecondary fontWeight={500} mr="4px">
-                <Trans>You have to delegate to unlock voting</Trans>
+                <Trans>Delegate to unlock voting</Trans>
               </ThemedText.BodySecondary>
               <StyledButtonPrimary
                 onClick={() => {
@@ -360,7 +360,7 @@ export default function Landing() {
             {/* {showUnlockVoting ? ( */}
             <UnlockVotingContainer>
               <ThemedText.BodySecondary fontWeight={500} mr="4px">
-                <Trans>You can delegate to someone</Trans>
+                <Trans>Delegate to another address</Trans>
               </ThemedText.BodySecondary>
 
               <TransferAddressInput

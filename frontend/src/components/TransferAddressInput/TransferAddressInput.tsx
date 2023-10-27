@@ -25,7 +25,7 @@ const InputContainer = styled.div`
 `;
 
 const Input = styled.input`
-  font-size: 1.25rem;
+  // font-size: 1.25rem;
   outline: none;
   border: none;
   flex: 1 1 auto;
@@ -54,6 +54,17 @@ const Input = styled.input`
 
   ::placeholder {
     color: ${({ theme }) => theme.deprecated_text4};
+  }
+
+  @media only screen and (max-width: ${({ theme }) =>
+      `${theme.breakpoint.md}px`}) {
+    font-size: 16px;
+  }
+
+  @media only screen and (max-width: ${({ theme }) =>
+      `${theme.breakpoint.sm}px`}) {
+    font-size: 14px;
+    width: 50%;
   }
 `;
 
