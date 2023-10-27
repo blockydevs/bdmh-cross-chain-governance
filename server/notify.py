@@ -9,7 +9,7 @@ CONTRACT_ADDRESS = 'YOUR_CONTRACT_ADDRESS'
 CONTRACT_ABI = []
 #for discord integration
 CHANNEL_ID = 1165138239301107803  #Enter your discord channel id
-BOT_TOKEN = 'MTE2NjUzNjU2OTk5ODU0MDg5MA.G5vRdW.8JoOWg-ypzVyw3GkpILJnRgeEDUsbSIyDImWec'
+BOT_TOKEN = 'MTE2NjUzNjU2OTk5ODU0MDg5MA.GwX7K0.CL5GyZPQfS0DGS2dPgAvtuz743xtq7bBvDNXzc'
 
 NOTIFICATION = 'Hello, Mehidy I wanted to inform you that someone has created a proposal.'
 # NOTIFICATION = '.'
