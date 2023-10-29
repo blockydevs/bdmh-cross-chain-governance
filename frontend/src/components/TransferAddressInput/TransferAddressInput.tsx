@@ -11,7 +11,7 @@ const ContainerRow = styled.div`
   
   align-items: center;
   border-radius: 4px;
-  border: 2px solid ${"#320A8D"} } ;
+
   transition: border-color 300ms step-start
   background-color: #fff;
 `;

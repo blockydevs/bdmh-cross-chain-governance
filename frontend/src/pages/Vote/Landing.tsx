@@ -1,4 +1,5 @@
 /* eslint-disable prettier/prettier */
+import { BigNumber } from "@ethersproject/bignumber";
 import { Trans } from "@lingui/macro";
 import { CurrencyAmount, Token } from "@uniswap/sdk-core";
 import { useWeb3React } from "@web3-react/core";
@@ -16,7 +17,7 @@ import { useHmtContractToken } from "lib/hooks/useCurrencyBalance";
 import { useTokenBalance } from "lib/hooks/useCurrencyBalance";
 import { useIsMobile } from "nft/hooks";
 import { darken } from "polished";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "rebass/styled-components";
 import {
@@ -26,9 +27,11 @@ import {
   useToggleDelegateModal,
 } from "state/application/hooks";
 import { ApplicationModal } from "state/application/reducer";
-import { ProposalData } from "state/governance/hooks";
+import { ProposalData, useUserVotesByAddress } from "state/governance/hooks";
 import {
+  useAllDelegateData,
   useAllProposalData,
+  useTotalSupply,
   useUserDelegatee,
   useUserVotes,
 } from "state/governance/hooks";
@@ -63,6 +66,114 @@ const PageWrapper = styled(AutoColumn)`
     padding-top: 20px;
   }
 `;
+const DelegateContainer = styled.div`
+  max-width: 820px;
+  width: 100%;
+  background-color: ${({ theme }) => theme.white};
+  border-radius: 12px;
+  @media only screen and (max-width: ${({ theme }) =>
+      `${theme.breakpoint.sm}px`}) {
+    padding: 0 16px;
+  }
+
+  @media only screen and (max-width: ${({ theme }) =>
+      `${theme.breakpoint.xs}px`}) {
+    padding: unset;
+  }
+`;
+const Delegate = styled(Button)`
+  width: 100%;
+  display: flex;
+  align-items: center;
+  text-align: left;
+  padding: 0.75rem 1rem;
+
+  outline: none;
+  cursor: pointer;
+  text-decoration: none;
+  font-size: 14px;
+  background-color: ${({ theme }) => theme.white};
+
+  &:hover {
+    background-color: ${({ theme }) => theme.backgroundInteractive};
+  }
+
+  @media only screen and (max-width: ${({ theme }) =>
+      `${theme.breakpoint.sm}px`}) {
+    align-items: center;
+  }
+`;
+
+const DelegateVotingContainer = styled.div`
+  width: 80%;
+  display: flex;
+  align-items: center;
+  text-align: left;
+  padding: 0.75rem 1rem;
+
+  @media only screen and (max-width: ${({ theme }) =>
+      `${theme.breakpoint.sm}px`}) {
+    align-items: center;
+  }
+`;
+const DelegateAddress = styled.div`
+  width: 100px;
+  margin-right: 20px;
+  color: ${({ theme }) => theme.textPrimary};
+  font-weight: 600;
+
+  @media only screen and (max-width: ${({ theme }) =>
+      `${theme.breakpoint.md}px`}) {
+    width: 80px;
+  }
+`;
+const DelegateButton = styled.div`
+  width: 200px;
+  margin-right: 20px;
+  justify-self: flex-end;
+  color: ${({ theme }) => theme.textPrimary};
+  font-weight: 600;
+
+  @media only screen and (max-width: ${({ theme }) =>
+      `${theme.breakpoint.md}px`}) {
+    width: 200px;
+  }
+`;
+const DelegateVotingText = styled.div`
+  width: 150px;
+  margin-right: 20px;
+  color: ${({ theme }) => theme.textPrimary};
+  font-weight: 600;
+
+  @media only screen and (max-width: ${({ theme }) =>
+      `${theme.breakpoint.md}px`}) {
+    margin-right: 10px;
+    width: 100px;
+  }
+`;
+const StyledDelegateButton = styled(Button)`
+cursor: pointer;
+  width: 147px;
+  height: 42px;
+  margin-left: auto;
+  background: ${({ theme }) => theme.textSecondary};
+
+  @media only screen and (max-width: ${({ theme }) =>
+    `${theme.breakpoint.xs}px`}) {
+    width: 90%;
+    margin: 0 auto;
+
+    > button {
+      width: 204px !important;
+    }
+  }
+}
+
+@media only screen and (max-width: ${({ theme }) =>
+  `${theme.breakpoint.xs}px`}) {
+  flex-direction: column;
+  gap: 10px;
+}`;
 
 const ProposalsContainer = styled(AutoColumn)`
   max-width: 820px;
@@ -255,7 +366,13 @@ export default function Landing() {
   // get data to list all proposals
   const { data: allProposals } = useAllProposalData();
 
-  // user data
+  // get data to list all delegate
+  const { data: allDelagateData } = useAllDelegateData();
+
+  // get data to list totalSupply
+  const { data: getTotalSupply } = useTotalSupply();
+
+  // get data to list user votes
   const { availableVotes } = useUserVotes();
 
   const hmtContractToken = useHmtContractToken();
@@ -274,6 +391,7 @@ export default function Landing() {
   function onAddressChange(value: string) {
     setAddressToTransfer(value);
   }
+
   const { userDelegatee }: { userDelegatee: string; isLoading: boolean } =
     useUserDelegatee();
 
@@ -295,6 +413,26 @@ export default function Landing() {
     uniBalance && JSBI.notEqual(uniBalance.quotient, JSBI.BigInt(0))
   );
 
+  //filter top delegates
+  const [fitlerData, setFilterData] = useState<
+    {
+      address: string;
+      votepercentage: string;
+      votepower: string;
+    }[]
+  >([]);
+
+  function FormattedUserVotesByAddress(
+    addresses: string[],
+    totalSupply: BigNumber
+  ) {
+    const votes = useUserVotesByAddress(addresses, totalSupply);
+    useEffect(() => {
+      setFilterData(votes.filterData);
+    }, [addresses, totalSupply]);
+  }
+
+  const res = FormattedUserVotesByAddress(allDelagateData, getTotalSupply);
   return (
     <>
       <PageWrapper gap="lg" justify="center">
@@ -435,10 +573,54 @@ export default function Landing() {
           <ThemedText.HeadlineLarge
             style={{ margin: "28px 0 12px 0", flexShrink: 0 }}
           >
+            <Trans>Top Delegates</Trans>
+          </ThemedText.HeadlineLarge>
+          <DelegateContainer>
+            <Delegate>
+              <DelegateAddress>Address</DelegateAddress>
+              <DelegateVotingContainer>
+                <DelegateVotingText>Voting Percentage</DelegateVotingText>
+                <DelegateVotingText>Voting Power</DelegateVotingText>
+              </DelegateVotingContainer>
+
+              <DelegateButton></DelegateButton>
+            </Delegate>
+            {account &&
+              getTotalSupply &&
+              fitlerData?.map((item: any) => {
+                return (
+                  <Delegate key={item.acc}>
+                    <DelegateAddress>{shortenString(item.acc)}</DelegateAddress>
+                    <DelegateVotingContainer>
+                      <DelegateVotingText>
+                        {item.votepercentage}
+                      </DelegateVotingText>
+                      <DelegateVotingText>
+                        {item.votepower + " vHMT"}
+                      </DelegateVotingText>
+                    </DelegateVotingContainer>
+
+                    <DelegateButton>
+                      <StyledDelegateButton
+                        onClick={() => {
+                          toggleDelegateModal();
+                          setTransferToOther(true);
+                          setAddressToTransfer(item.acc);
+                        }}
+                      >
+                        <Trans>Delegate</Trans>
+                        <div></div>
+                      </StyledDelegateButton>
+                    </DelegateButton>
+                  </Delegate>
+                );
+              })}
+          </DelegateContainer>
+          <ThemedText.HeadlineLarge
+            style={{ margin: "28px 0 12px 0", flexShrink: 0 }}
+          >
             <Trans>Proposal</Trans>
           </ThemedText.HeadlineLarge>
-          <div />
-
           {allProposals?.length === 0 && <ProposalEmptyState />}
           {allProposals &&
             allProposals
