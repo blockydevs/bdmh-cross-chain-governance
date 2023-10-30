@@ -667,18 +667,16 @@ export function useTotalSupply(): {
 } {
   const [data, setTotalSupply] = useState();
   const [isLoading, setIsLoading] = useState(true);
-  const { account } = useWeb3React();
+  const { provider } = useWeb3React();
 
   const uniContract = useUniContract();
-
   useEffect(() => {
     setIsLoading(true);
     async function getTotalSupply() {
       if (uniContract) {
         try {
           const getTotalSupply =
-            account && (await uniContract?.functions.totalSupply());
-
+          provider && (await uniContract?.functions.totalSupply());
           setTotalSupply(getTotalSupply);
         } catch (error) {
           console.log(error);
@@ -689,7 +687,7 @@ export function useTotalSupply(): {
     }
 
     getTotalSupply();
-  });
+  }, [provider]);
   return { data, isLoading };
 }
 
@@ -701,7 +699,6 @@ export function useUserVotesByAddress(
   filterData: any;
 } {
   // const [availableVotes, setAvailableVotes] = useState<any>();
-  const { account } = useWeb3React();
   const uniContract = useUniContract();
   const filteredVotes: {
     acc: string;
@@ -712,12 +709,11 @@ export function useUserVotesByAddress(
   useEffect(() => {
     addresses.forEach((address) => {
       async function getUserVotesFromUni() {
-        if (uniContract) {
+        if (uniContract && totalSupply) {
           try {
             const getVotesResponse = await uniContract?.functions.getVotes(
               address
             );
-            // setAvailableVotes(getVotesResponse);
             if (getVotesResponse !== undefined && filteredVotes) {
               // if (filteredVotes.length < totalLength) {
               const votePowerPercentage = (
@@ -758,7 +754,7 @@ export function useUserVotesByAddress(
       }
       getUserVotesFromUni();
     });
-  }, [addresses]);
+  }, [addresses, totalSupply]);
 
   return { filterData };
 }

@@ -1,5 +1,4 @@
 /* eslint-disable prettier/prettier */
-import { BigNumber } from "@ethersproject/bignumber";
 import { Trans } from "@lingui/macro";
 import { CurrencyAmount, Token } from "@uniswap/sdk-core";
 import { useWeb3React } from "@web3-react/core";
@@ -17,7 +16,7 @@ import { useHmtContractToken } from "lib/hooks/useCurrencyBalance";
 import { useTokenBalance } from "lib/hooks/useCurrencyBalance";
 import { useIsMobile } from "nft/hooks";
 import { darken } from "polished";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "rebass/styled-components";
 import {
@@ -372,6 +371,8 @@ export default function Landing() {
   // get data to list totalSupply
   const { data: getTotalSupply } = useTotalSupply();
 
+  const {filterData : votes} = useUserVotesByAddress(allDelagateData, getTotalSupply);
+
   // get data to list user votes
   const { availableVotes } = useUserVotes();
 
@@ -413,26 +414,6 @@ export default function Landing() {
     uniBalance && JSBI.notEqual(uniBalance.quotient, JSBI.BigInt(0))
   );
 
-  //filter top delegates
-  const [fitlerData, setFilterData] = useState<
-    {
-      address: string;
-      votepercentage: string;
-      votepower: string;
-    }[]
-  >([]);
-
-  function FormattedUserVotesByAddress(
-    addresses: string[],
-    totalSupply: BigNumber
-  ) {
-    const votes = useUserVotesByAddress(addresses, totalSupply);
-    useEffect(() => {
-      setFilterData(votes.filterData);
-    }, [addresses, totalSupply]);
-  }
-
-  const res = FormattedUserVotesByAddress(allDelagateData, getTotalSupply);
   return (
     <>
       <PageWrapper gap="lg" justify="center">
@@ -482,7 +463,7 @@ export default function Landing() {
             {/* {showUnlockVoting ? ( */}
             <UnlockVotingContainer>
               <ThemedText.BodySecondary fontWeight={500} mr="4px">
-                <Trans>Delegate to unlock voting</Trans>
+                <Trans>Self Delegate to unlock voting</Trans>
               </ThemedText.BodySecondary>
               <StyledButtonPrimary
                 onClick={() => {
@@ -585,9 +566,8 @@ export default function Landing() {
 
               <DelegateButton></DelegateButton>
             </Delegate>
-            {account &&
-              getTotalSupply &&
-              fitlerData?.map((item: any) => {
+            {getTotalSupply &&
+              votes && votes?.map((item: any) => {
                 return (
                   <Delegate key={item.acc}>
                     <DelegateAddress>{shortenString(item.acc)}</DelegateAddress>
