@@ -573,7 +573,7 @@ export default function Landing() {
                     <DelegateAddress>{shortenString(item.acc)}</DelegateAddress>
                     <DelegateVotingContainer>
                       <DelegateVotingText>
-                        {item.votepercentage}
+                        {item.votepercentage} %
                       </DelegateVotingText>
                       <DelegateVotingText>
                         {item.votepower + " vHMT"}
