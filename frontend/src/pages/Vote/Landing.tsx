@@ -560,8 +560,8 @@ export default function Landing() {
             <Delegate>
               <DelegateAddress>Address</DelegateAddress>
               <DelegateVotingContainer>
-                <DelegateVotingText>Voting Percentage</DelegateVotingText>
                 <DelegateVotingText>Voting Power</DelegateVotingText>
+                <DelegateVotingText>vHMT</DelegateVotingText>
               </DelegateVotingContainer>
 
               <DelegateButton></DelegateButton>
