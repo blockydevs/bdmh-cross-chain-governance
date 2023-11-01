@@ -86,7 +86,6 @@ const Delegate = styled(Button)`
   align-items: center;
   text-align: left;
   padding: 0.75rem 1rem;
-
   outline: none;
   cursor: pointer;
   text-decoration: none;
@@ -99,6 +98,9 @@ const Delegate = styled(Button)`
 
   @media only screen and (max-width: ${({ theme }) =>
       `${theme.breakpoint.sm}px`}) {
+    width: 100%;
+    font-size: 10px;
+    padding: 0.4rem 0.5rem;
     align-items: center;
   }
 `;
@@ -112,30 +114,9 @@ const DelegateVotingContainer = styled.div`
 
   @media only screen and (max-width: ${({ theme }) =>
       `${theme.breakpoint.sm}px`}) {
+    width: 70%;
+    padding: 0.4rem 0.5rem;
     align-items: center;
-  }
-`;
-const DelegateAddress = styled.div`
-  width: 100px;
-  margin-right: 20px;
-  color: ${({ theme }) => theme.textPrimary};
-  font-weight: 600;
-
-  @media only screen and (max-width: ${({ theme }) =>
-      `${theme.breakpoint.md}px`}) {
-    width: 80px;
-  }
-`;
-const DelegateButton = styled.div`
-  width: 200px;
-  margin-right: 20px;
-  justify-self: flex-end;
-  color: ${({ theme }) => theme.textPrimary};
-  font-weight: 600;
-
-  @media only screen and (max-width: ${({ theme }) =>
-      `${theme.breakpoint.md}px`}) {
-    width: 200px;
   }
 `;
 const DelegateVotingText = styled.div`
@@ -146,11 +127,34 @@ const DelegateVotingText = styled.div`
 
   @media only screen and (max-width: ${({ theme }) =>
       `${theme.breakpoint.md}px`}) {
-    margin-right: 10px;
-    width: 100px;
+    width: 100%;
+    margin-right: 3px;
   }
 `;
-const StyledDelegateButton = styled(Button)`
+const DelegateAddress = styled.div`
+  width: 100px;
+  margin-right: 20px;
+  color: ${({ theme }) => theme.textPrimary};
+  font-weight: 600;
+
+  @media only screen and (max-width: ${({ theme }) =>
+      `${theme.breakpoint.md}px`}) {
+    width: 20%;
+  }
+`;
+const DelegateButton = styled.div`
+  width: 200px;
+  color: ${({ theme }) => theme.textPrimary};
+  font-weight: 600;
+
+  @media only screen and (max-width: ${({ theme }) =>
+      `${theme.breakpoint.md}px`}) {
+    font-size: 10px;
+    width: 60px;
+  }
+`;
+
+const StyledDelegateButton = styled(ButtonPrimary)`
 cursor: pointer;
   width: 147px;
   height: 42px;
@@ -159,12 +163,10 @@ cursor: pointer;
 
   @media only screen and (max-width: ${({ theme }) =>
     `${theme.breakpoint.xs}px`}) {
-    width: 90%;
+    width: 60px;
+    height: 30px;
+    font-size:10px;
     margin: 0 auto;
-
-    > button {
-      width: 204px !important;
-    }
   }
 }
 
@@ -371,7 +373,10 @@ export default function Landing() {
   // get data to list totalSupply
   const { data: getTotalSupply } = useTotalSupply();
 
-  const {filterData : votes} = useUserVotesByAddress(allDelagateData, getTotalSupply);
+  const { filterData: votes } = useUserVotesByAddress(
+    allDelagateData,
+    getTotalSupply
+  );
 
   // get data to list user votes
   const { availableVotes } = useUserVotes();
@@ -567,31 +572,35 @@ export default function Landing() {
               <DelegateButton></DelegateButton>
             </Delegate>
             {getTotalSupply &&
-              votes && votes?.map((item: any) => {
+              votes &&
+              votes?.map((item: any) => {
                 return (
                   <Delegate key={item.acc}>
-                    <DelegateAddress>{shortenString(item.acc)}</DelegateAddress>
-                    <DelegateVotingContainer>
-                      <DelegateVotingText>
-                        {item.votepercentage} %
-                      </DelegateVotingText>
-                      <DelegateVotingText>
-                        {item.votepower + " vHMT"}
-                      </DelegateVotingText>
-                    </DelegateVotingContainer>
+                    <RowBetween>
+                      <DelegateAddress>
+                        {shortenString(item.acc)}
+                      </DelegateAddress>
+                      <DelegateVotingContainer>
+                        <DelegateVotingText>
+                          {item.votepercentage} %
+                        </DelegateVotingText>
+                        <DelegateVotingText>
+                          {item.votepower + " vHMT"}
+                        </DelegateVotingText>
+                      </DelegateVotingContainer>
 
-                    <DelegateButton>
-                      <StyledDelegateButton
-                        onClick={() => {
-                          toggleDelegateModal();
-                          setTransferToOther(true);
-                          setAddressToTransfer(item.acc);
-                        }}
-                      >
-                        <Trans>Delegate</Trans>
-                        <div></div>
-                      </StyledDelegateButton>
-                    </DelegateButton>
+                      <DelegateButton>
+                        <StyledDelegateButton
+                          onClick={() => {
+                            toggleDelegateModal();
+                            setTransferToOther(true);
+                            setAddressToTransfer(item.acc);
+                          }}
+                        >
+                          <Trans>Delegate</Trans>
+                        </StyledDelegateButton>
+                      </DelegateButton>
+                    </RowBetween>
                   </Delegate>
                 );
               })}
