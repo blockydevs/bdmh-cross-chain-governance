@@ -65,32 +65,33 @@ const PageWrapper = styled(AutoColumn)`
     padding-top: 20px;
   }
 `;
-const DelegateContainer = styled.div`
-  max-width: 820px;
-  width: 100%;
-  background-color: ${({ theme }) => theme.white};
-  border-radius: 12px;
-  @media only screen and (max-width: ${({ theme }) =>
-      `${theme.breakpoint.sm}px`}) {
-    padding: 0 16px;
-  }
+const DelegateContainer = styled(RowBetween)`
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 1rem;
 
-  @media only screen and (max-width: ${({ theme }) =>
-      `${theme.breakpoint.xs}px`}) {
-    padding: unset;
-  }
+  ${({ theme }) => theme.deprecated_mediaWidth.deprecated_upToSmall`
+  flex-wrap: wrap;
+`};
 `;
-const Delegate = styled(Button)`
+const DelegateHeader = styled.div`
   width: 100%;
   display: flex;
   align-items: center;
-  text-align: left;
-  padding: 0.75rem 1rem;
-  outline: none;
+  margin: 0px 12px 0 0;
+  padding: 28px 16px;
   cursor: pointer;
-  text-decoration: none;
   font-size: 14px;
+  font-weight: 600;
   background-color: ${({ theme }) => theme.white};
+`;
+const DelegateBody = styled.div`
+  display: flex;
+  align-items: center;
+  width: 100%;
+  margin: 0px 12px 0 0;
+  padding: 15px 16px;
+  background: ${({ theme }) => theme.white};
 
   &:hover {
     background-color: ${({ theme }) => theme.backgroundInteractive};
@@ -105,76 +106,24 @@ const Delegate = styled(Button)`
   }
 `;
 
-const DelegateVotingContainer = styled.div`
-  width: 80%;
-  display: flex;
-  align-items: center;
-  text-align: left;
-  padding: 0.75rem 1rem;
+const DelegateButton = styled(ButtonPrimary)`
+   {
+    width: 147px;
+    height: 42px;
+    margin-left: auto;
+    background: ${({ theme }) => theme.textSecondary};
 
-  @media only screen and (max-width: ${({ theme }) =>
-      `${theme.breakpoint.sm}px`}) {
-    width: 70%;
-    padding: 0.4rem 0.5rem;
-    align-items: center;
+    @media only screen and (max-width: ${({ theme }) =>
+        `${theme.breakpoint.xs}px`}) {
+      width: 90%;
+      margin: 0 auto;
+      font-size: 10px;
+      > button {
+        width: 204px !important;
+      }
+    }
   }
 `;
-const DelegateVotingText = styled.div`
-  width: 150px;
-  margin-right: 20px;
-  color: ${({ theme }) => theme.textPrimary};
-  font-weight: 600;
-
-  @media only screen and (max-width: ${({ theme }) =>
-      `${theme.breakpoint.md}px`}) {
-    width: 100%;
-    margin-right: 3px;
-  }
-`;
-const DelegateAddress = styled.div`
-  width: 100px;
-  margin-right: 20px;
-  color: ${({ theme }) => theme.textPrimary};
-  font-weight: 600;
-
-  @media only screen and (max-width: ${({ theme }) =>
-      `${theme.breakpoint.md}px`}) {
-    width: 20%;
-  }
-`;
-const DelegateButton = styled.div`
-  width: 200px;
-  color: ${({ theme }) => theme.textPrimary};
-  font-weight: 600;
-
-  @media only screen and (max-width: ${({ theme }) =>
-      `${theme.breakpoint.md}px`}) {
-    font-size: 10px;
-    width: 60px;
-  }
-`;
-
-const StyledDelegateButton = styled(ButtonPrimary)`
-cursor: pointer;
-  width: 147px;
-  height: 42px;
-  margin-left: auto;
-  background: ${({ theme }) => theme.textSecondary};
-
-  @media only screen and (max-width: ${({ theme }) =>
-    `${theme.breakpoint.xs}px`}) {
-    width: 60px;
-    height: 30px;
-    font-size:10px;
-    margin: 0 auto;
-  }
-}
-
-@media only screen and (max-width: ${({ theme }) =>
-  `${theme.breakpoint.xs}px`}) {
-  flex-direction: column;
-  gap: 10px;
-}`;
 
 const ProposalsContainer = styled(AutoColumn)`
   max-width: 820px;
@@ -562,49 +511,38 @@ export default function Landing() {
             <Trans>Top Delegates</Trans>
           </ThemedText.HeadlineLarge>
           <DelegateContainer>
-            <Delegate>
-              <DelegateAddress>Address</DelegateAddress>
-              <DelegateVotingContainer>
-                <DelegateVotingText>Voting Power</DelegateVotingText>
-                <DelegateVotingText>vHMT</DelegateVotingText>
-              </DelegateVotingContainer>
+            <DelegateHeader>
+              <AutoRow>Address</AutoRow>
+              <AutoRow>Voting Power</AutoRow>
+              <AutoRow>vHMT</AutoRow>
+              <AutoRow></AutoRow>
+            </DelegateHeader>
 
-              <DelegateButton></DelegateButton>
-            </Delegate>
             {getTotalSupply &&
               votes &&
               votes?.map((item: any) => {
                 return (
-                  <Delegate key={item.acc}>
-                    <RowBetween>
-                      <DelegateAddress>
-                        {shortenString(item.acc)}
-                      </DelegateAddress>
-                      <DelegateVotingContainer>
-                        <DelegateVotingText>
-                          {item.votepercentage} %
-                        </DelegateVotingText>
-                        <DelegateVotingText>
-                          {item.votepower + " vHMT"}
-                        </DelegateVotingText>
-                      </DelegateVotingContainer>
-
-                      <DelegateButton>
-                        <StyledDelegateButton
-                          onClick={() => {
-                            toggleDelegateModal();
-                            setTransferToOther(true);
-                            setAddressToTransfer(item.acc);
-                          }}
-                        >
-                          <Trans>Delegate</Trans>
-                        </StyledDelegateButton>
+                  <DelegateBody key={item.acc}>
+                    <AutoRow>{shortenString(item.acc)}</AutoRow>
+                    <AutoRow>{item.votepercentage} %</AutoRow>
+                    <AutoRow>{item.votepower + " vHMT"}</AutoRow>
+                    <AutoRow>
+                      <DelegateButton
+                        onClick={() => {
+                          toggleDelegateModal();
+                          setTransferToOther(true);
+                          setAddressToTransfer(item.acc);
+                        }}
+                      >
+                        <Trans>Delegate</Trans>
                       </DelegateButton>
-                    </RowBetween>
-                  </Delegate>
+                    </AutoRow>
+                    {/* </DelegateButton> */}
+                  </DelegateBody>
                 );
               })}
           </DelegateContainer>
+
           <ThemedText.HeadlineLarge
             style={{ margin: "28px 0 12px 0", flexShrink: 0 }}
           >
