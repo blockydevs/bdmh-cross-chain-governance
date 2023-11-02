@@ -1,6 +1,7 @@
 from web3 import Web3
 import discord
 import asyncio
+import requests
 
 # GLOBALS
 # for web3 integration
@@ -49,6 +50,25 @@ if w3:
         while True:
             for event in event_filter.get_new_entries():
                 event_callback(event)
+
+    #telegram setup
+    telegram_message = """I am a telegram bot and I want to tell my makers' friend "Bakr Chan" that I am also integrated into the notification app.
+    Thanks."""
+    
+    Group_ID = -4076543591
+    
+    def send_message(message):
+        base_url = f"https://api.telegram.org/bot6354873154:AAEZ16kIOPu6nZjWklOQLf-LZ4dsR1wIT0k/sendMessage"
+        params = {
+            'chat_id': Group_ID,
+            'text': message
+        }
+    
+        response = requests.get(base_url, params=params)
+        print("Message is sent")
+    
+    # Call the function
+    send_message(telegram_message)
 
 
 # this is just for testing the notifications without events can be removed once the project is done.
