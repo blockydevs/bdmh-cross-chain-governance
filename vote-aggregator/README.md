@@ -103,6 +103,25 @@ Redis - In-memory data structure store.
 dotenv - Module to load environment variables from .env file.       
 web3.js - Ethereum JavaScript API.
 
-
+## Github Actions deploy
+Set proper NETWORK_PARAMS in secrets with format
+```json
+{"NETWORK_PARAMS":
+  [
+    {
+      "NETWORK_MOONBASE_SPOKE_ADDRESS": "0xabc",
+      "NETWORK_MOONBASE_CHAIN_ID": 1,
+      "NETWORK_MOONBASE_RPC_URL": "https: //xyz",
+      "NETWORK_MOONBASE_DISPLAY_NAME": "name"
+    },
+    {
+      "NETWORK_AVALANCHE_SPOKE_ADDRESS": "0xabc",
+      "NETWORK_AVALANCHE_CHAIN_ID": 1,
+      "NETWORK_AVALANCHE_RPC_URL": "https://xyz",
+      "NETWORK_AVALANCHE_DISPLAY_NAME": "name"
+    }
+  ]
+}
+```
 
 
