@@ -60,7 +60,9 @@ jobs:
           version: nightly
 
       - name: Deploy contracts
-        run: ./deploy.sh
+        run: |
+          forge -V
+          ./deploy.sh
 
       # store output jsons as artifact, for download see https://docs.github.com/en/rest/actions/artifacts?apiVersion=2022-11-28#download-an-artifact
       - uses: actions/upload-artifact@v3
