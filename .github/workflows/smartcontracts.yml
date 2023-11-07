@@ -57,7 +57,7 @@ jobs:
       - name: Install Foundry
         uses: foundry-rs/foundry-toolchain@v1
         with:
-          version: nightly-ca67d15f4abd46394b324c50e21e66f306a1162d
+          version: nightly-2e90e35ee52efeba74c06a1484bdc1fb96d01a0e
 
       - name: Deploy contracts
         run: |
