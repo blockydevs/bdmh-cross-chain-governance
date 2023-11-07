@@ -109,16 +109,16 @@ Set proper NETWORK_PARAMS in secrets with format
 {"NETWORK_PARAMS":
   [
     {
-      "NETWORK_MOONBASE_SPOKE_ADDRESS": "0xabc",
-      "NETWORK_MOONBASE_CHAIN_ID": 1,
-      "NETWORK_MOONBASE_RPC_URL": "https: //xyz",
-      "NETWORK_MOONBASE_DISPLAY_NAME": "name"
+      "NETWORK_SPOKE_ADDRESS": "0xabc",
+      "NETWORK_CHAIN_ID": 1,
+      "NETWORK_RPC_URL": "https: //xyz",
+      "NETWORK_DISPLAY_NAME": "name"
     },
     {
-      "NETWORK_AVALANCHE_SPOKE_ADDRESS": "0xabc",
-      "NETWORK_AVALANCHE_CHAIN_ID": 1,
-      "NETWORK_AVALANCHE_RPC_URL": "https://xyz",
-      "NETWORK_AVALANCHE_DISPLAY_NAME": "name"
+      "NETWORK_SPOKE_ADDRESS": "0xabc",
+      "NETWORK_CHAIN_ID": 1,
+      "NETWORK_RPC_URL": "https://xyz",
+      "NETWORK_DISPLAY_NAME": "name"
     }
   ]
 }
