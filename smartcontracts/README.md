@@ -62,7 +62,7 @@ The project relies on the following external dependencies:
 
 To set up and deploy the contracts, follow these steps:
 
-1. Install Foundry. [Installation guide](https://book.getfoundry.sh/getting-started/installation)
+1. Install Foundry. [Installation guide](https://book.getfoundry.sh/getting-started/installation), require [Nightly (2023-08-02)](https://github.com/foundry-rs/foundry/releases/tag/nightly-ca67d15f4abd46394b324c50e21e66f306a1162d) version.
 2. Prepare `.env` file based on provided [.env.example](.env.example).
 3. Fill out private keys, rpc urls, magistrate address and Etherscan api keys.
 4. Follow instructions from [Deployment guide](DEPLOYMENT_GUIDE.md).
