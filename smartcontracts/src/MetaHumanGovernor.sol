@@ -70,9 +70,6 @@ contract MetaHumanGovernor is Governor, GovernorSettings, CrossChainGovernorCoun
     ) public payable override {
         require(msg.sender == address(wormholeRelayer), "Only relayer allowed");
 
-        require(spokeContractsMapping[sourceAddress][sourceChain],
-            "Only messages from the spoke contracts can be received!");
-
         require(!processedMessages[deliveryHash], "Message already processed");
 
         (
@@ -110,6 +107,10 @@ contract MetaHumanGovernor is Governor, GovernorSettings, CrossChainGovernorCoun
         uint256 _against,
         uint256 _abstain
         ) = abi.decode(payload, (uint16, uint256, uint256, uint256, uint256));
+
+        require(spokeContractsMappingSnapshots[_proposalId][emitterAddress][emitterChainId],
+            "Only messages from the spoke contracts can be received!");
+
         // As long as the received data isn't already initialized...
         if (spokeVotes[_proposalId][emitterAddress][emitterChainId].initialized) {
             revert("Already initialized!");
@@ -157,11 +158,11 @@ contract MetaHumanGovernor is Governor, GovernorSettings, CrossChainGovernorCoun
     */
     function _finishCollectionPhase(uint256 proposalId) internal {
         bool phaseFinished = true;
-        uint spokeContractsLength = spokeContracts.length;
+        uint spokeContractsLength = spokeContractsSnapshots[proposalId].length;
         for (uint16 i = 1; i <= spokeContractsLength && phaseFinished; ++i) {
             phaseFinished =
             phaseFinished &&
-            spokeVotes[proposalId][spokeContracts[i-1].contractAddress][spokeContracts[i-1].chainId].initialized;
+            spokeVotes[proposalId][spokeContractsSnapshots[proposalId][i-1].contractAddress][spokeContractsSnapshots[proposalId][i-1].chainId].initialized;
         }
 
         collectionFinished[proposalId] = phaseFinished;
@@ -184,7 +185,7 @@ contract MetaHumanGovernor is Governor, GovernorSettings, CrossChainGovernorCoun
         collectionStarted[proposalId] = true;
 
 
-        uint spokeContractsLength = spokeContracts.length;
+        uint spokeContractsLength = spokeContractsSnapshots[proposalId].length;
         // Get a price of sending the message back to hub
         uint256 sendMessageToHubCost = quoteCrossChainMessage(chainId, 0);
 
@@ -194,17 +195,17 @@ contract MetaHumanGovernor is Governor, GovernorSettings, CrossChainGovernorCoun
             // Using "1" as the function selector
             bytes memory message = abi.encode(1, proposalId);
             bytes memory payload = abi.encode(
-                spokeContracts[i-1].contractAddress,
-                spokeContracts[i-1].chainId,
+                spokeContractsSnapshots[proposalId][i-1].contractAddress,
+                spokeContractsSnapshots[proposalId][i-1].chainId,
                 msg.sender,
                 message
             );
 
-            uint256 cost = quoteCrossChainMessage(spokeContracts[i-1].chainId, sendMessageToHubCost);
+            uint256 cost = quoteCrossChainMessage(spokeContractsSnapshots[proposalId][i-1].chainId, sendMessageToHubCost);
 
             wormholeRelayer.sendPayloadToEvm{value: cost}(
-                spokeContracts[i-1].chainId,
-                address(uint160(uint256(spokeContracts[i-1].contractAddress))),
+                spokeContractsSnapshots[proposalId][i-1].chainId,
+                address(uint160(uint256(spokeContractsSnapshots[proposalId][i-1].contractAddress))),
                 payload,
                 sendMessageToHubCost, // send value to enable the spoke to send back vote result
                 GAS_LIMIT
@@ -226,11 +227,15 @@ contract MetaHumanGovernor is Governor, GovernorSettings, CrossChainGovernorCoun
     onlyMagistrate
     returns (uint256) {
         uint256 proposalId = super.propose(targets, values, calldatas, description);
+
+        //create snapshot of current spokes
+        createSnapshot(proposalId);
+
         // Sends the proposal to all of the other spoke contracts
-        if (spokeContracts.length > 0) {
+        if (spokeContractsSnapshots[proposalId].length > 0) {
 
             // Iterate over every spoke contract and send a message
-            uint spokeContractsLength = spokeContracts.length;
+            uint spokeContractsLength = spokeContractsSnapshots[proposalId].length;
             for (uint16 i = 1; i <= spokeContractsLength; ++i) {
                 bytes memory message = abi.encode(
                     0, // Function selector "0" for destination contract
@@ -239,17 +244,17 @@ contract MetaHumanGovernor is Governor, GovernorSettings, CrossChainGovernorCoun
                 );
 
                 bytes memory payload = abi.encode(
-                    spokeContracts[i-1].contractAddress,
-                    spokeContracts[i-1].chainId,
+                    spokeContractsSnapshots[proposalId][i-1].contractAddress,
+                    spokeContractsSnapshots[proposalId][i-1].chainId,
                     bytes32(uint256(uint160(address(this)))),
                     message
                 );
 
-                uint256 cost = quoteCrossChainMessage(spokeContracts[i-1].chainId, 0);
+                uint256 cost = quoteCrossChainMessage(spokeContractsSnapshots[proposalId][i-1].chainId, 0);
 
                 wormholeRelayer.sendPayloadToEvm{value: cost}(
-                    spokeContracts[i-1].chainId,
-                    address(uint160(uint256(spokeContracts[i-1].contractAddress))),
+                    spokeContractsSnapshots[proposalId][i-1].chainId,
+                    address(uint160(uint256(spokeContractsSnapshots[proposalId][i-1].contractAddress))),
                     payload,
                     0, // no receiver value needed
                     GAS_LIMIT

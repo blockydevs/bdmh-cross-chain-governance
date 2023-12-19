@@ -491,6 +491,72 @@ contract MetaHumanGovernorTest is TestUtil, EIP712 {
         assert(state == expectedState);
     }
 
+    function testGetProposalStateWhenSpokesUpdatedAfterProposalCreation() public {
+        CrossChainGovernorCountingSimple.CrossChainAddress[] memory spokeContracts = new CrossChainGovernorCountingSimple.CrossChainAddress[](1);
+        spokeContracts[0] = CrossChainGovernorCountingSimple.CrossChainAddress(bytes32(uint256(uint160(address(daoSpokeContract)))), spokeChainId);
+        governanceContract.updateSpokeContracts(spokeContracts);
+        uint256 proposalId = _createBasicProposal();
+
+        CrossChainGovernorCountingSimple.CrossChainAddress[] memory updatedSpokeContracts = new CrossChainGovernorCountingSimple.CrossChainAddress[](1);
+        updatedSpokeContracts[0] = CrossChainGovernorCountingSimple.CrossChainAddress(bytes32(uint256(uint160(address(this)))), spokeChainId);
+        governanceContract.updateSpokeContracts(updatedSpokeContracts);
+
+        address someUser = _createMockUserWithVotingPower(1, voteToken);
+
+        //wait for next block
+        vm.roll(block.number + 2);
+        //cast vote
+        vm.startPrank(someUser);
+        governanceContract.castVote(proposalId, 1);
+        vm.stopPrank();
+
+        vm.roll(block.number + 50410);
+        governanceContract.requestCollections(proposalId);
+        _collectVotesFromSpoke(proposalId);
+
+        IGovernor.ProposalState state = governanceContract.state(proposalId);
+        IGovernor.ProposalState expectedState = IGovernor.ProposalState.Succeeded;
+        assert(state == expectedState);
+    }
+
+    function testReceiveMessageWhenVotesAlreadyCount() public {
+        CrossChainGovernorCountingSimple.CrossChainAddress[] memory spokeContracts = new CrossChainGovernorCountingSimple.CrossChainAddress[](1);
+        spokeContracts[0] = CrossChainGovernorCountingSimple.CrossChainAddress(bytes32(uint256(uint160(address(daoSpokeContract)))), spokeChainId);
+        governanceContract.updateSpokeContracts(spokeContracts);
+        uint256 proposalId = _createBasicProposal();
+
+        address someUser = _createMockUserWithVotingPower(1, voteToken);
+
+        //wait for next block
+        vm.roll(block.number + 2);
+        //cast vote
+        vm.startPrank(someUser);
+        governanceContract.castVote(proposalId, 1);
+        vm.stopPrank();
+
+        vm.roll(block.number + 50410);
+        governanceContract.requestCollections(proposalId);
+        _collectVotesFromSpoke(proposalId);
+
+        bytes memory message = abi.encode(
+            0,
+            proposalId, //proposalId
+            100 ether, //forVotes
+            200 ether, //againstVotes
+            300 ether //abstainVotes
+        );
+        //different result, so hash of Wormhole message will be different
+        bytes memory payload = abi.encode(
+            address(governanceContract),
+            hubChainId,
+            address(daoSpokeContract),
+            message
+        );
+
+        vm.expectRevert("Already initialized!");
+        _callReceiveMessageOnHubWithMock(_createMessageWithPayload(payload, spokeChainId, address(daoSpokeContract)));
+    }
+
     function testGetProposalThreshold() public {
         uint256 proposalThreshold = governanceContract.proposalThreshold();
         assertEq(proposalThreshold, 0);//0 is just taken from MetaHumanGovernor.sol constructor (GovernorSettings)
@@ -520,46 +586,13 @@ contract MetaHumanGovernorTest is TestUtil, EIP712 {
             3 ether //abstainVotes
         );
         bytes memory payload = abi.encode(
-            address(daoSpokeContract),
-            spokeChainId,
             address(governanceContract),
+            spokeChainId,
+            address(daoSpokeContract),
             message
         );
         vm.expectRevert("Only messages from the spoke contracts can be received!");
         _callReceiveMessageOnHubWithMock(_createMessageWithPayload(payload));
-    }
-
-    function testReceiveMessageWhenVotesAlreadyCount() public {
-        bytes memory message = abi.encode(
-            0,
-            1, //proposalId
-            1 ether, //forVotes
-            2 ether, //againstVotes
-            3 ether //abstainVotes
-        );
-        //different result, so hash of Wormhole message will be different
-        bytes memory message2 = abi.encode(
-            0,
-            1, //proposalId
-            2 ether, //forVotes
-            2 ether, //againstVotes
-            3 ether //abstainVotes
-        );
-        bytes memory payload = abi.encode(
-            address(governanceContract),
-            hubChainId,
-            address(daoSpokeContract),
-            message
-        );
-        bytes memory payload2 = abi.encode(
-            address(governanceContract),
-            hubChainId,
-            address(daoSpokeContract),
-            message2
-        );
-        _callReceiveMessageOnHubWithMock(_createMessageWithPayload(payload, spokeChainId, address(daoSpokeContract)));
-        vm.expectRevert("Already initialized!");
-        _callReceiveMessageOnHubWithMock(_createMessageWithPayload(payload2, spokeChainId, address(daoSpokeContract)));
     }
 
     function testReceiveMessage() public {
