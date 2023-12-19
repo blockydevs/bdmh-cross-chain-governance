@@ -83,7 +83,7 @@ contract MetaHumanGovernor is Governor, GovernorSettings, CrossChainGovernorCoun
         bytes memory decodedMessage
         ) = abi.decode(payload, (address, uint16, address, bytes));
 
-        require(intendedRecipient == address(this));
+        require(intendedRecipient == address(this), "Message is not addressed for this contract");
 
         processedMessages[deliveryHash] = true;
         // Gets a function selector option

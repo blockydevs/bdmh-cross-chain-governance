@@ -161,7 +161,7 @@ contract DAOSpokeContract is IWormholeReceiver {
             bytes memory decodedMessage
         ) = abi.decode(payload, (address, uint16, address, bytes));
 
-        require(intendedRecipient == address(this));
+        require(intendedRecipient == address(this), "Message is not addressed for this contract");
 
         processedMessages[deliveryHash] = true;
 

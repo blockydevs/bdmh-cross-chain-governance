@@ -597,7 +597,7 @@ contract MetaHumanGovernorTest is TestUtil, EIP712 {
             address(daoSpokeContract),
             message
         );
-        vm.expectRevert();
+        vm.expectRevert("Message is not addressed for this contract");
         _callReceiveMessageOnHubWithMock(_createMessageWithPayload(payload, spokeChainId, address(daoSpokeContract)));
     }
 

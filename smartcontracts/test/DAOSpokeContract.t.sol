@@ -195,6 +195,24 @@ contract DAOSpokeContractTest is TestUtil {
         _callReceiveMessageOnSpokeWithMock(mockPayload);
     }
 
+    function testReceiveMessageWhenContractIsNotIntendedRecipient() public {
+        uint256 proposalId = 1;
+        bytes memory message = abi.encode(
+            0, // Function selector
+            proposalId,
+            block.timestamp // Encoding the proposal start
+        );
+        bytes memory payload = abi.encode(
+            address(this),
+            spokeChainId,
+            address(governanceContract),
+            message
+        );
+        IWormhole.VM memory mockPayload = _createMessageWithPayload(payload);
+        vm.expectRevert("Message is not addressed for this contract");
+        _callReceiveMessageOnSpokeWithMock(mockPayload);
+    }
+
     function testReceiveMessageWhenProposalIdNotUnique() public {
         uint256 proposalId = 1;
         bytes memory message = abi.encode(
