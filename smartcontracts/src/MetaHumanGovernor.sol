@@ -62,8 +62,8 @@ contract MetaHumanGovernor is Governor, GovernorSettings, CrossChainGovernorCoun
      @param deliveryHash A unique hash representing the delivery of the message to prevent duplicate processing.
     */
     function receiveWormholeMessages(
-        bytes memory payload,
-        bytes[] memory additionalVaas, // additionalVaas
+        bytes calldata payload,
+        bytes[] calldata additionalVaas, // additionalVaas
         bytes32 sourceAddress, // address that called 'sendPayloadToEvm' (HelloWormhole contract address)
         uint16 sourceChain,
         bytes32 deliveryHash // this can be stored in a mapping deliveryHash => bool to prevent duplicate deliveries
@@ -221,7 +221,7 @@ contract MetaHumanGovernor is Governor, GovernorSettings, CrossChainGovernorCoun
      @param description The description of the proposal.
      @return The ID of the created proposal.
     */
-    function crossChainPropose(address[] memory targets, uint256[] memory values, bytes[] memory calldatas, string memory description)
+    function crossChainPropose(address[] calldata targets, uint256[] calldata values, bytes[] calldata calldatas, string calldata description)
     public payable virtual
     onlyMagistrate
     returns (uint256) {
