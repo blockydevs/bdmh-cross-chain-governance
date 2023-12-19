@@ -65,6 +65,9 @@ abstract contract CrossChainGovernorCountingSimple is Governor, Ownable {
         uint newSpokeContractsLength = _spokeContracts.length;
         for (uint i = 1; i <= newSpokeContractsLength; ++i) {
             CrossChainAddress memory addressToAdd = _spokeContracts[i-1];
+            if (spokeContractsMapping[addressToAdd.contractAddress][addressToAdd.chainId] == true) {//check if duplicate
+                revert("Duplicates are not allowed");
+            }
             spokeContractsMapping[addressToAdd.contractAddress][addressToAdd.chainId] = true;
             spokeContracts.push(addressToAdd);
         }

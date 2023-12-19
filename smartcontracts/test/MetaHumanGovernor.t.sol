@@ -63,6 +63,25 @@ contract MetaHumanGovernorTest is TestUtil, EIP712 {
         assertTrue(governanceContract.spokeContractsMapping(bytes32(uint256(uint160(address(newlyDeployedSpoke)))), spokeChainId));
     }
 
+    function testUpdateSpokeContractsWithDuplicate() public {
+        DAOSpokeContract newlyDeployedSpoke = new DAOSpokeContract(bytes32(uint256(uint160(address(governanceContract)))), hubChainId, voteToken, 12, spokeChainId, wormholeMockAddress);
+        CrossChainGovernorCountingSimple.CrossChainAddress[] memory spokeContracts = new CrossChainGovernorCountingSimple.CrossChainAddress[](2);
+        spokeContracts[0] = CrossChainGovernorCountingSimple.CrossChainAddress(bytes32(uint256(uint160(address(newlyDeployedSpoke)))), spokeChainId);
+        spokeContracts[1] = CrossChainGovernorCountingSimple.CrossChainAddress(bytes32(uint256(uint160(address(newlyDeployedSpoke)))), spokeChainId);
+        vm.expectRevert("Duplicates are not allowed");
+        governanceContract.updateSpokeContracts(spokeContracts);
+    }
+
+    function testUpdateSpokeContractsWithUniqueEntries() public {
+        DAOSpokeContract newlyDeployedSpoke = new DAOSpokeContract(bytes32(uint256(uint160(address(governanceContract)))), hubChainId, voteToken, 12, spokeChainId, wormholeMockAddress);
+        CrossChainGovernorCountingSimple.CrossChainAddress[] memory spokeContracts = new CrossChainGovernorCountingSimple.CrossChainAddress[](2);
+        spokeContracts[0] = CrossChainGovernorCountingSimple.CrossChainAddress(bytes32(uint256(uint160(address(newlyDeployedSpoke)))), spokeChainId);
+        spokeContracts[1] = CrossChainGovernorCountingSimple.CrossChainAddress(bytes32(uint256(uint160(address(newlyDeployedSpoke)))), spokeChainId + 1);
+        governanceContract.updateSpokeContracts(spokeContracts);
+        assertTrue(governanceContract.spokeContractsMapping(bytes32(uint256(uint160(address(newlyDeployedSpoke)))), spokeChainId));
+        assertTrue(governanceContract.spokeContractsMapping(bytes32(uint256(uint160(address(newlyDeployedSpoke)))), spokeChainId + 1));
+    }
+
     function testCannotUpdateSpokeContractsAfterTransferringOwnership() public {
         DAOSpokeContract newlyDeployedSpoke = new DAOSpokeContract(bytes32(uint256(uint160(address(governanceContract)))), hubChainId, voteToken, 12, spokeChainId, wormholeMockAddress);
         CrossChainGovernorCountingSimple.CrossChainAddress[] memory spokeContracts = new CrossChainGovernorCountingSimple.CrossChainAddress[](1);
