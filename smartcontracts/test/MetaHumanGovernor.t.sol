@@ -99,7 +99,6 @@ contract MetaHumanGovernorTest is TestUtil, EIP712 {
         calldatas[0] = encodedCall;
 
         governanceContract.crossChainPropose(targets, values, calldatas, "");
-        assert(governanceContract.nonce() == 0);//no messages emitted
     }
 
     function testCrossChainProposeWhenNotMagistrate() public {

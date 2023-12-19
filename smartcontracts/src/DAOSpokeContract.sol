@@ -22,7 +22,6 @@ contract DAOSpokeContract is IWormholeReceiver {
     IWormholeRelayer immutable public wormholeRelayer;
     uint16 immutable public chainId;
 
-    uint16 public nonce = 0;
     uint256 constant internal GAS_LIMIT = 500_000;
     mapping(uint256 => RemoteProposal) public proposals;
     mapping(uint256 => ProposalVote) public proposalVotes;

@@ -24,7 +24,6 @@ contract MetaHumanGovernor is Governor, GovernorSettings, CrossChainGovernorCoun
     GovernorVotes, GovernorVotesQuorumFraction, GovernorTimelockControl, Magistrate, IWormholeReceiver {
 
     IWormholeRelayer immutable public wormholeRelayer;
-    uint16 public nonce = 0;
     uint256 constant internal GAS_LIMIT = 500_000;
     uint16 immutable public chainId;
 
