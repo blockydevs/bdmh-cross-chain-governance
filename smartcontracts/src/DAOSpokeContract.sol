@@ -15,12 +15,12 @@ import "./wormhole/IWormholeReceiver.sol";
  */
 contract DAOSpokeContract is IWormholeReceiver {
 
-    bytes32 public hubContractAddress;
-    uint16 public hubContractChainId;
+    bytes32 public immutable hubContractAddress;
+    uint16 public immutable hubContractChainId;
     IVotes public immutable token;
     uint256 public immutable targetSecondsPerBlock;
-    IWormholeRelayer immutable public wormholeRelayer;
-    uint16 immutable public chainId;
+    IWormholeRelayer public immutable wormholeRelayer;
+    uint16 public immutable chainId;
 
     uint256 constant internal GAS_LIMIT = 500_000;
     mapping(uint256 => RemoteProposal) public proposals;
