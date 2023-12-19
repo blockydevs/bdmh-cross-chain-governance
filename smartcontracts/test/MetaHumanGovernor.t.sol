@@ -15,6 +15,8 @@ contract MetaHumanGovernorTest is TestUtil, EIP712 {
     EIP712("MetaHumanGovernor", "1")//done for vote with signature tests
     {}
 
+    event SpokesUpdated(CrossChainGovernorCountingSimple.CrossChainAddress[] indexed spokes);
+
     TimelockController public timelockController;
 
     function setUp() public {
@@ -55,6 +57,8 @@ contract MetaHumanGovernorTest is TestUtil, EIP712 {
         DAOSpokeContract newlyDeployedSpoke = new DAOSpokeContract(bytes32(uint256(uint160(address(governanceContract)))), hubChainId, voteToken, 12, spokeChainId, wormholeMockAddress);
         CrossChainGovernorCountingSimple.CrossChainAddress[] memory spokeContracts = new CrossChainGovernorCountingSimple.CrossChainAddress[](1);
         spokeContracts[0] = CrossChainGovernorCountingSimple.CrossChainAddress(bytes32(uint256(uint160(address(newlyDeployedSpoke)))), spokeChainId);
+        vm.expectEmit(true, false, false, false);
+        emit SpokesUpdated(spokeContracts);
         governanceContract.updateSpokeContracts(spokeContracts);
         assertTrue(governanceContract.spokeContractsMapping(bytes32(uint256(uint160(address(newlyDeployedSpoke)))), spokeChainId));
     }

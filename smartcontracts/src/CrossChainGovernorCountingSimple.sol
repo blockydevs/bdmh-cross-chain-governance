@@ -44,6 +44,8 @@ abstract contract CrossChainGovernorCountingSimple is Governor, Ownable {
         mapping(address => bool) hasVoted;
     }
 
+    event SpokesUpdated(CrossChainAddress[] indexed spokes);
+
     constructor(CrossChainAddress[] memory _spokeContracts) {
         updateSpokeContracts(_spokeContracts);
     }
@@ -66,6 +68,8 @@ abstract contract CrossChainGovernorCountingSimple is Governor, Ownable {
             spokeContractsMapping[addressToAdd.contractAddress][addressToAdd.chainId] = true;
             spokeContracts.push(addressToAdd);
         }
+
+        emit SpokesUpdated(spokeContracts);
     }
 
     /**
