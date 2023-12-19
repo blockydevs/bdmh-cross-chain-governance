@@ -213,6 +213,8 @@ contract DAOSpokeContract is IWormholeReceiver {
             // chain 'targetChain' with a gasLimit of 'GAS_LIMIT'
             uint256 cost = quoteCrossChainMessage(hubContractChainId);
 
+            proposals[proposalId].voteFinished = true;
+
             wormholeRelayer.sendPayloadToEvm{value: cost}(
                 hubContractChainId,
                 address(uint160(uint256(hubContractAddress))),
@@ -220,8 +222,6 @@ contract DAOSpokeContract is IWormholeReceiver {
                 0, // no receiver value needed
                 GAS_LIMIT
             );
-
-            proposals[proposalId].voteFinished = true;
         }
     }
 
