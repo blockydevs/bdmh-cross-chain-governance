@@ -172,7 +172,7 @@ contract MetaHumanGovernor is Governor, GovernorSettings, CrossChainGovernorCoun
      @dev Requests the voting data from all of the spoke chains.
      @param proposalId The ID of the proposal.
     */
-    function requestCollections(uint256 proposalId) public {
+    function requestCollections(uint256 proposalId) public payable {
         require(
             block.number > proposalDeadline(proposalId),
             "Cannot request for vote collection until after the vote period is over!"
@@ -276,7 +276,7 @@ contract MetaHumanGovernor is Governor, GovernorSettings, CrossChainGovernorCoun
 
     /**
      @dev Retrieves the voting delay period.
-     @return The duration of the voting delay in seconds.
+     @return The duration of the voting delay in blocks.
     */
     function votingDelay()
     public
@@ -289,7 +289,7 @@ contract MetaHumanGovernor is Governor, GovernorSettings, CrossChainGovernorCoun
 
     /**
      @dev Retrieves the voting period duration.
-     @return The duration of the voting period in seconds.
+     @return The duration of the voting period in blocks.
     */
     function votingPeriod()
     public
