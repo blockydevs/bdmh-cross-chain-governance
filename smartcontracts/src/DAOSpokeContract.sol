@@ -42,7 +42,10 @@ contract DAOSpokeContract is IWormholeReceiver {
 
     struct RemoteProposal {
         // Blocks provided by the hub chain as to when the local votes should start/finish.
+        uint256 proposalCreation;
         uint256 localVoteStart;
+        uint256 localVoteEnd;
+        uint256 localVoteStartBlock;
         bool voteFinished;
     }
 
@@ -89,15 +92,19 @@ contract DAOSpokeContract is IWormholeReceiver {
     {
         RemoteProposal storage proposal = proposals[proposalId];
         require(
-            !proposal.voteFinished,
-            "DAOSpokeContract: vote not currently active"
-        );
-        require(
             isProposal(proposalId),
             "DAOSpokeContract: not a started vote"
         );
+        require(
+            !proposal.voteFinished,
+            "DAOSpokeContract: vote finished"
+        );
+        require(
+            block.timestamp >= proposal.localVoteStart && block.timestamp < proposal.localVoteEnd,
+            "DAOSpokeContract: vote not currently active"
+        );
 
-        uint256 weight = token.getPastVotes(msg.sender, proposal.localVoteStart);
+        uint256 weight = token.getPastVotes(msg.sender, proposal.localVoteStartBlock);
         _countVote(proposalId, msg.sender, support, weight);
 
         emit VoteCast(msg.sender, proposalId, support, weight, "");
@@ -128,6 +135,27 @@ contract DAOSpokeContract is IWormholeReceiver {
         } else {
             revert("DAOSpokeContract: invalid value for enum VoteType");
         }
+    }
+
+    /**
+     @dev Estimates what block number will be the current block on given timestamp.
+     @return timestampToEstimate Timestamp to estimate the block for.
+    */
+    function estimateBlockFromTimestamp(uint256 timestampToEstimate) internal view returns (uint256) {
+        uint256 currentTimestamp = block.timestamp;
+        uint256 currentBlock = block.number;
+        uint256 estimatedBlock = 0;
+        if (timestampToEstimate > currentTimestamp) { //future
+            uint256 timeDifference = timestampToEstimate - currentTimestamp;
+            uint256 blockDifference = timeDifference / targetSecondsPerBlock;
+            estimatedBlock = currentBlock + blockDifference;
+        } else { //past
+            uint256 timeDifference = currentTimestamp - timestampToEstimate;
+            uint256 blockDifference = timeDifference / targetSecondsPerBlock;
+            estimatedBlock = currentBlock - blockDifference;
+        }
+
+        return estimatedBlock;
     }
 
     /**
@@ -171,24 +199,22 @@ contract DAOSpokeContract is IWormholeReceiver {
 
         if (option == 0) {
             // Begin a proposal on the local chain, with local block times
-            (, uint256 proposalId, uint256 proposalStart) = abi.decode(decodedMessage, (uint16, uint256, uint256));
+            (
+                ,//function selector
+                uint256 proposalId,
+                uint256 proposalCreationTimestamp,
+                uint256 voteStartTimestamp,
+                uint256 voteEndTimestamp
+            ) = abi.decode(decodedMessage, (uint16, uint256, uint256, uint256, uint256));
             require(!isProposal(proposalId), "Proposal ID must be unique.");
 
-            uint256 cutOffBlockEstimation = 0;
-            if(proposalStart < block.timestamp) {
-                uint256 blockAdjustment = (block.timestamp - proposalStart) / targetSecondsPerBlock;
-                if(blockAdjustment < block.number) {
-                    cutOffBlockEstimation = block.number - blockAdjustment;
-                }
-                else {
-                    cutOffBlockEstimation = block.number;
-                }
-            }
-            else {
-                cutOffBlockEstimation = block.number;
-            }
-
-            proposals[proposalId] = RemoteProposal(cutOffBlockEstimation, false);
+            proposals[proposalId] = RemoteProposal(
+                proposalCreationTimestamp,
+                voteStartTimestamp,
+                voteEndTimestamp,
+                estimateBlockFromTimestamp(voteStartTimestamp),
+                false
+            );
         }
         else if (option == 1) {
             // Send vote results back to the hub chain

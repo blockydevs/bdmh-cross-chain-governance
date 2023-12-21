@@ -25,6 +25,7 @@ contract MetaHumanGovernor is Governor, GovernorSettings, CrossChainGovernorCoun
 
     IWormholeRelayer immutable public wormholeRelayer;
     uint256 constant internal GAS_LIMIT = 500_000;
+    uint256 immutable public secondsPerBlock;
     uint16 immutable public chainId;
 
     mapping(bytes32 => bool) public processedMessages;
@@ -39,7 +40,7 @@ contract MetaHumanGovernor is Governor, GovernorSettings, CrossChainGovernorCoun
      @param _chainId The chain ID of the current contract.
      @param _wormholeRelayerAddress The address of the wormhole automatic relayer contract used for cross-chain communication.
     */
-    constructor(IVotes _token, TimelockController _timelock, CrossChainAddress[] memory _spokeContracts, uint16 _chainId, address _wormholeRelayerAddress, address _magistrateAddress)
+    constructor(IVotes _token, TimelockController _timelock, CrossChainAddress[] memory _spokeContracts, uint16 _chainId, address _wormholeRelayerAddress, address _magistrateAddress, uint256 _secondsPerBlock)
     Governor("MetaHumanGovernor")
     GovernorSettings(1 /* 1 block */, 20 * 15 /* 20 blocks per minute * 15 minutes (polygon mumbai) */, 0) //TODO:prod in production voting delay, voting period, proposal threshold needs to be changed to value of choice. Depending on block time on selected hub chain and desired period
     GovernorVotes(_token)
@@ -50,6 +51,7 @@ contract MetaHumanGovernor is Governor, GovernorSettings, CrossChainGovernorCoun
     {
         chainId = _chainId;
         wormholeRelayer = IWormholeRelayer(_wormholeRelayerAddress);
+        secondsPerBlock = _secondsPerBlock;
     }
 
     /**
@@ -231,6 +233,9 @@ contract MetaHumanGovernor is Governor, GovernorSettings, CrossChainGovernorCoun
         //create snapshot of current spokes
         createSnapshot(proposalId);
 
+        uint256 voteStartTimestamp = estimateTimestampFromBlock(proposalSnapshot(proposalId));
+        uint256 voteEndTimestamp = estimateTimestampFromBlock(proposalDeadline(proposalId));
+
         // Sends the proposal to all of the other spoke contracts
         if (spokeContractsSnapshots[proposalId].length > 0) {
 
@@ -240,7 +245,9 @@ contract MetaHumanGovernor is Governor, GovernorSettings, CrossChainGovernorCoun
                 bytes memory message = abi.encode(
                     0, // Function selector "0" for destination contract
                     proposalId,
-                    block.timestamp // Encoding the proposal start
+                    block.timestamp, // proposal creation timestamp
+                    voteStartTimestamp, //vote start timestamp
+                    voteEndTimestamp //vote end timestamp
                 );
 
                 bytes memory payload = abi.encode(
@@ -270,6 +277,27 @@ contract MetaHumanGovernor is Governor, GovernorSettings, CrossChainGovernorCoun
     */
     function quoteCrossChainMessage(uint16 targetChain, uint256 valueToSend) internal view returns (uint256 cost) {
         (cost,) = wormholeRelayer.quoteEVMDeliveryPrice(targetChain, valueToSend, GAS_LIMIT);
+    }
+
+    /**
+     @dev Estimates timestamp when given block number should be the current block.
+     @return blockToEstimate Block to estimate the timestamp for.
+    */
+    function estimateTimestampFromBlock(uint256 blockToEstimate) internal view returns (uint256) {
+        uint256 currentTimestamp = block.timestamp;
+        uint256 currentBlock = block.number;
+        uint256 estimatedTimestamp = 0;
+        if (blockToEstimate > currentBlock) { //future
+            uint256 blockDifference = blockToEstimate - currentBlock;
+            uint256 timeDifference = blockDifference * secondsPerBlock;
+            estimatedTimestamp = currentTimestamp + timeDifference;
+        } else { //past
+            uint256 blockDifference = currentBlock - blockToEstimate;
+            uint256 timeDifference = blockDifference * secondsPerBlock;
+            estimatedTimestamp = currentTimestamp - timeDifference;
+        }
+
+        return estimatedTimestamp;
     }
 
     // The following functions are overrides required by Solidity.

@@ -23,7 +23,7 @@ contract DAOSpokeContractTest is TestUtil {
         proposers[0] = address(this);
         executors[0] = address(0);
         TimelockController timelockController = new TimelockController(1, proposers, executors, address(this));
-        governanceContract = new MetaHumanGovernor(voteToken, timelockController, emptySpokeContracts, 10002, wormholeMockAddress, address(this));
+        governanceContract = new MetaHumanGovernor(voteToken, timelockController, emptySpokeContracts, 10002, wormholeMockAddress, address(this), 12);
         daoSpokeContract = new DAOSpokeContract(bytes32(uint256(uint160(address(governanceContract)))), 10002, voteToken, 12, spokeChainId, wormholeMockAddress);
         CrossChainGovernorCountingSimple.CrossChainAddress[] memory spokeContracts = new CrossChainGovernorCountingSimple.CrossChainAddress[](1);
         spokeContracts[0] = CrossChainGovernorCountingSimple.CrossChainAddress(bytes32(uint256(uint160(address(daoSpokeContract)))), 5);
@@ -149,7 +149,7 @@ contract DAOSpokeContractTest is TestUtil {
         _callReceiveMessageOnSpokeWithMock(mockResult);
         //cast vote
         address someUser = _createMockUserWithVotingPower(1, voteToken);
-        vm.expectRevert("DAOSpokeContract: vote not currently active");
+        vm.expectRevert("DAOSpokeContract: vote finished");
         vm.startPrank(someUser);
         daoSpokeContract.castVote(proposalId, 1);
         vm.stopPrank();
@@ -218,7 +218,9 @@ contract DAOSpokeContractTest is TestUtil {
         bytes memory message = abi.encode(
             0, // Function selector
             proposalId,
-            block.timestamp // Encoding the proposal start
+            block.timestamp, // Encoding the proposal start
+            block.timestamp,
+            block.timestamp + 1000
         );
         bytes memory payload = abi.encode(
             address(daoSpokeContract),
@@ -242,7 +244,9 @@ contract DAOSpokeContractTest is TestUtil {
         bytes memory message = abi.encode(
             0, // Function selector
             proposalId,
-            block.timestamp - 20 // Encoding the proposal start
+            block.timestamp - (secondsPerBlock * 2), // Encoding the proposal start
+            block.timestamp - (secondsPerBlock * 2),
+            block.timestamp + (secondsPerBlock * 10)
         );
         bytes memory payload = abi.encode(
             address(daoSpokeContract),
@@ -251,8 +255,17 @@ contract DAOSpokeContractTest is TestUtil {
             message
         );
         _callReceiveMessageOnSpokeWithMock(_createMessageWithPayload(payload));
-        (uint256 localVoteStart, ) = daoSpokeContract.proposals(proposalId);
-        assertEq(localVoteStart, block.number - 1);
+        (
+            uint256 proposalCreation,
+            uint256 localVoteStart,
+            uint256 localVoteEnd,
+            uint256 localVoteStartBlock,
+            //vote finished
+        ) = daoSpokeContract.proposals(proposalId);
+        assertEq(proposalCreation, block.timestamp - (secondsPerBlock * 2));
+        assertEq(localVoteStart, block.timestamp - (secondsPerBlock * 2));
+        assertEq(localVoteEnd, block.timestamp + (secondsPerBlock * 10));
+        assertEq(localVoteStartBlock, block.number - 2);
     }
 
     function testReceiveMessageWhenProposalStartAfterBlockTimestamp() public {
@@ -265,7 +278,9 @@ contract DAOSpokeContractTest is TestUtil {
         bytes memory message = abi.encode(
             0, // Function selector
             proposalId,
-            block.timestamp + 20 // Encoding the proposal start
+            block.timestamp + (secondsPerBlock * 2), // Encoding the proposal start
+            block.timestamp + (secondsPerBlock * 2),
+            block.timestamp + (secondsPerBlock * 10)
         );
         bytes memory payload = abi.encode(
             address(daoSpokeContract),
@@ -274,31 +289,17 @@ contract DAOSpokeContractTest is TestUtil {
             message
         );
         _callReceiveMessageOnSpokeWithMock(_createMessageWithPayload(payload));
-        (uint256 localVoteStart, ) = daoSpokeContract.proposals(proposalId);
-        assertEq(localVoteStart, block.number);
-    }
-
-    function testReceiveMessageWhenBlockAdjustmentGreaterThanBlockNumber() public {
-        uint256 proposalId = 1;
-
-        //prepare blockTimestamp and blockNumber
-        vm.warp(1000);
-        vm.roll(5);
-
-        bytes memory message = abi.encode(
-            0, // Function selector
-            proposalId,
-            block.timestamp - 200 // Encoding the proposal start
-        );
-        bytes memory payload = abi.encode(
-            address(daoSpokeContract),
-            spokeChainId,
-            address(governanceContract),
-            message
-        );
-        _callReceiveMessageOnSpokeWithMock(_createMessageWithPayload(payload));
-        (uint256 localVoteStart, ) = daoSpokeContract.proposals(proposalId);
-        assertEq(localVoteStart, block.number);
+        (
+            uint256 proposalCreation,
+            uint256 localVoteStart,
+            uint256 localVoteEnd,
+            uint256 localVoteStartBlock,
+            //vote finished
+        ) = daoSpokeContract.proposals(proposalId);
+        assertEq(proposalCreation, block.timestamp + (secondsPerBlock * 2));
+        assertEq(localVoteStart, block.timestamp + (secondsPerBlock * 2));
+        assertEq(localVoteEnd, block.timestamp + (secondsPerBlock * 10));
+        assertEq(localVoteStartBlock, block.number + 2);
     }
 
     function testReceiveMessageSendingVotesBackToHub() public {
@@ -314,7 +315,13 @@ contract DAOSpokeContractTest is TestUtil {
             message
         );
         _callReceiveMessageOnSpokeWithMock(_createMessageWithPayload(payload));
-        (, bool voteFinished) = daoSpokeContract.proposals(proposalId);
+        (
+            ,//proposalCreation
+            ,//localVoteStart
+            ,//localVoteEnd
+            ,//localVoteStartBlock
+            bool voteFinished //vote finished
+        ) = daoSpokeContract.proposals(proposalId);
         assertTrue(voteFinished);
     }
 }

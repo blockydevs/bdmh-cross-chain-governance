@@ -15,6 +15,7 @@ abstract contract TestUtil is Test {
     address public wormholeMockAddress = address(100);
     uint16 public spokeChainId = 5;
     uint16 public hubChainId = 10002;
+    uint16 public secondsPerBlock = 12;
     string public utilDescription = "test1";
 
     function _createMockUser(uint256 privateKeySeed) internal pure returns (address) {
@@ -52,7 +53,9 @@ abstract contract TestUtil is Test {
         bytes memory message = abi.encode(
             0, // Function selector "0" for destination contract
             proposalId,
-            block.timestamp // Encoding the proposal start
+            block.timestamp, // Encoding the proposal start
+            block.timestamp,
+            block.timestamp + 1000
         );
         bytes memory payload = abi.encode(
             address(daoSpokeContract),
