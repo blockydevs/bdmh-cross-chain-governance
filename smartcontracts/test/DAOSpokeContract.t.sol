@@ -12,6 +12,9 @@ contract DAOSpokeContractTest is TestUtil {
 
     event VoteCast(address indexed voter, uint256 proposalId, uint8 support, uint256 weight, string reason);
 
+    // Required for withdraw test
+    receive() external payable {}
+
     function setUp() public {
         hmToken = new HMToken(100 ether, "HMToken", 18, "HMT");
         voteToken = new VHMToken(IERC20(address(hmToken)));
@@ -24,7 +27,7 @@ contract DAOSpokeContractTest is TestUtil {
         executors[0] = address(0);
         TimelockController timelockController = new TimelockController(1, proposers, executors, address(this));
         governanceContract = new MetaHumanGovernor(voteToken, timelockController, emptySpokeContracts, 10002, wormholeMockAddress, address(this), 12);
-        daoSpokeContract = new DAOSpokeContract(bytes32(uint256(uint160(address(governanceContract)))), 10002, voteToken, 12, spokeChainId, wormholeMockAddress);
+        daoSpokeContract = new DAOSpokeContract(bytes32(uint256(uint160(address(governanceContract)))), 10002, voteToken, 12, spokeChainId, wormholeMockAddress, address(this));
         CrossChainGovernorCountingSimple.CrossChainAddress[] memory spokeContracts = new CrossChainGovernorCountingSimple.CrossChainAddress[](1);
         spokeContracts[0] = CrossChainGovernorCountingSimple.CrossChainAddress(bytes32(uint256(uint160(address(daoSpokeContract)))), 5);
         governanceContract.updateSpokeContracts(spokeContracts);
@@ -323,5 +326,21 @@ contract DAOSpokeContractTest is TestUtil {
             bool voteFinished //vote finished
         ) = daoSpokeContract.proposals(proposalId);
         assertTrue(voteFinished);
+    }
+
+    function testWithdrawAsMagistrate() public {
+        uint256 contractBalance = address(daoSpokeContract).balance;
+        uint256 beforeWithdraw = address(this).balance;
+        daoSpokeContract.withdrawFunds();
+        uint256 afterWithdraw = address(this).balance;
+        uint256 difference = afterWithdraw - beforeWithdraw;
+        assertEq(difference, contractBalance);
+        assertGt(difference, 0);
+    }
+
+    function testWithdrawAsNotMagistrate() public {
+        vm.prank(address(0));
+        vm.expectRevert("Magistrate: caller is not the magistrate");
+        daoSpokeContract.withdrawFunds();
     }
 }

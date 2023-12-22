@@ -13,9 +13,10 @@ contract SpokeDeployment is Script, DeploymentUtils {
         uint16 chainId = uint16(vm.envUint("SPOKE_WORMHOLE_CHAIN_ID"));
         address vHMTokenAddress = vm.envAddress("SPOKE_VOTE_TOKEN_ADDRESS");
         address spokeAutomaticRelayerAddress = vm.envAddress("SPOKE_AUTOMATIC_RELAYER_ADDRESS");
+        address spokeMagistrateAddress = vm.envAddress("SPOKE_MAGISTRATE_ADDRESS");
         VHMToken voteToken = VHMToken(vHMTokenAddress);
         vm.startBroadcast(deployerPrivateKey);
 
-        new DAOSpokeContract(bytes32(uint256(uint160(governorAddress))), hubChainId, voteToken, targetSecondsPerBlock, chainId, spokeAutomaticRelayerAddress);
+        new DAOSpokeContract(bytes32(uint256(uint160(governorAddress))), hubChainId, voteToken, targetSecondsPerBlock, chainId, spokeAutomaticRelayerAddress, spokeMagistrateAddress);
     }
 }

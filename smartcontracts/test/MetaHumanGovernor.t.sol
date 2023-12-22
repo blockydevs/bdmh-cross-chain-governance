@@ -19,6 +19,9 @@ contract MetaHumanGovernorTest is TestUtil, EIP712 {
 
     TimelockController public timelockController;
 
+    // Required for withdraw test
+    receive() external payable {}
+
     function setUp() public {
         hmToken = new HMToken(100 ether, "HMToken", 18, "HMT");
         voteToken = new VHMToken(IERC20(address(hmToken)));
@@ -31,7 +34,7 @@ contract MetaHumanGovernorTest is TestUtil, EIP712 {
         CrossChainGovernorCountingSimple.CrossChainAddress[] memory emptySpokeContracts = new CrossChainGovernorCountingSimple.CrossChainAddress[](0);
         timelockController = new TimelockController(1, proposers, executors, address(this));
         governanceContract = new MetaHumanGovernor(voteToken, timelockController, emptySpokeContracts, 0, wormholeMockAddress, address(this), 12);
-        daoSpokeContract = new DAOSpokeContract(bytes32(uint256(uint160(address(governanceContract)))), hubChainId, voteToken, 12, spokeChainId, wormholeMockAddress);
+        daoSpokeContract = new DAOSpokeContract(bytes32(uint256(uint160(address(governanceContract)))), hubChainId, voteToken, 12, spokeChainId, wormholeMockAddress, address(this));
         CrossChainGovernorCountingSimple.CrossChainAddress[] memory spokeContracts = new CrossChainGovernorCountingSimple.CrossChainAddress[](1);
         spokeContracts[0] = CrossChainGovernorCountingSimple.CrossChainAddress(bytes32(uint256(uint160(address(daoSpokeContract)))), spokeChainId);
         governanceContract.updateSpokeContracts(spokeContracts);
@@ -54,7 +57,7 @@ contract MetaHumanGovernorTest is TestUtil, EIP712 {
     }
 
     function testUpdateSpokeContracts() public {
-        DAOSpokeContract newlyDeployedSpoke = new DAOSpokeContract(bytes32(uint256(uint160(address(governanceContract)))), hubChainId, voteToken, 12, spokeChainId, wormholeMockAddress);
+        DAOSpokeContract newlyDeployedSpoke = new DAOSpokeContract(bytes32(uint256(uint160(address(governanceContract)))), hubChainId, voteToken, 12, spokeChainId, wormholeMockAddress, address(this));
         CrossChainGovernorCountingSimple.CrossChainAddress[] memory spokeContracts = new CrossChainGovernorCountingSimple.CrossChainAddress[](1);
         spokeContracts[0] = CrossChainGovernorCountingSimple.CrossChainAddress(bytes32(uint256(uint160(address(newlyDeployedSpoke)))), spokeChainId);
         vm.expectEmit(true, false, false, false);
@@ -64,7 +67,7 @@ contract MetaHumanGovernorTest is TestUtil, EIP712 {
     }
 
     function testUpdateSpokeContractsWithDuplicate() public {
-        DAOSpokeContract newlyDeployedSpoke = new DAOSpokeContract(bytes32(uint256(uint160(address(governanceContract)))), hubChainId, voteToken, 12, spokeChainId, wormholeMockAddress);
+        DAOSpokeContract newlyDeployedSpoke = new DAOSpokeContract(bytes32(uint256(uint160(address(governanceContract)))), hubChainId, voteToken, 12, spokeChainId, wormholeMockAddress, address(this));
         CrossChainGovernorCountingSimple.CrossChainAddress[] memory spokeContracts = new CrossChainGovernorCountingSimple.CrossChainAddress[](2);
         spokeContracts[0] = CrossChainGovernorCountingSimple.CrossChainAddress(bytes32(uint256(uint160(address(newlyDeployedSpoke)))), spokeChainId);
         spokeContracts[1] = CrossChainGovernorCountingSimple.CrossChainAddress(bytes32(uint256(uint160(address(newlyDeployedSpoke)))), spokeChainId);
@@ -73,7 +76,7 @@ contract MetaHumanGovernorTest is TestUtil, EIP712 {
     }
 
     function testUpdateSpokeContractsWithUniqueEntries() public {
-        DAOSpokeContract newlyDeployedSpoke = new DAOSpokeContract(bytes32(uint256(uint160(address(governanceContract)))), hubChainId, voteToken, 12, spokeChainId, wormholeMockAddress);
+        DAOSpokeContract newlyDeployedSpoke = new DAOSpokeContract(bytes32(uint256(uint160(address(governanceContract)))), hubChainId, voteToken, 12, spokeChainId, wormholeMockAddress, address(this));
         CrossChainGovernorCountingSimple.CrossChainAddress[] memory spokeContracts = new CrossChainGovernorCountingSimple.CrossChainAddress[](2);
         spokeContracts[0] = CrossChainGovernorCountingSimple.CrossChainAddress(bytes32(uint256(uint160(address(newlyDeployedSpoke)))), spokeChainId);
         spokeContracts[1] = CrossChainGovernorCountingSimple.CrossChainAddress(bytes32(uint256(uint160(address(newlyDeployedSpoke)))), spokeChainId + 1);
@@ -83,7 +86,7 @@ contract MetaHumanGovernorTest is TestUtil, EIP712 {
     }
 
     function testCannotUpdateSpokeContractsAfterTransferringOwnership() public {
-        DAOSpokeContract newlyDeployedSpoke = new DAOSpokeContract(bytes32(uint256(uint160(address(governanceContract)))), hubChainId, voteToken, 12, spokeChainId, wormholeMockAddress);
+        DAOSpokeContract newlyDeployedSpoke = new DAOSpokeContract(bytes32(uint256(uint160(address(governanceContract)))), hubChainId, voteToken, 12, spokeChainId, wormholeMockAddress, address(this));
         CrossChainGovernorCountingSimple.CrossChainAddress[] memory spokeContracts = new CrossChainGovernorCountingSimple.CrossChainAddress[](1);
         spokeContracts[0] = CrossChainGovernorCountingSimple.CrossChainAddress(bytes32(uint256(uint160(address(newlyDeployedSpoke)))), spokeChainId);
         governanceContract.transferOwnership(address(timelockController));
@@ -868,5 +871,21 @@ contract MetaHumanGovernorTest is TestUtil, EIP712 {
     function testMagistrateTransferWhenNewMagistrateIsZeroAddress() public {
         vm.expectRevert("Magistrate: new magistrate is the zero address");
         governanceContract.transferMagistrate(address(0));
+    }
+
+    function testWithdrawAsMagistrate() public {
+        uint256 contractBalance = address(governanceContract).balance;
+        uint256 beforeWithdraw = address(this).balance;
+        governanceContract.withdrawFunds();
+        uint256 afterWithdraw = address(this).balance;
+        uint256 difference = afterWithdraw - beforeWithdraw;
+        assert(difference == contractBalance);
+        assertGt(difference, 0);
+    }
+
+    function testWithdrawAsNotMagistrate() public {
+        vm.prank(address(0));
+        vm.expectRevert("Magistrate: caller is not the magistrate");
+        governanceContract.withdrawFunds();
     }
 }

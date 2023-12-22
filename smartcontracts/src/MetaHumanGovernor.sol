@@ -55,6 +55,13 @@ contract MetaHumanGovernor is Governor, GovernorSettings, CrossChainGovernorCoun
     }
 
     /**
+     @dev Allows the magistrate address to withdraw all funds from the contract
+    */
+    function withdrawFunds() public onlyMagistrate {
+        payable(msg.sender).transfer(address(this).balance);
+    }
+
+    /**
      @dev Receives messages from the Wormhole protocol's relay mechanism and processes them accordingly.
      This function is intended to be called only by the designated Wormhole relayer.
      @param payload The payload of the received message.

@@ -7,13 +7,14 @@ import "@openzeppelin/contracts/governance/utils/IVotes.sol";
 import "./MetaHumanGovernor.sol";
 import "./wormhole/IWormholeRelayer.sol";
 import "./wormhole/IWormholeReceiver.sol";
+import "./magistrate/Magistrate.sol";
 
 /**
   @title DAOSpokeContract
   @dev DAOSpokeContract is a contract that handles voting and proposal functionality for a DAO spoke chain.
   It integrates with the MetaHumanGovernor contract for governance operations.
  */
-contract DAOSpokeContract is IWormholeReceiver {
+contract DAOSpokeContract is IWormholeReceiver, Magistrate {
 
     bytes32 public immutable hubContractAddress;
     uint16 public immutable hubContractChainId;
@@ -60,13 +61,30 @@ contract DAOSpokeContract is IWormholeReceiver {
       @param _chainId The chain ID of the current contract.
       @param _wormholeRelayerAddress The address of the wormhole automatic relayer contract used for cross-chain communication.
     */
-    constructor(bytes32 _hubContractAddress, uint16 _hubContractChainId, IVotes _token, uint _targetSecondsPerBlock, uint16 _chainId, address _wormholeRelayerAddress) {
+    constructor(
+        bytes32 _hubContractAddress,
+        uint16 _hubContractChainId,
+        IVotes _token,
+        uint _targetSecondsPerBlock,
+        uint16 _chainId,
+        address _wormholeRelayerAddress,
+        address _magistrateAddress
+    )
+    Magistrate(_magistrateAddress)
+    {
         token = _token;
         targetSecondsPerBlock = _targetSecondsPerBlock;
         chainId = _chainId;
         wormholeRelayer = IWormholeRelayer(_wormholeRelayerAddress);
         hubContractAddress = _hubContractAddress;
         hubContractChainId = _hubContractChainId;
+    }
+
+    /**
+     @dev Allows the magistrate address to withdraw all funds from the contract
+    */
+    function withdrawFunds() public onlyMagistrate {
+        payable(msg.sender).transfer(address(this).balance);
     }
 
     function hasVoted(uint256 proposalId, address account) public view virtual returns (bool) {
