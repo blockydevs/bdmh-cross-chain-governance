@@ -10,9 +10,8 @@ import "./TestUtil.sol";
 pragma solidity ^0.8.20;
 
 contract MetaHumanGovernorTest is TestUtil, EIP712 {
-
     constructor()
-    EIP712("MetaHumanGovernor", "1")//done for vote with signature tests
+        EIP712("MetaHumanGovernor", "1") //done for vote with signature tests
     {}
 
     event SpokesUpdated(CrossChainGovernorCountingSimple.CrossChainAddress[] indexed spokes);
@@ -31,12 +30,18 @@ contract MetaHumanGovernorTest is TestUtil, EIP712 {
         address[] memory executors = new address[](1);
         proposers[0] = address(this);
         executors[0] = address(0);
-        CrossChainGovernorCountingSimple.CrossChainAddress[] memory emptySpokeContracts = new CrossChainGovernorCountingSimple.CrossChainAddress[](0);
+        CrossChainGovernorCountingSimple.CrossChainAddress[] memory emptySpokeContracts =
+            new CrossChainGovernorCountingSimple.CrossChainAddress[](0);
         timelockController = new TimelockController(1, proposers, executors, address(this));
-        governanceContract = new MetaHumanGovernor(voteToken, timelockController, emptySpokeContracts, 0, wormholeMockAddress, address(this), 12);
-        daoSpokeContract = new DAOSpokeContract(bytes32(uint256(uint160(address(governanceContract)))), hubChainId, voteToken, 12, spokeChainId, wormholeMockAddress, address(this));
-        CrossChainGovernorCountingSimple.CrossChainAddress[] memory spokeContracts = new CrossChainGovernorCountingSimple.CrossChainAddress[](1);
-        spokeContracts[0] = CrossChainGovernorCountingSimple.CrossChainAddress(bytes32(uint256(uint160(address(daoSpokeContract)))), spokeChainId);
+        governanceContract =
+        new MetaHumanGovernor(voteToken, timelockController, emptySpokeContracts, 0, wormholeMockAddress, address(this), 12);
+        daoSpokeContract =
+        new DAOSpokeContract(bytes32(uint256(uint160(address(governanceContract)))), hubChainId, voteToken, 12, spokeChainId, wormholeMockAddress, address(this));
+        CrossChainGovernorCountingSimple.CrossChainAddress[] memory spokeContracts =
+            new CrossChainGovernorCountingSimple.CrossChainAddress[](1);
+        spokeContracts[0] = CrossChainGovernorCountingSimple.CrossChainAddress(
+            bytes32(uint256(uint160(address(daoSpokeContract)))), spokeChainId
+        );
         governanceContract.updateSpokeContracts(spokeContracts);
         timelockController.grantRole(keccak256("PROPOSER_ROLE"), address(governanceContract));
         timelockController.revokeRole(keccak256("TIMELOCK_ADMIN_ROLE"), address(this));
@@ -57,38 +62,70 @@ contract MetaHumanGovernorTest is TestUtil, EIP712 {
     }
 
     function testUpdateSpokeContracts() public {
-        DAOSpokeContract newlyDeployedSpoke = new DAOSpokeContract(bytes32(uint256(uint160(address(governanceContract)))), hubChainId, voteToken, 12, spokeChainId, wormholeMockAddress, address(this));
-        CrossChainGovernorCountingSimple.CrossChainAddress[] memory spokeContracts = new CrossChainGovernorCountingSimple.CrossChainAddress[](1);
-        spokeContracts[0] = CrossChainGovernorCountingSimple.CrossChainAddress(bytes32(uint256(uint160(address(newlyDeployedSpoke)))), spokeChainId);
+        DAOSpokeContract newlyDeployedSpoke =
+        new DAOSpokeContract(bytes32(uint256(uint160(address(governanceContract)))), hubChainId, voteToken, 12, spokeChainId, wormholeMockAddress, address(this));
+        CrossChainGovernorCountingSimple.CrossChainAddress[] memory spokeContracts =
+            new CrossChainGovernorCountingSimple.CrossChainAddress[](1);
+        spokeContracts[0] = CrossChainGovernorCountingSimple.CrossChainAddress(
+            bytes32(uint256(uint160(address(newlyDeployedSpoke)))), spokeChainId
+        );
         vm.expectEmit(true, false, false, false);
         emit SpokesUpdated(spokeContracts);
         governanceContract.updateSpokeContracts(spokeContracts);
-        assertTrue(governanceContract.spokeContractsMapping(bytes32(uint256(uint160(address(newlyDeployedSpoke)))), spokeChainId));
+        assertTrue(
+            governanceContract.spokeContractsMapping(
+                bytes32(uint256(uint160(address(newlyDeployedSpoke)))), spokeChainId
+            )
+        );
     }
 
     function testUpdateSpokeContractsWithDuplicate() public {
-        DAOSpokeContract newlyDeployedSpoke = new DAOSpokeContract(bytes32(uint256(uint160(address(governanceContract)))), hubChainId, voteToken, 12, spokeChainId, wormholeMockAddress, address(this));
-        CrossChainGovernorCountingSimple.CrossChainAddress[] memory spokeContracts = new CrossChainGovernorCountingSimple.CrossChainAddress[](2);
-        spokeContracts[0] = CrossChainGovernorCountingSimple.CrossChainAddress(bytes32(uint256(uint160(address(newlyDeployedSpoke)))), spokeChainId);
-        spokeContracts[1] = CrossChainGovernorCountingSimple.CrossChainAddress(bytes32(uint256(uint160(address(newlyDeployedSpoke)))), spokeChainId);
+        DAOSpokeContract newlyDeployedSpoke =
+        new DAOSpokeContract(bytes32(uint256(uint160(address(governanceContract)))), hubChainId, voteToken, 12, spokeChainId, wormholeMockAddress, address(this));
+        CrossChainGovernorCountingSimple.CrossChainAddress[] memory spokeContracts =
+            new CrossChainGovernorCountingSimple.CrossChainAddress[](2);
+        spokeContracts[0] = CrossChainGovernorCountingSimple.CrossChainAddress(
+            bytes32(uint256(uint160(address(newlyDeployedSpoke)))), spokeChainId
+        );
+        spokeContracts[1] = CrossChainGovernorCountingSimple.CrossChainAddress(
+            bytes32(uint256(uint160(address(newlyDeployedSpoke)))), spokeChainId
+        );
         vm.expectRevert("Duplicates are not allowed");
         governanceContract.updateSpokeContracts(spokeContracts);
     }
 
     function testUpdateSpokeContractsWithUniqueEntries() public {
-        DAOSpokeContract newlyDeployedSpoke = new DAOSpokeContract(bytes32(uint256(uint160(address(governanceContract)))), hubChainId, voteToken, 12, spokeChainId, wormholeMockAddress, address(this));
-        CrossChainGovernorCountingSimple.CrossChainAddress[] memory spokeContracts = new CrossChainGovernorCountingSimple.CrossChainAddress[](2);
-        spokeContracts[0] = CrossChainGovernorCountingSimple.CrossChainAddress(bytes32(uint256(uint160(address(newlyDeployedSpoke)))), spokeChainId);
-        spokeContracts[1] = CrossChainGovernorCountingSimple.CrossChainAddress(bytes32(uint256(uint160(address(newlyDeployedSpoke)))), spokeChainId + 1);
+        DAOSpokeContract newlyDeployedSpoke =
+        new DAOSpokeContract(bytes32(uint256(uint160(address(governanceContract)))), hubChainId, voteToken, 12, spokeChainId, wormholeMockAddress, address(this));
+        CrossChainGovernorCountingSimple.CrossChainAddress[] memory spokeContracts =
+            new CrossChainGovernorCountingSimple.CrossChainAddress[](2);
+        spokeContracts[0] = CrossChainGovernorCountingSimple.CrossChainAddress(
+            bytes32(uint256(uint160(address(newlyDeployedSpoke)))), spokeChainId
+        );
+        spokeContracts[1] = CrossChainGovernorCountingSimple.CrossChainAddress(
+            bytes32(uint256(uint160(address(newlyDeployedSpoke)))), spokeChainId + 1
+        );
         governanceContract.updateSpokeContracts(spokeContracts);
-        assertTrue(governanceContract.spokeContractsMapping(bytes32(uint256(uint160(address(newlyDeployedSpoke)))), spokeChainId));
-        assertTrue(governanceContract.spokeContractsMapping(bytes32(uint256(uint160(address(newlyDeployedSpoke)))), spokeChainId + 1));
+        assertTrue(
+            governanceContract.spokeContractsMapping(
+                bytes32(uint256(uint160(address(newlyDeployedSpoke)))), spokeChainId
+            )
+        );
+        assertTrue(
+            governanceContract.spokeContractsMapping(
+                bytes32(uint256(uint160(address(newlyDeployedSpoke)))), spokeChainId + 1
+            )
+        );
     }
 
     function testCannotUpdateSpokeContractsAfterTransferringOwnership() public {
-        DAOSpokeContract newlyDeployedSpoke = new DAOSpokeContract(bytes32(uint256(uint160(address(governanceContract)))), hubChainId, voteToken, 12, spokeChainId, wormholeMockAddress, address(this));
-        CrossChainGovernorCountingSimple.CrossChainAddress[] memory spokeContracts = new CrossChainGovernorCountingSimple.CrossChainAddress[](1);
-        spokeContracts[0] = CrossChainGovernorCountingSimple.CrossChainAddress(bytes32(uint256(uint160(address(newlyDeployedSpoke)))), spokeChainId);
+        DAOSpokeContract newlyDeployedSpoke =
+        new DAOSpokeContract(bytes32(uint256(uint160(address(governanceContract)))), hubChainId, voteToken, 12, spokeChainId, wormholeMockAddress, address(this));
+        CrossChainGovernorCountingSimple.CrossChainAddress[] memory spokeContracts =
+            new CrossChainGovernorCountingSimple.CrossChainAddress[](1);
+        spokeContracts[0] = CrossChainGovernorCountingSimple.CrossChainAddress(
+            bytes32(uint256(uint160(address(newlyDeployedSpoke)))), spokeChainId
+        );
         governanceContract.transferOwnership(address(timelockController));
         vm.expectRevert("Ownable: caller is not the owner");
         governanceContract.updateSpokeContracts(spokeContracts);
@@ -111,7 +148,8 @@ contract MetaHumanGovernorTest is TestUtil, EIP712 {
     }
 
     function testCrossChainProposeWhenSpokesEmpty() public {
-        CrossChainGovernorCountingSimple.CrossChainAddress[] memory spokeContracts = new CrossChainGovernorCountingSimple.CrossChainAddress[](0);
+        CrossChainGovernorCountingSimple.CrossChainAddress[] memory spokeContracts =
+            new CrossChainGovernorCountingSimple.CrossChainAddress[](0);
         governanceContract.updateSpokeContracts(spokeContracts);
         bytes memory encodedCall = abi.encodeCall(IERC20.transfer, (address(this), 50));
         address[] memory targets = new address[](1);
@@ -124,7 +162,8 @@ contract MetaHumanGovernorTest is TestUtil, EIP712 {
     }
 
     function testCrossChainProposeWhenNotMagistrate() public {
-        CrossChainGovernorCountingSimple.CrossChainAddress[] memory spokeContracts = new CrossChainGovernorCountingSimple.CrossChainAddress[](0);
+        CrossChainGovernorCountingSimple.CrossChainAddress[] memory spokeContracts =
+            new CrossChainGovernorCountingSimple.CrossChainAddress[](0);
         governanceContract.updateSpokeContracts(spokeContracts);
         bytes memory encodedCall = abi.encodeCall(IERC20.transfer, (address(this), 50));
         address[] memory targets = new address[](1);
@@ -286,19 +325,8 @@ contract MetaHumanGovernorTest is TestUtil, EIP712 {
         vm.roll(block.number + 10);
 
         //vote collection message
-        bytes memory message = abi.encode(
-            0,
-            proposalId,
-            1 ether,
-            0,
-            0
-        );
-        bytes memory payload = abi.encode(
-            address(governanceContract),
-            spokeChainId,
-            address(daoSpokeContract),
-            message
-        );
+        bytes memory message = abi.encode(0, proposalId, 1 ether, 0, 0);
+        bytes memory payload = abi.encode(address(governanceContract), spokeChainId, address(daoSpokeContract), message);
         _callReceiveMessageOnHubWithMock(_createMessageWithPayload(payload, spokeChainId, address(daoSpokeContract)));
 
         //assert votes
@@ -398,15 +426,14 @@ contract MetaHumanGovernorTest is TestUtil, EIP712 {
         governanceContract.execute(targets, values, calldatas, keccak256(bytes(utilDescription)));
     }
 
-
     function testGetVotingDelay() public {
         uint256 votingDelay = governanceContract.votingDelay();
-        assertEq(votingDelay, 1);//1 is just taken from MetaHumanGovernor.sol constructor (GovernorSettings)
+        assertEq(votingDelay, 1); //1 is just taken from MetaHumanGovernor.sol constructor (GovernorSettings)
     }
 
     function testGetVotingPeriod() public {
         uint256 votingPeriod = governanceContract.votingPeriod();
-        assertEq(votingPeriod, 20 * 15);//5 is just taken from MetaHumanGovernor.sol constructor (GovernorSettings)
+        assertEq(votingPeriod, 20 * 15); //5 is just taken from MetaHumanGovernor.sol constructor (GovernorSettings)
     }
 
     function testGetQuorum() public {
@@ -495,13 +522,18 @@ contract MetaHumanGovernorTest is TestUtil, EIP712 {
     }
 
     function testGetProposalStateWhenSpokesUpdatedAfterProposalCreation() public {
-        CrossChainGovernorCountingSimple.CrossChainAddress[] memory spokeContracts = new CrossChainGovernorCountingSimple.CrossChainAddress[](1);
-        spokeContracts[0] = CrossChainGovernorCountingSimple.CrossChainAddress(bytes32(uint256(uint160(address(daoSpokeContract)))), spokeChainId);
+        CrossChainGovernorCountingSimple.CrossChainAddress[] memory spokeContracts =
+            new CrossChainGovernorCountingSimple.CrossChainAddress[](1);
+        spokeContracts[0] = CrossChainGovernorCountingSimple.CrossChainAddress(
+            bytes32(uint256(uint160(address(daoSpokeContract)))), spokeChainId
+        );
         governanceContract.updateSpokeContracts(spokeContracts);
         uint256 proposalId = _createBasicProposal();
 
-        CrossChainGovernorCountingSimple.CrossChainAddress[] memory updatedSpokeContracts = new CrossChainGovernorCountingSimple.CrossChainAddress[](1);
-        updatedSpokeContracts[0] = CrossChainGovernorCountingSimple.CrossChainAddress(bytes32(uint256(uint160(address(this)))), spokeChainId);
+        CrossChainGovernorCountingSimple.CrossChainAddress[] memory updatedSpokeContracts =
+            new CrossChainGovernorCountingSimple.CrossChainAddress[](1);
+        updatedSpokeContracts[0] =
+            CrossChainGovernorCountingSimple.CrossChainAddress(bytes32(uint256(uint160(address(this)))), spokeChainId);
         governanceContract.updateSpokeContracts(updatedSpokeContracts);
 
         address someUser = _createMockUserWithVotingPower(1, voteToken);
@@ -523,8 +555,11 @@ contract MetaHumanGovernorTest is TestUtil, EIP712 {
     }
 
     function testReceiveMessageWhenVotesAlreadyCount() public {
-        CrossChainGovernorCountingSimple.CrossChainAddress[] memory spokeContracts = new CrossChainGovernorCountingSimple.CrossChainAddress[](1);
-        spokeContracts[0] = CrossChainGovernorCountingSimple.CrossChainAddress(bytes32(uint256(uint160(address(daoSpokeContract)))), spokeChainId);
+        CrossChainGovernorCountingSimple.CrossChainAddress[] memory spokeContracts =
+            new CrossChainGovernorCountingSimple.CrossChainAddress[](1);
+        spokeContracts[0] = CrossChainGovernorCountingSimple.CrossChainAddress(
+            bytes32(uint256(uint160(address(daoSpokeContract)))), spokeChainId
+        );
         governanceContract.updateSpokeContracts(spokeContracts);
         uint256 proposalId = _createBasicProposal();
 
@@ -549,12 +584,7 @@ contract MetaHumanGovernorTest is TestUtil, EIP712 {
             300 ether //abstainVotes
         );
         //different result, so hash of Wormhole message will be different
-        bytes memory payload = abi.encode(
-            address(governanceContract),
-            hubChainId,
-            address(daoSpokeContract),
-            message
-        );
+        bytes memory payload = abi.encode(address(governanceContract), hubChainId, address(daoSpokeContract), message);
 
         vm.expectRevert("Already initialized!");
         _callReceiveMessageOnHubWithMock(_createMessageWithPayload(payload, spokeChainId, address(daoSpokeContract)));
@@ -562,7 +592,7 @@ contract MetaHumanGovernorTest is TestUtil, EIP712 {
 
     function testGetProposalThreshold() public {
         uint256 proposalThreshold = governanceContract.proposalThreshold();
-        assertEq(proposalThreshold, 0);//0 is just taken from MetaHumanGovernor.sol constructor (GovernorSettings)
+        assertEq(proposalThreshold, 0); //0 is just taken from MetaHumanGovernor.sol constructor (GovernorSettings)
     }
 
     function testSupportsInterfaceIGovernor() public {
@@ -588,12 +618,7 @@ contract MetaHumanGovernorTest is TestUtil, EIP712 {
             2 ether, //againstVotes
             3 ether //abstainVotes
         );
-        bytes memory payload = abi.encode(
-            address(governanceContract),
-            spokeChainId,
-            address(daoSpokeContract),
-            message
-        );
+        bytes memory payload = abi.encode(address(governanceContract), spokeChainId, address(daoSpokeContract), message);
         vm.expectRevert("Only messages from the spoke contracts can be received!");
         _callReceiveMessageOnHubWithMock(_createMessageWithPayload(payload));
     }
@@ -607,12 +632,7 @@ contract MetaHumanGovernorTest is TestUtil, EIP712 {
             2 ether, //againstVotes
             3 ether //abstainVotes
         );
-        bytes memory payload = abi.encode(
-            address(governanceContract),
-            hubChainId,
-            address(daoSpokeContract),
-            message
-        );
+        bytes memory payload = abi.encode(address(governanceContract), hubChainId, address(daoSpokeContract), message);
         _callReceiveMessageOnHubWithMock(_createMessageWithPayload(payload, spokeChainId, address(daoSpokeContract)));
     }
 
@@ -625,12 +645,7 @@ contract MetaHumanGovernorTest is TestUtil, EIP712 {
             2 ether, //againstVotes
             3 ether //abstainVotes
         );
-        bytes memory payload = abi.encode(
-            address(governanceContract),
-            hubChainId,
-            address(daoSpokeContract),
-            message
-        );
+        bytes memory payload = abi.encode(address(governanceContract), hubChainId, address(daoSpokeContract), message);
         _callReceiveMessageOnHubWithMock(_createMessageWithPayload(payload, spokeChainId, address(daoSpokeContract)));
         vm.expectRevert("Message already processed");
         _callReceiveMessageOnHubWithMock(_createMessageWithPayload(payload, spokeChainId, address(daoSpokeContract)));
@@ -645,12 +660,7 @@ contract MetaHumanGovernorTest is TestUtil, EIP712 {
             2 ether, //againstVotes
             3 ether //abstainVotes
         );
-        bytes memory payload = abi.encode(
-            address(this),
-            hubChainId,
-            address(daoSpokeContract),
-            message
-        );
+        bytes memory payload = abi.encode(address(this), hubChainId, address(daoSpokeContract), message);
         vm.expectRevert("Message is not addressed for this contract");
         _callReceiveMessageOnHubWithMock(_createMessageWithPayload(payload, spokeChainId, address(daoSpokeContract)));
     }

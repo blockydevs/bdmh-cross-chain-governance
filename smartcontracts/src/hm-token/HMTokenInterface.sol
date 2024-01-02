@@ -1,7 +1,6 @@
 pragma solidity ^0.8.0;
 
 interface HMTokenInterface {
-
     event Transfer(address indexed _from, address indexed _to, uint256 _value);
     event Approval(address indexed _owner, address indexed _spender, uint256 _value);
 
@@ -22,7 +21,9 @@ interface HMTokenInterface {
     /// @return success Whether the transfer was successful or not
     function transferFrom(address _from, address _to, uint256 _value) external returns (bool success);
 
-    function transferBulk(address[] calldata _tos, uint256[] calldata _values, uint256 _txId) external returns (uint256 _bulkCount);
+    function transferBulk(address[] calldata _tos, uint256[] calldata _values, uint256 _txId)
+        external
+        returns (uint256 _bulkCount);
 
     /// @notice `msg.sender` approves `_spender` to spend `_value` tokens
     /// @param _spender The address of the account able to transfer the tokens

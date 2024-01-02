@@ -15,7 +15,8 @@ contract CastVote is Script, DeploymentUtils {
         vm.startBroadcast(secondPrivateKey);
         MetaHumanGovernor governanceContract = MetaHumanGovernor(governorAddress);
 
-        (address[] memory targets, uint256[] memory values, bytes[] memory calldatas, string memory description) = getProposalExecutionData();
+        (address[] memory targets, uint256[] memory values, bytes[] memory calldatas, string memory description) =
+            getProposalExecutionData();
 
         uint256 proposalId = governanceContract.hashProposal(targets, values, calldatas, keccak256(bytes(description)));
         governanceContract.castVote(proposalId, 1);

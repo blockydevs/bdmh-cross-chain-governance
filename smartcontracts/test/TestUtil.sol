@@ -7,7 +7,6 @@ import "../src/wormhole/IWormhole.sol";
 pragma solidity ^0.8.20;
 
 abstract contract TestUtil is Test {
-
     MetaHumanGovernor public governanceContract;
     DAOSpokeContract public daoSpokeContract;
     HMToken public hmToken;
@@ -57,12 +56,7 @@ abstract contract TestUtil is Test {
             block.timestamp,
             block.timestamp + 1000
         );
-        bytes memory payload = abi.encode(
-            address(daoSpokeContract),
-            spokeChainId,
-            address(governanceContract),
-            message
-        );
+        bytes memory payload = abi.encode(address(daoSpokeContract), spokeChainId, address(governanceContract), message);
         IWormhole.VM memory mockResult = _createMessageWithPayload(payload);
 
         _callReceiveMessageOnSpokeWithMock(mockResult);
@@ -77,18 +71,26 @@ abstract contract TestUtil is Test {
         );
         bytes[] memory vaas = new bytes[](0);
         vm.startPrank(wormholeMockAddress);
-        daoSpokeContract.receiveWormholeMessages(result.payload, vaas, result.emitterAddress, result.emitterChainId, result.hash);
+        daoSpokeContract.receiveWormholeMessages(
+            result.payload, vaas, result.emitterAddress, result.emitterChainId, result.hash
+        );
         vm.stopPrank();
     }
 
     function _callReceiveMessageOnHubWithMock(IWormhole.VM memory result) internal {
         bytes[] memory vaas = new bytes[](0);
         vm.startPrank(wormholeMockAddress);
-        governanceContract.receiveWormholeMessages(result.payload, vaas, result.emitterAddress, result.emitterChainId, result.hash);
+        governanceContract.receiveWormholeMessages(
+            result.payload, vaas, result.emitterAddress, result.emitterChainId, result.hash
+        );
         vm.stopPrank();
     }
 
-    function _createMessageWithPayload(bytes memory payload, uint16 emitterChainId, address emitterAddress) internal pure returns (IWormhole.VM memory) {
+    function _createMessageWithPayload(bytes memory payload, uint16 emitterChainId, address emitterAddress)
+        internal
+        pure
+        returns (IWormhole.VM memory)
+    {
         IWormhole.Signature[] memory signatures = new IWormhole.Signature[](0);
         return IWormhole.VM(
             0, //version
@@ -101,25 +103,14 @@ abstract contract TestUtil is Test {
             payload,
             0, //guardianSetIndex
             signatures,
-            keccak256(payload)//hash
+            keccak256(payload) //hash
         );
     }
 
     function _collectVotesFromSpoke(uint256 proposalId) internal {
         //vote collection message
-        bytes memory message = abi.encode(
-            0,
-            proposalId,
-            1 ether,
-            0,
-            0
-        );
-        bytes memory payload = abi.encode(
-            address(governanceContract),
-            hubChainId,
-            address(daoSpokeContract),
-            message
-        );
+        bytes memory message = abi.encode(0, proposalId, 1 ether, 0, 0);
+        bytes memory payload = abi.encode(address(governanceContract), hubChainId, address(daoSpokeContract), message);
         _callReceiveMessageOnHubWithMock(_createMessageWithPayload(payload, spokeChainId, address(daoSpokeContract)));
     }
 
@@ -129,19 +120,50 @@ abstract contract TestUtil is Test {
 
     function _getHashToSignProposal(uint256 proposalId, uint8 support) internal view returns (bytes32) {
         return keccak256(
-            abi.encodePacked("\x19\x01",
-                keccak256(abi.encode(keccak256(
-                    "EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)"
-                ), keccak256(bytes("MetaHumanGovernor")), keccak256(bytes("1")), block.chainid, address(governanceContract))),
-                keccak256(abi.encode(governanceContract.BALLOT_TYPEHASH(), proposalId, support))));
+            abi.encodePacked(
+                "\x19\x01",
+                keccak256(
+                    abi.encode(
+                        keccak256("EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)"),
+                        keccak256(bytes("MetaHumanGovernor")),
+                        keccak256(bytes("1")),
+                        block.chainid,
+                        address(governanceContract)
+                    )
+                ),
+                keccak256(abi.encode(governanceContract.BALLOT_TYPEHASH(), proposalId, support))
+            )
+        );
     }
 
-    function _getHashToSignProposalWithReasonAndParams(uint256 proposalId, uint8 support, string memory reason, bytes memory params) internal view returns (bytes32) {
+    function _getHashToSignProposalWithReasonAndParams(
+        uint256 proposalId,
+        uint8 support,
+        string memory reason,
+        bytes memory params
+    ) internal view returns (bytes32) {
         return keccak256(
-            abi.encodePacked("\x19\x01",
-                keccak256(abi.encode(keccak256(
-                    "EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)"
-                ), keccak256(bytes("MetaHumanGovernor")), keccak256(bytes("1")), block.chainid, address(governanceContract))),
-                keccak256(abi.encode(governanceContract.EXTENDED_BALLOT_TYPEHASH(), proposalId, support, keccak256(bytes(reason)), keccak256(params)))));
+            abi.encodePacked(
+                "\x19\x01",
+                keccak256(
+                    abi.encode(
+                        keccak256("EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)"),
+                        keccak256(bytes("MetaHumanGovernor")),
+                        keccak256(bytes("1")),
+                        block.chainid,
+                        address(governanceContract)
+                    )
+                ),
+                keccak256(
+                    abi.encode(
+                        governanceContract.EXTENDED_BALLOT_TYPEHASH(),
+                        proposalId,
+                        support,
+                        keccak256(bytes(reason)),
+                        keccak256(params)
+                    )
+                )
+            )
+        );
     }
 }
