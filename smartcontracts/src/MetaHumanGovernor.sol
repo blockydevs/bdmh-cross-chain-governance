@@ -69,12 +69,13 @@ contract MetaHumanGovernor is
 
     IWormholeRelayer public immutable wormholeRelayer;
     uint16 public immutable chainId;
-    uint256 public immutable secondsPerBlock;
-    uint256 internal constant GAS_LIMIT = 500_000;
-    uint256 initialVotingDelay;
-    uint256 initialVotingPeriod;
-    uint256 initialProposalThreshold;
-    uint256 quorumFraction;
+    uint16 public initialVotingDelay;
+    uint16 public initialVotingPeriod;
+    uint16 public initialProposalThreshold;
+    uint16 public quorumFraction;
+    uint16 public immutable secondsPerBlock;
+    uint256 internal constant _GAS_LIMIT = 500_000;
+    
 
     mapping(bytes32 => bool) public processedMessages;
     mapping(uint256 => bool) public collectionStarted;
@@ -95,7 +96,11 @@ contract MetaHumanGovernor is
         uint16 _chainId,
         address _wormholeRelayerAddress,
         address _magistrateAddress,
-        uint256 _secondsPerBlock
+        uint16 _secondsPerBlock,
+        uint16 _initialVotingDelay,
+        uint16 _initialVotingPeriod, 
+        uint16 _initialProposalThreshold,
+        uint16 _quorumFraction
     )
         Governor("MetaHumanGovernor")
         GovernorSettings(initialVotingDelay, initialVotingPeriod, initialProposalThreshold)
@@ -107,7 +112,11 @@ contract MetaHumanGovernor is
     {
         chainId = _chainId;
         wormholeRelayer = IWormholeRelayer(_wormholeRelayerAddress);
-        secondsPerBlock = _secondsPerBlock; 
+        secondsPerBlock = _secondsPerBlock;
+        initialVotingDelay = _initialVotingDelay;
+        initialVotingPeriod = _initialVotingPeriod;
+        initialProposalThreshold = _initialProposalThreshold;
+        quorumFraction = _quorumFraction;
     }
 
     /**
@@ -269,7 +278,7 @@ contract MetaHumanGovernor is
                 address(uint160(uint256(spokeContracts[i - 1].contractAddress))),
                 payload,
                 sendMessageToHubCost, // send value to enable the spoke to send back vote result
-                GAS_LIMIT,
+                _GAS_LIMIT,
                 spokeContracts[i - 1].chainId,
                 msg.sender
             );
@@ -317,7 +326,7 @@ contract MetaHumanGovernor is
                     address(uint160(uint256(spokeContracts[i - 1].contractAddress))),
                     payload,
                     0, // no receiver value needed
-                    GAS_LIMIT,
+                    _GAS_LIMIT,
                     spokeContracts[i - 1].chainId,
                     msg.sender
                 );
@@ -331,7 +340,7 @@ contract MetaHumanGovernor is
      *  @return cost Price, in units of current chain currency, that the delivery provider charges to perform the relay
      */
     function quoteCrossChainMessage(uint16 targetChain, uint256 valueToSend) internal view returns (uint256 cost) {
-        (cost,) = wormholeRelayer.quoteEVMDeliveryPrice(targetChain, valueToSend, GAS_LIMIT);
+        (cost,) = wormholeRelayer.quoteEVMDeliveryPrice(targetChain, valueToSend, _GAS_LIMIT);
     }
 
     /**

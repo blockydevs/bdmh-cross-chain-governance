@@ -9,6 +9,10 @@ abstract contract DeploymentUtils is Script {
     uint16 public hubChainId = uint16(vm.envUint("HUB_WORMHOLE_CHAIN_ID"));
     uint16 public targetSecondsPerBlock = uint16(vm.envUint("HUB_SECONDS_PER_BLOCK"));
     address public hubAutomaticRelayerAddress = vm.envAddress("HUB_AUTOMATIC_RELAYER_ADDRESS");
+    uint16 public initialVotingDelay = 1;
+    uint16 public initialVotingPeriod = 300;
+    uint16 public initialProposalThreshold = 0;
+    uint16 public quorumFraction = 4;
 
     uint256 public deployerPrivateKey = vm.envUint("PRIVATE_KEY");
     address public deployerAddress = vm.addr(deployerPrivateKey);

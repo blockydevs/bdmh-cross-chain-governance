@@ -34,7 +34,7 @@ contract MetaHumanGovernorTest is TestUtil, EIP712 {
             new CrossChainGovernorCountingSimple.CrossChainAddress[](0);
         timelockController = new TimelockController(1, proposers, executors, address(this));
         governanceContract =
-        new MetaHumanGovernor(voteToken, timelockController, emptySpokeContracts, 0, wormholeMockAddress, address(this), 12);
+        new MetaHumanGovernor(voteToken, timelockController, emptySpokeContracts, 0, wormholeMockAddress, address(this), 12, initialVotingDelay, initialVotingPeriod, initialProposalThreshold, quorumFraction);
         daoSpokeContract =
         new DAOSpokeContract(bytes32(uint256(uint160(address(governanceContract)))), hubChainId, voteToken, 12, spokeChainId, wormholeMockAddress, address(this));
         CrossChainGovernorCountingSimple.CrossChainAddress[] memory spokeContracts =
