@@ -15,10 +15,10 @@ contract ExecuteProposal is Script, DeploymentUtils {
         MetaHumanGovernor governanceContract = MetaHumanGovernor(governorAddress);
         vm.startBroadcast(deployerPrivateKey);
 
-        (address[] memory targets, uint256[] memory values, bytes[] memory calldatas, string memory description) = getProposalExecutionData();
+        (address[] memory targets, uint256[] memory values, bytes[] memory calldatas, string memory description) =
+            getProposalExecutionData();
 
         governanceContract.execute(targets, values, calldatas, keccak256(bytes(description)));
-
 
         vm.stopBroadcast();
     }

@@ -331,7 +331,7 @@ contract MetaHumanGovernorTest is TestUtil, EIP712 {
         vm.stopPrank();
 
         //wait for voting to end
-        vm.roll(block.number + 50410);
+        vm.roll(block.number + 201_600);
         governanceContract.requestCollections(proposalId);
         _collectVotesFromSpoke(proposalId);
         governanceContract.queue(targets, values, calldatas, keccak256(bytes(utilDescription)));
@@ -365,7 +365,7 @@ contract MetaHumanGovernorTest is TestUtil, EIP712 {
         vm.stopPrank();
 
         //wait for voting to end
-        vm.roll(block.number + 50410);
+        vm.roll(block.number + 201602);
         vm.expectRevert("Governor: proposal not successful");
         governanceContract.queue(targets, values, calldatas, keccak256(bytes(utilDescription)));
     }
@@ -393,7 +393,7 @@ contract MetaHumanGovernorTest is TestUtil, EIP712 {
         vm.stopPrank();
 
         //wait for voting to end
-        vm.roll(block.number + 50410);
+        vm.roll(block.number + 201602);
         vm.expectRevert("Governor: proposal not successful");
         governanceContract.execute(targets, values, calldatas, keccak256(bytes(utilDescription)));
     }
@@ -406,7 +406,7 @@ contract MetaHumanGovernorTest is TestUtil, EIP712 {
 
     function testGetVotingPeriod() public {
         uint256 votingPeriod = governanceContract.votingPeriod();
-        assertEq(votingPeriod, 20 * 15);//5 is just taken from MetaHumanGovernor.sol constructor (GovernorSettings)
+        assertEq(votingPeriod, 20 * 10_080);//5 is just taken from MetaHumanGovernor.sol constructor (GovernorSettings)
     }
 
     function testGetQuorum() public {
@@ -426,7 +426,7 @@ contract MetaHumanGovernorTest is TestUtil, EIP712 {
     function testGetProposalStateWhenNotSucceededAndCollectionNotFinished() public {
         uint256 proposalId = _createBasicProposal();
 
-        vm.roll(block.number + 50410);
+        vm.roll(block.number + 201602);
 
         IGovernor.ProposalState state = governanceContract.state(proposalId);
         IGovernor.ProposalState expectedState = IGovernor.ProposalState.Pending;
@@ -445,7 +445,7 @@ contract MetaHumanGovernorTest is TestUtil, EIP712 {
         governanceContract.castVote(proposalId, 1);
         vm.stopPrank();
 
-        vm.roll(block.number + 50410);
+        vm.roll(block.number + 201602);
 
         IGovernor.ProposalState state = governanceContract.state(proposalId);
         IGovernor.ProposalState expectedState = IGovernor.ProposalState.Pending;
@@ -464,7 +464,7 @@ contract MetaHumanGovernorTest is TestUtil, EIP712 {
         governanceContract.castVote(proposalId, 1);
         vm.stopPrank();
 
-        vm.roll(block.number + 50410);
+        vm.roll(block.number + 201602);
         governanceContract.requestCollections(proposalId);
         _collectVotesFromSpoke(proposalId);
 
@@ -485,7 +485,7 @@ contract MetaHumanGovernorTest is TestUtil, EIP712 {
         governanceContract.castVote(proposalId, 0);
         vm.stopPrank();
 
-        vm.roll(block.number + 50410);
+        vm.roll(block.number + 201602);
         governanceContract.requestCollections(proposalId);
         _collectVotesFromSpoke(proposalId);
 
@@ -513,7 +513,7 @@ contract MetaHumanGovernorTest is TestUtil, EIP712 {
         governanceContract.castVote(proposalId, 1);
         vm.stopPrank();
 
-        vm.roll(block.number + 50410);
+        vm.roll(block.number + 201602);
         governanceContract.requestCollections(proposalId);
         _collectVotesFromSpoke(proposalId);
 
@@ -537,7 +537,7 @@ contract MetaHumanGovernorTest is TestUtil, EIP712 {
         governanceContract.castVote(proposalId, 1);
         vm.stopPrank();
 
-        vm.roll(block.number + 50410);
+        vm.roll(block.number + 201602);
         governanceContract.requestCollections(proposalId);
         _collectVotesFromSpoke(proposalId);
 
@@ -556,7 +556,7 @@ contract MetaHumanGovernorTest is TestUtil, EIP712 {
             message
         );
 
-        vm.expectRevert("Already initialized!");
+        vm.expectRevert(abi.encodeWithSelector(0x0dc149f0));
         _callReceiveMessageOnHubWithMock(_createMessageWithPayload(payload, spokeChainId, address(daoSpokeContract)));
     }
 
@@ -594,7 +594,7 @@ contract MetaHumanGovernorTest is TestUtil, EIP712 {
             address(daoSpokeContract),
             message
         );
-        vm.expectRevert("Only messages from the spoke contracts can be received!");
+        vm.expectRevert(abi.encodeWithSelector(0x8dd79de6));
         _callReceiveMessageOnHubWithMock(_createMessageWithPayload(payload));
     }
 
@@ -632,7 +632,7 @@ contract MetaHumanGovernorTest is TestUtil, EIP712 {
             message
         );
         _callReceiveMessageOnHubWithMock(_createMessageWithPayload(payload, spokeChainId, address(daoSpokeContract)));
-        vm.expectRevert("Message already processed");
+        vm.expectRevert(abi.encodeWithSelector(0x57eee766));
         _callReceiveMessageOnHubWithMock(_createMessageWithPayload(payload, spokeChainId, address(daoSpokeContract)));
     }
 
@@ -651,13 +651,13 @@ contract MetaHumanGovernorTest is TestUtil, EIP712 {
             address(daoSpokeContract),
             message
         );
-        vm.expectRevert("Message is not addressed for this contract");
+        vm.expectRevert(abi.encodeWithSelector(0x8dd79de6));
         _callReceiveMessageOnHubWithMock(_createMessageWithPayload(payload, spokeChainId, address(daoSpokeContract)));
     }
 
     function testFinishCollectionPhase() public {
         uint256 proposalId = _createBasicProposal();
-        vm.roll(block.number + 50410);
+        vm.roll(block.number + 201602);
         governanceContract.requestCollections(proposalId);
         _collectVotesFromSpoke(proposalId);
         bool collectionFinished = governanceContract.collectionFinished(proposalId);
@@ -666,22 +666,22 @@ contract MetaHumanGovernorTest is TestUtil, EIP712 {
 
     function testRequestCollections() public {
         uint256 proposalId = _createBasicProposal();
-        vm.roll(block.number + 50410);
+        vm.roll(block.number + 201602);
         governanceContract.requestCollections(proposalId);
     }
 
     function testRequestCollectionsWhenVotingPeriodNotOver() public {
         uint256 proposalId = _createBasicProposal();
         vm.roll(block.number + 2);
-        vm.expectRevert("Cannot request for vote collection until after the vote period is over!");
+        vm.expectRevert(abi.encodeWithSelector(0xbef9bbeb));
         governanceContract.requestCollections(proposalId);
     }
 
     function testRequestCollectionsWhenCollectionAlreadyStarted() public {
         uint256 proposalId = _createBasicProposal();
-        vm.roll(block.number + 50410);
+        vm.roll(block.number + 201602);
         governanceContract.requestCollections(proposalId);
-        vm.expectRevert("Collection phase for this proposal has already started!");
+        vm.expectRevert(abi.encodeWithSelector(0x9ac085be));
         governanceContract.requestCollections(proposalId);
     }
 

@@ -15,7 +15,8 @@ contract CreateProposal is Script, DeploymentUtils {
         MetaHumanGovernor governanceContract = MetaHumanGovernor(governorAddress);
         vm.startBroadcast(deployerPrivateKey);
 
-        (address[] memory targets, uint256[] memory values, bytes[] memory calldatas, string memory description) = getProposalExecutionData();
+        (address[] memory targets, uint256[] memory values, bytes[] memory calldatas, string memory description) =
+            getProposalExecutionData();
 
         governanceContract.crossChainPropose{value: 0.1 ether}(targets, values, calldatas, description);
 
