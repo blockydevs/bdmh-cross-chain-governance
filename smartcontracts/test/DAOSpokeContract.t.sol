@@ -9,6 +9,7 @@ import "./TestUtil.sol";
 pragma solidity ^0.8.20;
 
 contract DAOSpokeContractTest is TestUtil {
+
     event VoteCast(address indexed voter, uint256 proposalId, uint8 support, uint256 weight, string reason);
 
     // Required for withdraw test
@@ -21,19 +22,14 @@ contract DAOSpokeContractTest is TestUtil {
         voteToken.depositFor(address(this), 2 ether);
         address[] memory proposers = new address[](1);
         address[] memory executors = new address[](1);
-        CrossChainGovernorCountingSimple.CrossChainAddress[] memory emptySpokeContracts =
-            new CrossChainGovernorCountingSimple.CrossChainAddress[](0);
+        CrossChainGovernorCountingSimple.CrossChainAddress[] memory emptySpokeContracts = new CrossChainGovernorCountingSimple.CrossChainAddress[](0);
         proposers[0] = address(this);
         executors[0] = address(0);
         TimelockController timelockController = new TimelockController(1, proposers, executors, address(this));
-        governanceContract =
-        new MetaHumanGovernor(voteToken, timelockController, emptySpokeContracts, 10002, wormholeMockAddress, address(this), 12, initialVotingDelay, initialVotingPeriod, initialProposalThreshold, quorumFraction);
-        daoSpokeContract =
-        new DAOSpokeContract(bytes32(uint256(uint160(address(governanceContract)))), 10002, voteToken, 12, spokeChainId, wormholeMockAddress, address(this));
-        CrossChainGovernorCountingSimple.CrossChainAddress[] memory spokeContracts =
-            new CrossChainGovernorCountingSimple.CrossChainAddress[](1);
-        spokeContracts[0] =
-            CrossChainGovernorCountingSimple.CrossChainAddress(bytes32(uint256(uint160(address(daoSpokeContract)))), 5);
+        governanceContract = new MetaHumanGovernor(voteToken, timelockController, emptySpokeContracts, 10002, wormholeMockAddress, address(this), 12);
+        daoSpokeContract = new DAOSpokeContract(bytes32(uint256(uint160(address(governanceContract)))), 10002, voteToken, 12, spokeChainId, wormholeMockAddress, address(this));
+        CrossChainGovernorCountingSimple.CrossChainAddress[] memory spokeContracts = new CrossChainGovernorCountingSimple.CrossChainAddress[](1);
+        spokeContracts[0] = CrossChainGovernorCountingSimple.CrossChainAddress(bytes32(uint256(uint160(address(daoSpokeContract)))), 5);
         governanceContract.updateSpokeContracts(spokeContracts);
         bytes memory code = address(governanceContract).code;
         vm.deal(address(daoSpokeContract), 1 ether);
@@ -134,14 +130,23 @@ contract DAOSpokeContractTest is TestUtil {
     }
 
     function testCastVoteOnFinishedProposal() public {
-        vm.mockCall(wormholeMockAddress, abi.encodeWithSelector(IWormhole.publishMessage.selector), abi.encode(0));
+        vm.mockCall(
+            wormholeMockAddress,
+            abi.encodeWithSelector(IWormhole.publishMessage.selector),
+            abi.encode(0)
+        );
 
         uint256 proposalId = _createProposalOnSpoke();
         bytes memory message = abi.encode(
             1, // Function selector
             proposalId
         );
-        bytes memory payload = abi.encode(address(daoSpokeContract), spokeChainId, address(governanceContract), message);
+        bytes memory payload = abi.encode(
+            address(daoSpokeContract),
+            spokeChainId,
+            address(governanceContract),
+            message
+        );
         IWormhole.VM memory mockResult = _createMessageWithPayload(payload);
         //make proposal finished
         _callReceiveMessageOnSpokeWithMock(mockResult);
@@ -180,7 +185,12 @@ contract DAOSpokeContractTest is TestUtil {
             proposalId,
             block.timestamp // Encoding the proposal start
         );
-        bytes memory payload = abi.encode(address(daoSpokeContract), spokeChainId, address(msg.sender), message);
+        bytes memory payload = abi.encode(
+            address(daoSpokeContract),
+            spokeChainId,
+            address(msg.sender),
+            message
+        );
         address someUser = _createMockUserWithVotingPower(1, voteToken);
         vm.expectRevert("Only messages from the hub contract can be received!");
         IWormhole.VM memory mockPayload = _createMessageWithPayload(payload);
@@ -195,7 +205,12 @@ contract DAOSpokeContractTest is TestUtil {
             proposalId,
             block.timestamp // Encoding the proposal start
         );
-        bytes memory payload = abi.encode(address(this), spokeChainId, address(governanceContract), message);
+        bytes memory payload = abi.encode(
+            address(this),
+            spokeChainId,
+            address(governanceContract),
+            message
+        );
         IWormhole.VM memory mockPayload = _createMessageWithPayload(payload);
         vm.expectRevert("Message is not addressed for this contract");
         _callReceiveMessageOnSpokeWithMock(mockPayload);
@@ -210,7 +225,12 @@ contract DAOSpokeContractTest is TestUtil {
             block.timestamp,
             block.timestamp + 1000
         );
-        bytes memory payload = abi.encode(address(daoSpokeContract), spokeChainId, address(governanceContract), message);
+        bytes memory payload = abi.encode(
+            address(daoSpokeContract),
+            spokeChainId,
+            address(governanceContract),
+            message
+        );
         IWormhole.VM memory mockPayload = _createMessageWithPayload(payload);
         _callReceiveMessageOnSpokeWithMock(mockPayload);
         vm.expectRevert("Message already processed");
@@ -231,7 +251,12 @@ contract DAOSpokeContractTest is TestUtil {
             block.timestamp - (secondsPerBlock * 2),
             block.timestamp + (secondsPerBlock * 10)
         );
-        bytes memory payload = abi.encode(address(daoSpokeContract), spokeChainId, address(governanceContract), message);
+        bytes memory payload = abi.encode(
+            address(daoSpokeContract),
+            spokeChainId,
+            address(governanceContract),
+            message
+        );
         _callReceiveMessageOnSpokeWithMock(_createMessageWithPayload(payload));
         (
             uint256 proposalCreation,
@@ -260,7 +285,12 @@ contract DAOSpokeContractTest is TestUtil {
             block.timestamp + (secondsPerBlock * 2),
             block.timestamp + (secondsPerBlock * 10)
         );
-        bytes memory payload = abi.encode(address(daoSpokeContract), spokeChainId, address(governanceContract), message);
+        bytes memory payload = abi.encode(
+            address(daoSpokeContract),
+            spokeChainId,
+            address(governanceContract),
+            message
+        );
         _callReceiveMessageOnSpokeWithMock(_createMessageWithPayload(payload));
         (
             uint256 proposalCreation,
@@ -281,13 +311,18 @@ contract DAOSpokeContractTest is TestUtil {
             1, // Function selector
             proposalId
         );
-        bytes memory payload = abi.encode(address(daoSpokeContract), spokeChainId, address(governanceContract), message);
+        bytes memory payload = abi.encode(
+            address(daoSpokeContract),
+            spokeChainId,
+            address(governanceContract),
+            message
+        );
         _callReceiveMessageOnSpokeWithMock(_createMessageWithPayload(payload));
         (
-            , //proposalCreation
-            , //localVoteStart
-            , //localVoteEnd
-            , //localVoteStartBlock
+            ,//proposalCreation
+            ,//localVoteStart
+            ,//localVoteEnd
+            ,//localVoteStartBlock
             bool voteFinished //vote finished
         ) = daoSpokeContract.proposals(proposalId);
         assertTrue(voteFinished);

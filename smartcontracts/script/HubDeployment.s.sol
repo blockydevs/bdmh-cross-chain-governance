@@ -16,13 +16,11 @@ contract HubDeployment is Script, DeploymentUtils {
         VHMToken voteToken = VHMToken(vHMTAddress);
         address[] memory proposers = new address[](1);
         address[] memory executors = new address[](1);
-        CrossChainGovernorCountingSimple.CrossChainAddress[] memory spokeContracts =
-            new CrossChainGovernorCountingSimple.CrossChainAddress[](0);
+        CrossChainGovernorCountingSimple.CrossChainAddress[] memory spokeContracts = new CrossChainGovernorCountingSimple.CrossChainAddress[](0);
         proposers[0] = address(0);
         executors[0] = address(0);
         TimelockController timelockController = new TimelockController(1, proposers, executors, deployerAddress);
-        MetaHumanGovernor governanceContract =
-        new MetaHumanGovernor(voteToken, timelockController, spokeContracts, chainId, hubAutomaticRelayerAddress, magistrateAddress, targetSecondsPerBlock, initialVotingDelay, initialVotingPeriod, initialProposalThreshold, quorumFraction);
+        MetaHumanGovernor governanceContract = new MetaHumanGovernor(voteToken, timelockController, spokeContracts, chainId, hubAutomaticRelayerAddress, magistrateAddress, targetSecondsPerBlock);
         timelockController.grantRole(keccak256("PROPOSER_ROLE"), address(governanceContract));
         timelockController.revokeRole(keccak256("TIMELOCK_ADMIN_ROLE"), deployerAddress);
 

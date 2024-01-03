@@ -15,10 +15,6 @@ abstract contract TestUtil is Test {
     uint16 public spokeChainId = 5;
     uint16 public hubChainId = 10002;
     uint16 public secondsPerBlock = 12;
-    uint16 public initialVotingDelay = 1;
-    uint16 public initialVotingPeriod = 300;
-    uint16 public initialProposalThreshold = 0;
-    uint16 public quorumFraction = 4;
     string public utilDescription = "test1";
 
 

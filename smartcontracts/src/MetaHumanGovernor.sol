@@ -30,52 +30,35 @@ contract MetaHumanGovernor is
     Magistrate,
     IWormholeReceiver
 {
-    /*´:°•.°+.*•´.*:˚.°*.˚•´.°:°•.°•.*•´.*:˚.°*.˚•´.°:°•.°+.*•´.*:*/
-    /*                       CUSTOM ERRORS                        */
-    /*.•°:°.´+˚.*°.˚:*.´•*.+°.•°:´*.´•*.•°.•°:°.´:•˚°.*°.˚:*.´+°.•*/
+    
+    /// CUSTOM ERRORS /// 
+    error AlreadyProcessed(); 
 
-    /// @dev
-    error AlreadyProcessed(bytes32 _hash);
+    error RelayerOnly(); 
 
-    /// @dev Only relayer allowed
-    error RelayerOnly(address sender, address relayer);
+    error OnlySpokeMessages();
 
-    /// @dev Only messages from spoke contracts are received
-    error OnlySpokeMessages(bytes32 source, uint16 chainId);
-
-    /// @dev Cross chain propose only to create a proposal
     error CrossChainProposeOnly();
 
-    /// @dev Spoke votes are already initialized
     error InitDone();
 
-    /// @dev Spoke votes are already initialized
-    error AlreadyInitialized(uint256 proposalId, bytes32 emitterAddress, uint16 emitterChainId);
+    error AlreadyInitialized();
 
-    /// @dev Only the relayer is allowed
     error OnlyRelayerAllowed();
 
-    /// @dev Only the spoke is allowed
     error OnlySpokeAllowed();
 
-    /// @dev
-    error CollectionStarted(uint256 proposalId);
+    error CollectionStarted();
 
-    /// @dev
-    error PeriodNotOver(uint256 proposalId);
+    error PeriodNotOver();
 
-    /// @dev
-    error CollectionUnfinished(uint256 proposalId);
+    error CollectionUnfinished();
 
-    IWormholeRelayer public immutable wormholeRelayer;
-    uint16 public immutable chainId;
-    uint16 public initialVotingDelay;
-    uint16 public initialVotingPeriod;
-    uint16 public initialProposalThreshold;
-    uint16 public quorumFraction;
-    uint16 public immutable secondsPerBlock;
-    uint256 internal constant _GAS_LIMIT = 500_000;
-    
+    IWormholeRelayer immutable public wormholeRelayer;
+    uint256 constant internal _GAS_LIMIT = 500_000;
+    uint256 constant internal VOTING_PERIOD = 10_080; // 1 week in blocks (polygon mumbai)
+    uint256 immutable public secondsPerBlock;
+    uint16 immutable public chainId;
 
     mapping(bytes32 => bool) public processedMessages;
     mapping(uint256 => bool) public collectionStarted;
@@ -89,34 +72,18 @@ contract MetaHumanGovernor is
      *  @param _chainId The chain ID of the current contract.
      *  @param _wormholeRelayerAddress The address of the wormhole automatic relayer contract used for cross-chain communication.
      */
-    constructor(
-        IVotes _token,
-        TimelockController _timelock,
-        CrossChainAddress[] memory _spokeContracts,
-        uint16 _chainId,
-        address _wormholeRelayerAddress,
-        address _magistrateAddress,
-        uint16 _secondsPerBlock,
-        uint16 _initialVotingDelay,
-        uint16 _initialVotingPeriod, 
-        uint16 _initialProposalThreshold,
-        uint16 _quorumFraction
-    )
-        Governor("MetaHumanGovernor")
-        GovernorSettings(initialVotingDelay, initialVotingPeriod, initialProposalThreshold)
-        GovernorVotes(_token)
-        GovernorVotesQuorumFraction(quorumFraction)
-        GovernorTimelockControl(_timelock)
-        CrossChainGovernorCountingSimple(_spokeContracts)
-        Magistrate(_magistrateAddress)
+    constructor(IVotes _token, TimelockController _timelock, CrossChainAddress[] memory _spokeContracts, uint16 _chainId, address _wormholeRelayerAddress, address _magistrateAddress, uint256 _secondsPerBlock)
+    Governor("MetaHumanGovernor")
+    GovernorSettings(1 /* 1 block */, 20 * VOTING_PERIOD /* 20 blocks per minute * 15 minutes (polygon mumbai) */, 0) //TODO:prod in production voting delay, voting period, proposal threshold needs to be changed to value of choice. Depending on block time on selected hub chain and desired period
+    GovernorVotes(_token)
+    GovernorVotesQuorumFraction(4)//TODO:prod change quorum fraction to value of choice
+    GovernorTimelockControl(_timelock)
+    CrossChainGovernorCountingSimple(_spokeContracts)
+    Magistrate(_magistrateAddress)
     {
         chainId = _chainId;
         wormholeRelayer = IWormholeRelayer(_wormholeRelayerAddress);
         secondsPerBlock = _secondsPerBlock;
-        initialVotingDelay = _initialVotingDelay;
-        initialVotingPeriod = _initialVotingPeriod;
-        initialProposalThreshold = _initialProposalThreshold;
-        quorumFraction = _quorumFraction;
     }
 
     /**
@@ -143,15 +110,15 @@ contract MetaHumanGovernor is
         bytes32 deliveryHash // this can be stored in a mapping deliveryHash => bool to prevent duplicate deliveries
     ) public payable override {
         if (msg.sender != address(wormholeRelayer)) {
-            revert RelayerOnly(msg.sender, address(wormholeRelayer));
+            revert RelayerOnly(); 
         }
 
         if (!spokeContractsMapping[sourceAddress][sourceChain]) {
-            revert OnlySpokeMessages(sourceAddress, sourceChain);
+            revert OnlySpokeMessages();
         }
 
         if (processedMessages[deliveryHash]) {
-            revert AlreadyProcessed(deliveryHash);
+            revert AlreadyProcessed();
         }
 
         (
@@ -195,7 +162,7 @@ contract MetaHumanGovernor is
         ) = abi.decode(payload, (uint16, uint256, uint256, uint256, uint256));
         // As long as the received data isn't already initialized...
         if (spokeVotes[_proposalId][emitterAddress][emitterChainId].initialized) {
-            revert AlreadyInitialized(_proposalId, emitterAddress, emitterChainId);
+            revert AlreadyInitialized();
         } else {
             // Add it to the map (while setting initialized true)
             spokeVotes[_proposalId][emitterAddress][emitterChainId] = SpokeProposalVote(_for, _against, _abstain, true);
@@ -222,7 +189,7 @@ contract MetaHumanGovernor is
         _finishCollectionPhase(proposalId);
 
         if (!collectionFinished[proposalId]) {
-            revert CollectionUnfinished(proposalId);
+            revert CollectionUnfinished();
         }
 
         super._beforeExecute(proposalId, targets, values, calldatas, descriptionHash);
@@ -250,11 +217,11 @@ contract MetaHumanGovernor is
      */
     function requestCollections(uint256 proposalId) public {
         if (block.number <= proposalDeadline(proposalId)) {
-            revert PeriodNotOver(proposalId);
+            revert PeriodNotOver();
         }
 
         if (collectionStarted[proposalId]) {
-            revert CollectionStarted(proposalId);
+            revert CollectionStarted();
         }
 
         collectionStarted[proposalId] = true;
@@ -278,9 +245,7 @@ contract MetaHumanGovernor is
                 address(uint160(uint256(spokeContracts[i - 1].contractAddress))),
                 payload,
                 sendMessageToHubCost, // send value to enable the spoke to send back vote result
-                _GAS_LIMIT,
-                spokeContracts[i - 1].chainId,
-                msg.sender
+                _GAS_LIMIT
             );
         }
     }
@@ -326,9 +291,7 @@ contract MetaHumanGovernor is
                     address(uint160(uint256(spokeContracts[i - 1].contractAddress))),
                     payload,
                     0, // no receiver value needed
-                    _GAS_LIMIT,
-                    spokeContracts[i - 1].chainId,
-                    msg.sender
+                    _GAS_LIMIT
                 );
             }
         }
@@ -365,6 +328,21 @@ contract MetaHumanGovernor is
 
         return estimatedTimestamp;
     }
+
+     /**
+     @dev Retrieves the voting period duration.
+     @return The duration of the voting period in seconds.
+    */
+    function votingPeriod()
+    public
+    view
+    override(IGovernor, GovernorSettings)
+    returns (uint256)
+    {
+        return super.votingPeriod();
+    }
+    
+
 
     /**
      * @dev Retrieves the state of a proposal.
