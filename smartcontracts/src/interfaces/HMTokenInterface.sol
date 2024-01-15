@@ -1,4 +1,6 @@
-pragma solidity ^0.8.0;
+// SPDX-License-Identifier: MIT
+
+pragma solidity >=0.6.2;
 
 interface HMTokenInterface {
     event Transfer(address indexed _from, address indexed _to, uint256 _value);

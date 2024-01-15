@@ -15,11 +15,11 @@ contract RequestCollections is Script, DeploymentUtils {
         MetaHumanGovernor governanceContract = MetaHumanGovernor(governorAddress);
         vm.startBroadcast(deployerPrivateKey);
 
-        (address[] memory targets, uint256[] memory values, bytes[] memory calldatas, string memory description) = getProposalExecutionData();
+        (address[] memory targets, uint256[] memory values, bytes[] memory calldatas, string memory description) =
+            getProposalExecutionData();
 
         uint256 proposalId = governanceContract.hashProposal(targets, values, calldatas, keccak256(bytes(description)));
         governanceContract.requestCollections(proposalId);
-
 
         vm.stopBroadcast();
     }

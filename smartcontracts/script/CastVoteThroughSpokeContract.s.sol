@@ -15,7 +15,8 @@ contract CastVoteThroughSpokeContract is Script, DeploymentUtils {
         vm.startBroadcast(thirdPrivateKey);
         DAOSpokeContract spokeContract = DAOSpokeContract(spokeAddress);
 
-        (address[] memory targets, uint256[] memory values, bytes[] memory calldatas, string memory description) = getProposalExecutionData();
+        (address[] memory targets, uint256[] memory values, bytes[] memory calldatas, string memory description) =
+            getProposalExecutionData();
 
         //calculate hash based on lib/openzeppelin-contracts/contracts/governance/Governor.sol:133
         uint256 proposalId = uint256(keccak256(abi.encode(targets, values, calldatas, keccak256(bytes(description)))));

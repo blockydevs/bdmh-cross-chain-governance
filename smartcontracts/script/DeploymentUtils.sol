@@ -13,8 +13,11 @@ abstract contract DeploymentUtils is Script {
     uint256 public deployerPrivateKey = vm.envUint("PRIVATE_KEY");
     address public deployerAddress = vm.addr(deployerPrivateKey);
 
-
-    function getProposalExecutionData() public view returns(address[] memory targets, uint256[] memory values, bytes[] memory calldatas, string memory description) {
+    function getProposalExecutionData()
+        public
+        view
+        returns (address[] memory targets, uint256[] memory values, bytes[] memory calldatas, string memory description)
+    {
         address hmTokenAddress = vm.envAddress("HM_TOKEN_ADDRESS");
 
         description = vm.envString("DESCRIPTION");
